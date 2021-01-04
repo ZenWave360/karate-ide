@@ -4,9 +4,12 @@ import ProviderStatusBar from "./providerStatusBar";
 import ProviderExecutions from "./providerExecutions";
 import parse = require('parse-curl');
 import * as vscode from 'vscode';
+import { TreeEntry } from "./model/KarateEventLogsModels";
 let os = require('os')
 
 let debugLineNumber: number = 0;
+let lastDebugExecution = null;
+let isRelaunchLastDebugExecution = false
 
 
 async function smartPaste()
@@ -82,8 +85,14 @@ async function smartPaste()
   })
 }
 
+
 async function getDebugFile()
 {
+  if (isRelaunchLastDebugExecution) {
+    isRelaunchLastDebugExecution = false;
+    return lastDebugExecution;
+  }
+
   let debugLine: string = (debugLineNumber === 0) ? "" : `:${debugLineNumber}`;
   debugLineNumber = 0;
 
@@ -91,7 +100,7 @@ async function getDebugFile()
 
   if (activeKarateFile !== null)
   {
-    return activeKarateFile + debugLine;
+    return lastDebugExecution = activeKarateFile + debugLine;
   }
   else
   {
@@ -134,7 +143,7 @@ async function runAllKarateTests(args = null)
   runKarateTest(commandArgs);
 }
 
-async function runKarateTest(args = null)
+async function runKarateTest_bak(args = null)
 {
   if (args === null)
   {
@@ -399,7 +408,7 @@ async function runKarateTest(args = null)
       },
       async (progress) =>
       {
-        await new Promise((resolve) =>
+        await new Promise<void>((resolve) =>
         {
           let interval = setInterval(() =>
           {
@@ -419,6 +428,30 @@ async function runKarateTest(args = null)
   .then(task => showProgress(task));
 }
 
+function runKarateTest(args) {
+  console.log('launchKarateTest', args)
+  const path = args[0];
+  vscode.workspace.getConfiguration('karateRunner.karateJar').get('commandLineArgs')
+  const runCommand = `java -Dvscode.port=8888 -Dkarate.env=local -cp "target/classes;target/test-classes;src/test/resources;/dev/ZenWave-Studio/karate-repos/karate/karate-core/target/classes;target/dependency/*" com.intuit.karate.cli.Main \
+ -H com.intuit.karate.cli.VSCodeHook "${path}"`
+  let seo: vscode.ShellExecutionOptions = { /* executable: 'C:\\Program Files\\Git\\bin\\bash.exe', shellArgs: ['-c'], cwd: projectRootPath */ }
+  let exec = new vscode.ShellExecution(runCommand, seo);
+  let task = new vscode.Task({ type: 'karate' }, vscode.TaskScope.Workspace, 'Karate Runner', 'karate', exec, []);
+  vscode.tasks.executeTask(task);
+}
+
+function relaunchLastKarateDebugExecution() {
+  isRelaunchLastDebugExecution = true;
+  debugKarateTest();
+}
+
+function launchKarateDebugExecution(entry: TreeEntry) {
+  console.log('launchKarateDebugExecution', entry)
+  isRelaunchLastDebugExecution = true;
+  lastDebugExecution = entry.eventStart.resource + ':' + entry.eventStart.line;
+  debugKarateTest();
+}
+
 function debugKarateTest(args = null)
 {
   if (args !== null)
@@ -430,6 +463,7 @@ function debugKarateTest(args = null)
     debugLineNumber = 0;
   }
 
+  vscode.commands.executeCommand('karateRunner.karateExecutionsTree.clearTree');
   vscode.commands.executeCommand('workbench.action.debug.start');
 }
 
@@ -454,4 +488,4 @@ function openFileInEditor(args)
   vscode.window.showTextDocument(fileUri);
 }
 
-export { smartPaste, getDebugFile, getDebugBuildFile, debugKarateTest, runKarateTest, runAllKarateTests, displayReportsTree, displayTestsTree, openBuildReport, openFileInEditor };
+export { smartPaste, getDebugFile, getDebugBuildFile, debugKarateTest, runKarateTest, runAllKarateTests, displayReportsTree, displayTestsTree, openBuildReport, openFileInEditor, relaunchLastKarateDebugExecution, launchKarateDebugExecution };

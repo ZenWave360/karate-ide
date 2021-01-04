@@ -7,18 +7,20 @@ import ProviderExecutions from "./providerExecutions";
 import ProviderStatusBar from "./providerStatusBar";
 import ProviderCodeLens from "./providerCodeLens";
 import ProviderDefinition from "./providerDefinition";
-import KarateNetworkLogsProvider from './KarateNetworkLogsProvider';
-import LogsServerSocketAppender  from './LogsServerSocketAppender';
+import KarateNetworkLogsTreeProvider from './KarateNetworkLogsTreeProvider';
+import EventLogsServer  from './model/EventLogsServer';
 import HoverRunDebugProvider from './HoverRunDebugProvider';
 //import ProviderFoldingRange from "./providerFoldingRange";
-import { smartPaste, getDebugFile, getDebugBuildFile, debugKarateTest, runKarateTest, runAllKarateTests, displayReportsTree, displayTestsTree, openBuildReport, openFileInEditor } from "./commands";
+import { smartPaste, getDebugFile, getDebugBuildFile, debugKarateTest, runKarateTest, runAllKarateTests, displayReportsTree, displayTestsTree, openBuildReport, openFileInEditor, launchKarateDebugExecution, relaunchLastKarateDebugExecution } from "./commands";
 import * as vscode from 'vscode';
+import KarateExecutionsTreeProvider from "./KarateExecutionsTreeProvider";
 
 let buildReportsTreeView = null;
 let karateTestsTreeView = null;
 let buildReportsWatcher = null;
 let karateTestsWatcher = null;
 let karateNetworkTreeView = null;
+let karateExecutionsTreeView = null;
 
 
 export function activate(context: vscode.ExtensionContext)
@@ -63,16 +65,31 @@ export function activate(context: vscode.ExtensionContext)
   karateTestsTreeView = vscode.window.createTreeView('karate-tests', { showCollapseAll: true, treeDataProvider: karateTestsProvider });
 
   const registerHoverRunDebugProvider = vscode.languages.registerHoverProvider(codeLensTarget, new HoverRunDebugProvider(context));
-  const karateNetworkLogsProvider = new KarateNetworkLogsProvider();
+  // NetworkLogs View
+  const karateNetworkLogsProvider = new KarateNetworkLogsTreeProvider();
   const clearNetworkLogsTreeCommand = vscode.commands.registerCommand('karateRunner.karateNetworkLogs.clearTree', () => karateNetworkLogsProvider.clear());
-  const logsServerSocketAppender = new LogsServerSocketAppender(data => karateNetworkLogsProvider.processLoggingEvent(data));
+  const showScenariosCommand = vscode.commands.registerCommand('karateRunner.karateNetworkLogs.showScenarios.true', () => karateNetworkLogsProvider.setShowScenarios(true));
+  const dontShowScenariosCommand = vscode.commands.registerCommand('karateRunner.karateNetworkLogs.showScenarios.false', () => karateNetworkLogsProvider.setShowScenarios(false));
   karateNetworkTreeView = vscode.window.createTreeView('karate-network-logs', {
     showCollapseAll: true,
     treeDataProvider: karateNetworkLogsProvider,
   });
-  const logsServerPort: number = vscode.workspace.getConfiguration('karateRunner.logsServerSocketAppender').get('port');
+  // Executions View
+  const karateExecutionsTreeProvider = new KarateExecutionsTreeProvider();
+  const clearExecutionsTreeCommand = vscode.commands.registerCommand('karateRunner.karateExecutionsTree.clearTree', () => karateExecutionsTreeProvider.clear());
+  const relaunchLastCommand = vscode.commands.registerCommand('karateRunner.karateExecutionsTree.relaunchLast', relaunchLastKarateDebugExecution);
+  const launchExecutionCommand = vscode.commands.registerCommand('karateRunner.karateExecutionsTree.launch', launchKarateDebugExecution);
+  karateExecutionsTreeView = vscode.window.createTreeView('karate-executions', {
+    showCollapseAll: false,
+    treeDataProvider: karateExecutionsTreeProvider,
+  });
+  const eventLogsServer = new EventLogsServer(data => {
+    karateNetworkLogsProvider.processLoggingEvent(data);
+    karateExecutionsTreeProvider.processLoggingEvent(data);
+  });
+  const logsServerPort: number = vscode.workspace.getConfiguration('karateRunner.eventLogsServer').get('port');
   if (logsServerPort) {
-    logsServerSocketAppender.start(logsServerPort);
+    eventLogsServer.start(logsServerPort);
   }
 
   setupWatcher(
@@ -141,11 +158,11 @@ export function activate(context: vscode.ExtensionContext)
       )
     }
 
-    const port: number = vscode.workspace.getConfiguration('karateRunner.logsServerSocketAppender').get('port');
-    if (logsServerSocketAppender.port !== port) {
-      logsServerSocketAppender.stop();
+    const port: number = vscode.workspace.getConfiguration('karateRunner.eventLogsServer').get('port');
+    if (eventLogsServer.port !== port) {
+      eventLogsServer.stop();
       if (port) {
-        logsServerSocketAppender.start(port);
+        eventLogsServer.start(port);
       }
     }
   });
@@ -171,8 +188,14 @@ export function activate(context: vscode.ExtensionContext)
   context.subscriptions.push(resultsProvider);
   //context.subscriptions.push(registerFoldingRangeProvider);
   context.subscriptions.push(registerHoverRunDebugProvider);
+  context.subscriptions.push(clearExecutionsTreeCommand);
+  context.subscriptions.push(karateExecutionsTreeView);
   context.subscriptions.push(karateNetworkTreeView);
   context.subscriptions.push(clearNetworkLogsTreeCommand);
+  context.subscriptions.push(showScenariosCommand);
+  context.subscriptions.push(dontShowScenariosCommand);
+  context.subscriptions.push(relaunchLastCommand);
+  context.subscriptions.push(launchExecutionCommand);
 }
 
 export function deactivate()

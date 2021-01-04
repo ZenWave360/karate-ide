@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/kirksl/karate-runner"
   },
-  "version": "0.9.5",
+  "version": "0.9.5-fork",
   "license": "MIT",
   "author": {
     "name": "Kirk Slota"
@@ -53,6 +53,10 @@
         {
           "id": "karate-network-logs",
           "name": "Karate Network Logs"
+        },
+        {
+          "id": "karate-executions",
+          "name": "Karate Executions"
         }
       ]
     },
@@ -90,11 +94,35 @@
         }
       },
       {
+        "command": "karateRunner.karateExecutionsTree.clearTree",
+        "title": "Clear",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
         "command": "karateRunner.karateNetworkLogs.clearTree",
         "title": "Clear",
         "icon": {
           "light": "resources/light/refresh.svg",
           "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "karateRunner.karateNetworkLogs.showScenarios.true",
+        "title": "Show Scenarios",
+        "icon": {
+          "light": "resources/light/display-deep.svg",
+          "dark": "resources/dark/display-deep.svg"
+        }
+      },
+      {
+        "command": "karateRunner.karateNetworkLogs.showScenarios.false",
+        "title": "Hide Scenarios",
+        "icon": {
+          "light": "resources/light/display-shallow.svg",
+          "dark": "resources/dark/display-shallow.svg"
         }
       },
       {
@@ -116,6 +144,22 @@
       {
         "command": "karateRunner.tests.runAll",
         "title": "Run All Tests",
+        "icon": {
+          "light": "resources/light/run-all.svg",
+          "dark": "resources/dark/run-all.svg"
+        }
+      },
+      {
+        "command": "karateRunner.karateExecutionsTree.relaunchLast",
+        "title": "Relaunch Last Karate Debug Execution",
+        "icon": {
+          "light": "resources/light/run-all.svg",
+          "dark": "resources/dark/run-all.svg"
+        }
+      },
+      {
+        "command": "karateRunner.karateExecutionsTree.launch",
+        "title": "Debug this Execution",
         "icon": {
           "light": "resources/light/run-all.svg",
           "dark": "resources/dark/run-all.svg"
@@ -190,6 +234,16 @@
           "command": "karateRunner.karateNetworkLogs.clearTree",
           "when": "view == karate-network-logs",
           "group": "navigation@1"
+        },
+        {
+          "command": "karateRunner.karateNetworkLogs.showScenarios.true",
+          "when": "view == karate-network-logs",
+          "group": "navigation@1"
+        },
+        {
+          "command": "karateRunner.karateNetworkLogs.showScenarios.false",
+          "when": "view == karate-network-logs",
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [
@@ -202,6 +256,16 @@
           "command": "karateRunner.tests.runAll",
           "when": "view == karate-tests && viewItem == testDirectory",
           "group": "inline"
+        },
+        {
+          "command": "karateRunner.karateExecutionsTree.launch",
+          "when": "view == karate-executions",
+          "group": "inline"
+        },
+        {
+          "command": "karateRunner.karateExecutionsTree.relaunchLast",
+          "when": "view == karate-executions",
+          "group": "navigation@1"
         }
       ]
     },
@@ -307,10 +371,10 @@
           "description": "Display Karate tests as a flat list (Shallow) or natural directory structure (Deep) within Activity Bar.",
           "scope": "resource"
         },
-        "karateRunner.logsServerSocketAppender.port": {
+        "karateRunner.eventLogsServer.port": {
           "type": "number",
-          "default": 9999,
-          "description": "LogsServerSocketAppender port.",
+          "default": 0,
+          "description": "Events Log Server Port ('0' means disabled).",
           "scope": "resource"
         }
       }

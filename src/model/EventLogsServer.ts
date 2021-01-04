@@ -1,6 +1,6 @@
 import * as net from 'net';
 
-export default class LogsServerSocketAppender {
+export default class EventLogsServer {
     public port = 0;
     public server: net.Server = null;
     constructor(private callback: (data: Buffer) => void) {}
@@ -14,7 +14,7 @@ export default class LogsServerSocketAppender {
 
             // When receive client data.
             socket.on('data', data => {
-                console.log(data.toString());
+                // console.log(data.toString());
                 if (this.callback) {
                     this.callback(data);
                 }
