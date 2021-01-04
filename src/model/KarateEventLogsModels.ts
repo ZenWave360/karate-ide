@@ -1,7 +1,12 @@
 import * as vscode from 'vscode';
 
 enum EventType {
-    REQUEST, RESPONSE, FEATURE_START, FEATURE_END, SCENARIO_START, SCENARIO_END
+    REQUEST,
+    RESPONSE,
+    FEATURE_START,
+    FEATURE_END,
+    SCENARIO_START,
+    SCENARIO_END,
 }
 export class LoggingEventVO {
     timestamp: number;
@@ -50,7 +55,7 @@ export class TreeEntry implements ITreeEntry {
         this.parent = parent;
         this.eventStart = eventStart;
         if (parent && parent.children) {
-            parent.children.push(this)
+            parent.children.push(this);
             if (eventStart.eventType === 'SCENARIO_START' && eventStart.payload) {
                 // this.children.push(new Payload(eventStart.payload, '__arg'))
                 this.__arg = eventStart.payload;
@@ -58,15 +63,18 @@ export class TreeEntry implements ITreeEntry {
         }
     }
 
-    asTreeItem() : vscode.TreeItem | ITreeEntryCommand {
+    asTreeItem(): vscode.TreeItem | ITreeEntryCommand {
         const eventType = this.eventStart.eventType;
         let label = '';
-        let state = (this.parent && this.parent.eventStart && this.parent.eventStart.eventType === 'FEATURE_START')? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed;
+        let state =
+            this.parent && this.parent.eventStart && this.parent.eventStart.eventType === 'FEATURE_START'
+                ? vscode.TreeItemCollapsibleState.Expanded
+                : vscode.TreeItemCollapsibleState.Collapsed;
         if (eventType === 'FEATURE_START') {
             label = 'Feature: ' + this.eventStart.resource;
         }
         if (eventType === 'SCENARIO_START') {
-            label = 'Scenario'
+            label = 'Scenario';
             if (this.eventStart.outline) {
                 label = 'Scenario Outline';
                 state = vscode.TreeItemCollapsibleState.Collapsed;
@@ -76,8 +84,8 @@ export class TreeEntry implements ITreeEntry {
         return {
             label,
             state,
-            iconPath: 'karate-test.svg'
-        }
+            iconPath: 'karate-test.svg',
+        };
         // return new vscode.TreeItem(`${label}`, state);
     }
 }
@@ -88,7 +96,7 @@ export class ThreadTreeEntry extends TreeEntry {
     httpLogs: NetworkRequestResponseLog[] = [];
 
     constructor(public threadName: string) {
-        super(null, null)
+        super(null, null);
     }
 
     asTreeItem() {
@@ -106,7 +114,7 @@ export class NetworkRequestResponseLog extends TreeEntry {
     response: NetworkLog;
 
     constructor(parent: TreeEntry, eventStart: LoggingEventVO, request: NetworkLog) {
-        super(parent, eventStart)
+        super(parent, eventStart);
         this.url = eventStart.url;
         this.method = eventStart.method;
         this.request = request;
@@ -121,7 +129,6 @@ export class NetworkRequestResponseLog extends TreeEntry {
 }
 
 export class NetworkLog implements ITreeEntry {
-
     constructor(private label: 'Request' | 'Response', public headers: Headers, public payload: Payload | null) {}
 
     asTreeItem() {
@@ -188,8 +195,10 @@ export class PayloadProperty implements ITreeEntry {
         }
     }
     asTreeItem() {
-        const treeItem = (this.properties && this.properties.length) ?
-            new vscode.TreeItem(`${this.key}:`, vscode.TreeItemCollapsibleState.Collapsed) : new vscode.TreeItem(`${this.key}: ${this.value}`, vscode.TreeItemCollapsibleState.None);
+        const treeItem =
+            this.properties && this.properties.length
+                ? new vscode.TreeItem(`${this.key}:`, vscode.TreeItemCollapsibleState.Collapsed)
+                : new vscode.TreeItem(`${this.key}: ${this.value}`, vscode.TreeItemCollapsibleState.None);
         treeItem.contextValue = 'PayloadProperty';
         return treeItem;
     }

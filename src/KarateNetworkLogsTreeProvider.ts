@@ -1,6 +1,16 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { Headers, ITreeEntry, LoggingEventVO, NetworkLog, NetworkRequestResponseLog, Payload, PayloadProperty, ThreadTreeEntry, TreeEntry } from './model/KarateEventLogsModels';
+import {
+    Headers,
+    ITreeEntry,
+    LoggingEventVO,
+    NetworkLog,
+    NetworkRequestResponseLog,
+    Payload,
+    PayloadProperty,
+    ThreadTreeEntry,
+    TreeEntry,
+} from './model/KarateEventLogsModels';
 
 export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataProvider<ITreeEntry> {
     private eventLogsTree: { [key: string]: ThreadTreeEntry } = {};
@@ -27,28 +37,25 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
                 this.addITreeEntry(json);
             });
     }
-    
+
     addITreeEntry(event: LoggingEventVO): any {
         // console.log('event', event.eventType, event.feature, event.scenario, event.url)
         const threadName = event.thread;
         const threadTree = this.eventLogsTree[threadName] || new ThreadTreeEntry(threadName);
         this.eventLogsTree[threadName] = threadTree;
         if (event.eventType.endsWith('_START')) {
-            const parent = threadTree.stack[threadTree.stack.length-1] || threadTree;
-            threadTree.stack.push(new TreeEntry(parent as TreeEntry, event))
-        }
-        else if (event.eventType.endsWith('_END')) {
+            const parent = threadTree.stack[threadTree.stack.length - 1] || threadTree;
+            threadTree.stack.push(new TreeEntry(parent as TreeEntry, event));
+        } else if (event.eventType.endsWith('_END')) {
             const parent = threadTree.stack.pop() as TreeEntry;
             parent.eventEnd = event;
-        }
-        else if (event.eventType === 'REQUEST') {
+        } else if (event.eventType === 'REQUEST') {
             const parent = threadTree.stack[threadTree.stack.length - 1] || threadTree;
             const request = new NetworkLog('Request', new Headers(event.headers), new Payload(event.payload));
             const httpLog = new NetworkRequestResponseLog(parent as TreeEntry, event, request);
             threadTree.stack.push(httpLog);
             threadTree.httpLogs.push(httpLog);
-        }
-        else if (event.eventType === 'RESPONSE') {
+        } else if (event.eventType === 'RESPONSE') {
             const parent = threadTree.stack.pop() as NetworkRequestResponseLog;
             const response = new NetworkLog('Response', new Headers(event.headers), new Payload(event.payload));
             parent.status = event.status;
@@ -66,16 +73,16 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
         }
         const treeItem = new vscode.TreeItem(item.label, item.state);
         if (item.iconPath) {
-            treeItem.iconPath =	{
-				light: path.join(__dirname, '..', 'resources', 'light', item.iconPath),
-				dark: path.join(__dirname, '..', 'resources', 'dark', item.iconPath)
-			}
+            treeItem.iconPath = {
+                light: path.join(__dirname, '..', 'resources', 'light', item.iconPath),
+                dark: path.join(__dirname, '..', 'resources', 'dark', item.iconPath),
+            };
         }
         if (item.command) {
             treeItem.command = item.command;
         }
         if (element instanceof TreeEntry) {
-            treeItem.contextValue = element.eventStart.eventType
+            treeItem.contextValue = element.eventStart.eventType;
         }
 
         return treeItem;

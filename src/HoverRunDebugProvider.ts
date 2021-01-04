@@ -12,7 +12,11 @@ export default class HoverRunDebugProvider implements vscode.HoverProvider {
         this.extensionContext = context;
     }
 
-    public provideHover(document: vscode.TextDocument, position: vscode.Position, _token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
+    public provideHover(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        _token: vscode.CancellationToken
+    ): vscode.ProviderResult<vscode.Hover> {
         const textLine = document.lineAt(position.line).text;
 
         if (textLine.trim().startsWith('|')) {

@@ -7,7 +7,16 @@ export default class EventLogsServer {
 
     createServer() {
         this.server = net.createServer((socket: net.Socket) => {
-            console.log('Client connect: ' + socket.localAddress + ':' + socket.localPort + '. client remote address : ' + socket.remoteAddress + ':' + socket.remotePort);
+            console.log(
+                'Client connect: ' +
+                    socket.localAddress +
+                    ':' +
+                    socket.localPort +
+                    '. client remote address : ' +
+                    socket.remoteAddress +
+                    ':' +
+                    socket.remotePort
+            );
 
             socket.setEncoding('utf-8');
             socket.setTimeout(10000);
