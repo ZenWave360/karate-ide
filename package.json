@@ -82,6 +82,10 @@
                 "title": "Debug Karate Test"
             },
             {
+                "command": "karateRunner.karateCli.debugCommand",
+                "title": "Returns processed 'karateRunner.karateCli.debugCommandTemplate' config"
+            },
+            {
                 "command": "karateRunner.buildReports.open",
                 "title": "Open Build Report"
             },
@@ -273,52 +277,50 @@
             "type": "object",
             "title": "Karate Runner",
             "properties": {
-                "karateRunner.karateJar.commandLineArgs": {
-                    "type": "string",
-                    "default": "java -cp karate.jar com.intuit.karate.Main",
-                    "description": "Karate.jar command line.  Karate Runner will handle setting the command line with the feature file being tested and suffixing the feature file with a ':number' when running individual Scenarios.  Only applies when using Karate.jar.",
-                    "scope": "resource"
-                },
-                "karateRunner.karateCli.overrideKarateRunner": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Override Karate Runner utilizing the new Karate Cli.  See 'Karate Cli' section within Extension Details in the Marketplace for further information.  Only applies when using Maven or Gradle.",
-                    "scope": "resource"
-                },
-                "karateRunner.karateCli.commandLineArgs": {
+                "karateRunner.multimodule.rootModuleMarkerFile": {
                     "type": "string",
                     "default": "",
-                    "description": "Karate Cli command line.  Karate Cli specific arguments are specified here as defined at https://github.com/intuit/karate/wiki/Debug-Server#karate-options.  Only applies when using Maven or Gradle.",
+                    "description": "When using a multimodule project this file will be used to set the root of each module (i.e: pom.xml, build.gradle, karate.jar... ",
                     "scope": "resource"
                 },
-                "karateRunner.karateRunner.commandLineArgs": {
+                "karateRunner.karateCli.karateOptions": {
                     "type": "string",
-                    "default": "",
-                    "description": "Karate Runner command line.  Arguments accepted by Maven or Gradle are specified here such as JVM args.  Karate Runner will handle build commands, setting the command line with the feature file being tested and suffixing the feature file with a ':number' when running individual Scenarios.  Only applies when using Maven or Gradle.",
+                    "default": "-H com.intuit.karate.cli.VSCodeHook",
+                    "description": "Karate Options to be set in command templates, for e.g. '-t ~@ignore -T 5'. It must include '-H com.intuit.karate.cli.VSCodeHook' or equivalent hook",
                     "scope": "resource"
                 },
-                "karateRunner.karateRunner.default": {
+                "karateRunner.karateCli.karateEnv": {
                     "type": "string",
-                    "default": "_SyncRunner",
-                    "description": "Default Karate Runner to use for running Karate tests.  Only applies when using Maven or Gradle.",
+                    "default": "local",
+                    "description": "karate.env system property value to be set in command templates",
                     "scope": "resource"
                 },
-                "karateRunner.karateRunner.promptToSpecify": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Prompt to specify Karate Runner before running Karate tests.  Only applies when using Maven or Gradle.",
+                "karateRunner.karateCli.classpath": {
+                    "type": "string",
+                    "default": "target/classes;target/test-classes;src/test/resources;karate.jar",
+                    "description": "Classpath expression to be set in command line templates.",
                     "scope": "resource"
                 },
-                "karateRunner.buildDirectory.cleanBeforeEachRun": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Clean build directory before running Karate tests.  Only applies when using Maven or Gradle.",
+                "karateRunner.karateCli.runCommandTemplate": {
+                    "type": "string",
+                    "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.cli.Main ${karateOptions} '${feature}'",
+                    "description": "Command line template for run action. Karate Runner will handle setting the command line with the feature file being tested and suffixing the feature file with a ':number' when running individual Scenarios.",
                     "scope": "resource"
                 },
-                "karateRunner.buildSystem.useWrapper": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Use build system wrapper.  Only applies when using Maven or Gradle.",
+                "karateRunner.karateCli.debugCommandTemplate": {
+                    "type": "string",
+                    "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.cli.Main -d",
+                    "description": "Command line template for debug action. Karate Runner will handle setting 'karate options' and the command line with the feature file being tested and suffixing the feature file with a ':number' when running individual Scenarios.",
+                    "scope": "resource"
+                },
+                "karateRunner.karateCli.defaultAction": {
+                    "type": "string",
+                    "default": "debug",
+                    "enum": [
+                        "run",
+                        "debug"
+                    ],
+                    "description": "Which action to run by default command in Tests Explorer, Executions, etc... views",
                     "scope": "resource"
                 },
                 "karateRunner.buildReports.openAfterEachRun": {
@@ -391,19 +393,19 @@
                 "configurationAttributes": {
                     "launch": {
                         "required": [
-                            "feature",
+                            "karateOptions",
                             "karateCli"
                         ],
                         "properties": {
                             "feature": {
                                 "type": "string",
-                                "description": "[feature]\n\nThis property is used to find project root if multiple projects are loaded in IDE.\nAdditionally used by Karate Debug Server if [karateOptions] property not specified.\n\nRecommend default setting which finds feature files opened in IDE.",
+                                "description": "[feature]\n\nUsed by Karate Debug Server if [karateOptions] property not specified.",
                                 "default": "^\"\\${command:karateRunner.getDebugFile}\""
                             },
                             "karateOptions": {
                                 "type": "string",
-                                "description": "[karateOptions]\n\nThis property is used only by Karate Debug Server.\nOverrides [feature] property to enable advanced debugging and specifying all Karate Options(classpath, threads, tags).",
-                                "default": ""
+                                "description": "[karateOptions]\n\nThis property is used only by Karate Debug Server.\nOverrides [feature] property to enable advanced debugging and specifying all Karate Options(classpath, threads, tags, hooks).\n Should contain '-H com.intuit.karate.cli.VSCodeHook' or compatible hook for this extension to fully work",
+                                "default": "-H com.intuit.karate.cli.VSCodeHook ${command:karateRunner.getDebugFile}"
                             },
                             "karateCli": {
                                 "type": "string",
@@ -417,33 +419,7 @@
                             }
                         }
                     }
-                },
-                "configurationSnippets": [
-                    {
-                        "label": "Karate (debug): Maven",
-                        "description": "Karate (debug) for a Maven project",
-                        "body": {
-                            "type": "karate",
-                            "name": "Karate (debug): Maven",
-                            "request": "launch",
-                            "feature": "^\"\\${command:karateRunner.getDebugFile}\"",
-                            "karateOptions": "",
-                            "karateCli": "^\"mvn test-compile -f \\\"\\${command:karateRunner.getDebugBuildFile}\\\" exec:java -Dexec.mainClass=com.intuit.karate.cli.Main -Dexec.args=\\\"-d\\\" -Dexec.classpathScope=\\\"test\\\" \\${config:karateRunner.karateRunner.commandLineArgs}\""
-                        }
-                    },
-                    {
-                        "label": "Karate (debug): Gradle",
-                        "description": "Karate (debug) for a Gradle project",
-                        "body": {
-                            "type": "karate",
-                            "name": "Karate (debug): Gradle",
-                            "request": "launch",
-                            "feature": "^\"\\${command:karateRunner.getDebugFile}\"",
-                            "karateOptions": "",
-                            "karateCli": "^\"gradle compileTestJava -b \\\"\\${command:karateRunner.getDebugBuildFile}\\\" karateExecute -DmainClass=com.intuit.karate.cli.Main --args=\\\"-d\\\" \\${config:karateRunner.karateRunner.commandLineArgs}\""
-                        }
-                    }
-                ]
+                }
             }
         ],
         "keybindings": [

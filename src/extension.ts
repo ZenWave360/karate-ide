@@ -13,6 +13,8 @@ import HoverRunDebugProvider from './HoverRunDebugProvider';
 //import ProviderFoldingRange from "./providerFoldingRange";
 import {
     smartPaste,
+    getDebugCommandLine,
+    getRunCommandLine,
     getDebugFile,
     getDebugBuildFile,
     debugKarateTest,
@@ -51,22 +53,23 @@ export function activate(context: vscode.ExtensionContext) {
     let definitionTarget = { language: 'karate', scheme: 'file' };
     //let foldingRangeTarget = { language: "karate", scheme: "file" };
 
-    let smartPasteCommand = vscode.commands.registerCommand('karateRunner.paste', smartPaste);
-    let getDebugFileCommand = vscode.commands.registerCommand('karateRunner.getDebugFile', getDebugFile);
-    let getDebugBuildFileCommand = vscode.commands.registerCommand('karateRunner.getDebugBuildFile', getDebugBuildFile);
-    let debugTestCommand = vscode.commands.registerCommand('karateRunner.tests.debug', debugKarateTest);
-    let runTestCommand = vscode.commands.registerCommand('karateRunner.tests.run', runKarateTest);
-    let runAllCommand = vscode.commands.registerCommand('karateRunner.tests.runAll', runAllKarateTests);
-    let displayShallowReportsTreeCommand = vscode.commands.registerCommand('karateRunner.buildReports.displayShallow', () =>
-        displayReportsTree('Shallow')
-    );
-    let displayDeepReportsTreeCommand = vscode.commands.registerCommand('karateRunner.buildReports.displayDeep', () => displayReportsTree('Deep'));
-    let displayShallowTestsTreeCommand = vscode.commands.registerCommand('karateRunner.tests.displayShallow', () => displayTestsTree('Shallow'));
-    let displayDeepTestsTreeCommand = vscode.commands.registerCommand('karateRunner.tests.displayDeep', () => displayTestsTree('Deep'));
-    let openReportCommand = vscode.commands.registerCommand('karateRunner.buildReports.open', openBuildReport);
-    let refreshReportsTreeCommand = vscode.commands.registerCommand('karateRunner.buildReports.refreshTree', () => buildReportsProvider.refresh());
-    let refreshTestsTreeCommand = vscode.commands.registerCommand('karateRunner.tests.refreshTree', () => karateTestsProvider.refresh());
-    let openFileCommand = vscode.commands.registerCommand('karateRunner.tests.open', openFileInEditor);
+    const registerCommand = vscode.commands.registerCommand;
+    let smartPasteCommand = registerCommand('karateRunner.paste', smartPaste);
+    let getDebugCommandLineCommand = registerCommand('karateRunner.getDebugCommand', getDebugCommandLine);
+    let getRunCommandLineCommand = registerCommand('karateRunner.getRunCommand', getRunCommandLine);
+    let getDebugFileCommand = registerCommand('karateRunner.getDebugFile', getDebugFile);
+    let getDebugBuildFileCommand = registerCommand('karateRunner.getDebugBuildFile', getDebugBuildFile);
+    let debugTestCommand = registerCommand('karateRunner.tests.debug', debugKarateTest);
+    let runTestCommand = registerCommand('karateRunner.tests.run', runKarateTest);
+    let runAllCommand = registerCommand('karateRunner.tests.runAll', runAllKarateTests);
+    let displayShallowReportsTreeCommand = registerCommand('karateRunner.buildReports.displayShallow', () => displayReportsTree('Shallow'));
+    let displayDeepReportsTreeCommand = registerCommand('karateRunner.buildReports.displayDeep', () => displayReportsTree('Deep'));
+    let displayShallowTestsTreeCommand = registerCommand('karateRunner.tests.displayShallow', () => displayTestsTree('Shallow'));
+    let displayDeepTestsTreeCommand = registerCommand('karateRunner.tests.displayDeep', () => displayTestsTree('Deep'));
+    let openReportCommand = registerCommand('karateRunner.buildReports.open', openBuildReport);
+    let refreshReportsTreeCommand = registerCommand('karateRunner.buildReports.refreshTree', () => buildReportsProvider.refresh());
+    let refreshTestsTreeCommand = registerCommand('karateRunner.tests.refreshTree', () => karateTestsProvider.refresh());
+    let openFileCommand = registerCommand('karateRunner.tests.open', openFileInEditor);
 
     let registerDebugAdapterProvider = vscode.debug.registerDebugAdapterDescriptorFactory('karate', debugAdapterProvider);
     let registerDebugConfigurationProvider = vscode.debug.registerDebugConfigurationProvider('karate', debugConfigurationProvider);
@@ -86,13 +89,11 @@ export function activate(context: vscode.ExtensionContext) {
     const registerHoverRunDebugProvider = vscode.languages.registerHoverProvider(codeLensTarget, new HoverRunDebugProvider(context));
     // NetworkLogs View
     const karateNetworkLogsProvider = new KarateNetworkLogsTreeProvider();
-    const clearNetworkLogsTreeCommand = vscode.commands.registerCommand('karateRunner.karateNetworkLogs.clearTree', () =>
-        karateNetworkLogsProvider.clear()
-    );
-    const showScenariosCommand = vscode.commands.registerCommand('karateRunner.karateNetworkLogs.showScenarios.true', () =>
+    const clearNetworkLogsTreeCommand = registerCommand('karateRunner.karateNetworkLogs.clearTree', () => karateNetworkLogsProvider.clear());
+    const showScenariosCommand = registerCommand('karateRunner.karateNetworkLogs.showScenarios.true', () =>
         karateNetworkLogsProvider.setShowScenarios(true)
     );
-    const dontShowScenariosCommand = vscode.commands.registerCommand('karateRunner.karateNetworkLogs.showScenarios.false', () =>
+    const dontShowScenariosCommand = registerCommand('karateRunner.karateNetworkLogs.showScenarios.false', () =>
         karateNetworkLogsProvider.setShowScenarios(false)
     );
     karateNetworkTreeView = vscode.window.createTreeView('karate-network-logs', {
@@ -101,11 +102,9 @@ export function activate(context: vscode.ExtensionContext) {
     });
     // Executions View
     const karateExecutionsTreeProvider = new KarateExecutionsTreeProvider();
-    const clearExecutionsTreeCommand = vscode.commands.registerCommand('karateRunner.karateExecutionsTree.clearTree', () =>
-        karateExecutionsTreeProvider.clear()
-    );
-    const relaunchLastCommand = vscode.commands.registerCommand('karateRunner.karateExecutionsTree.relaunchLast', relaunchLastKarateDebugExecution);
-    const launchExecutionCommand = vscode.commands.registerCommand('karateRunner.karateExecutionsTree.launch', launchKarateDebugExecution);
+    const clearExecutionsTreeCommand = registerCommand('karateRunner.karateExecutionsTree.clearTree', () => karateExecutionsTreeProvider.clear());
+    const relaunchLastCommand = registerCommand('karateRunner.karateExecutionsTree.relaunchLast', relaunchLastKarateDebugExecution);
+    const launchExecutionCommand = registerCommand('karateRunner.karateExecutionsTree.launch', launchKarateDebugExecution);
     karateExecutionsTreeView = vscode.window.createTreeView('karate-executions', {
         showCollapseAll: false,
         treeDataProvider: karateExecutionsTreeProvider,
@@ -172,6 +171,8 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     context.subscriptions.push(smartPasteCommand);
+    context.subscriptions.push(getDebugCommandLineCommand);
+    context.subscriptions.push(getRunCommandLineCommand);
     context.subscriptions.push(getDebugFileCommand);
     context.subscriptions.push(getDebugBuildFileCommand);
     context.subscriptions.push(debugTestCommand);

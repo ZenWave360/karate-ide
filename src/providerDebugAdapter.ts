@@ -1,4 +1,4 @@
-import { getProjectDetail, IProjectDetail } from './helper';
+import { getFileAndRootPath } from './helper';
 import fs = require('fs');
 import * as vscode from 'vscode';
 
@@ -14,8 +14,8 @@ class ProviderDebugAdapter implements vscode.DebugAdapterDescriptorFactory {
         let featureFile = String(session.configuration.feature);
         featureFile = featureFile.replace(/^['"]|['"]$/g, '');
         if (featureFile.endsWith('.feature')) {
-            let projectDetail: IProjectDetail = getProjectDetail(vscode.Uri.file(featureFile), vscode.FileType.File);
-            projectRootPath = projectDetail.projectRoot;
+            let projectDetail = getFileAndRootPath(vscode.Uri.file(featureFile));
+            projectRootPath = projectDetail.root;
         } else {
             projectRootPath = vscode.workspace.rootPath;
         }

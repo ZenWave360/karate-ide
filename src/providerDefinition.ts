@@ -1,4 +1,4 @@
-import { getProjectDetail, getChildAbsolutePath, IProjectDetail } from './helper';
+import { getFileAndRootPath, getChildAbsolutePath } from './helper';
 import { Feature, IUriToken, ILineToken } from './feature';
 import path = require('path');
 import fs = require('fs');
@@ -55,8 +55,8 @@ class ProviderDefinition implements vscode.DefinitionProvider {
         }
 
         if (uriToken.isClassPath) {
-            let projectDetail: IProjectDetail = getProjectDetail(document.uri, vscode.FileType.File);
-            let projectRootPath = projectDetail.projectRoot;
+            let projectDetail = getFileAndRootPath(document.uri);
+            let projectRootPath = projectDetail.root;
 
             let projectRootPathSrcTest = path.join(projectRootPath, 'src', 'test');
             if (fs.existsSync(projectRootPathSrcTest)) {

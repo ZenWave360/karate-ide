@@ -2,11 +2,6 @@ import path = require('path');
 import fs = require('fs');
 import * as vscode from 'vscode';
 
-interface IProjectDetail {
-    projectRoot: string;
-    runFile: string;
-}
-
 interface ITestExecutionDetail {
     testTag: string;
     testTitle: string;
@@ -19,51 +14,26 @@ interface ITestExecutionDetail {
     codelensLine: number;
 }
 
-function getProjectDetail(uri: vscode.Uri, type: vscode.FileType): IProjectDetail {
-    let filePathArray = uri.fsPath.split(path.sep);
-    let projectRootPath = '';
-    let runFilePath = '';
+function getFileAndRootPath(uri): { file: string; root: string } {
+    let rootFolderUri = vscode.workspace.getWorkspaceFolder(uri);
+    let rootModuleMarkerFile: string = vscode.workspace.getConfiguration('karateRunner.multimodule').get('rootModuleMarkerFile');
 
-    if (type === vscode.FileType.File) {
-        filePathArray.pop();
+    let rootPath = rootFolderUri.uri.fsPath;
+    let filePath = uri.fsPath.replace(rootPath + path.sep, '');
+    let filePathArray = filePath.split(path.sep);
+
+    if (rootModuleMarkerFile && rootModuleMarkerFile.trim().length > 0) {
+        while (filePathArray.pop()) {
+            let runFileTestPath = filePathArray.join(path.sep);
+            if (fs.existsSync(path.join(rootPath, runFileTestPath, rootModuleMarkerFile))) {
+                rootPath = path.join(rootPath, runFileTestPath);
+                filePath = uri.fsPath.replace(rootPath + path.sep, '');
+                break;
+            }
+        }
     }
 
-    for (let ndx = filePathArray.length; ndx > 0; ndx--) {
-        let mavenBuildFile = 'pom.xml';
-        let gradleBuildGroovyFile = 'build.gradle';
-        let gradleBuildKotlinFile = 'build.gradle.kts';
-        let karateJarFile = 'karate.jar';
-
-        let runFileTestPath = filePathArray.join(path.sep);
-
-        if (fs.existsSync(runFileTestPath + path.sep + karateJarFile)) {
-            projectRootPath = runFileTestPath;
-            runFilePath = runFileTestPath + path.sep + karateJarFile;
-            break;
-        }
-
-        if (fs.existsSync(runFileTestPath + path.sep + mavenBuildFile)) {
-            projectRootPath = runFileTestPath;
-            runFilePath = runFileTestPath + path.sep + mavenBuildFile;
-            break;
-        }
-
-        if (fs.existsSync(runFileTestPath + path.sep + gradleBuildGroovyFile)) {
-            projectRootPath = runFileTestPath;
-            runFilePath = runFileTestPath + path.sep + gradleBuildGroovyFile;
-            break;
-        }
-
-        if (fs.existsSync(runFileTestPath + path.sep + gradleBuildKotlinFile)) {
-            projectRootPath = runFileTestPath;
-            runFilePath = runFileTestPath + path.sep + gradleBuildKotlinFile;
-            break;
-        }
-
-        filePathArray.pop();
-    }
-
-    return { projectRoot: projectRootPath, runFile: runFilePath };
+    return { root: rootPath, file: filePath };
 }
 
 async function getTestExecutionDetail(uri: vscode.Uri, type: vscode.FileType): Promise<ITestExecutionDetail[]> {
@@ -247,4 +217,4 @@ async function getActiveFeatureFile(): Promise<string> {
     return activeFeatureFile;
 }
 
-export { getProjectDetail, getTestExecutionDetail, getChildAbsolutePath, getActiveFeatureFile, IProjectDetail, ITestExecutionDetail };
+export { getFileAndRootPath, getTestExecutionDetail, getChildAbsolutePath, getActiveFeatureFile, ITestExecutionDetail };
