@@ -20,8 +20,6 @@ import { generateBusinessFlowTest } from './generators/openapi/OpenAPIBusinessFl
 import { generateKarateMocksFromOpenAPI, generateKarateMockValidation } from './generators/openapi/OpenAPIMocksGenerator';
 import { NetworkLog, NetworkRequestResponseLog, PayloadProperty } from './server/KarateEventLogsModels';
 
-let karateTestsWatcher = null;
-
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(...disposables);
     let debugAdapterProvider = new ProviderDebugAdapter();
@@ -130,6 +128,4 @@ export function activate(context: vscode.ExtensionContext) {
     });
 }
 
-export function deactivate() {
-    karateTestsWatcher.dispose();
-}
+export function deactivate() {}

@@ -89,7 +89,7 @@ public class KarateTestProcess implements Runnable {
         }
 
         try(ServerSocket serverSocket = new ServerSocket(port)) {
-            karateLog.info("KarateTestProcess test server started on port " + serverSocket.getLocalPort());
+            System.out.println("KarateTestProcess test server started on port " + serverSocket.getLocalPort());
             while (!isStopped) {
                 KarateTestProcess karateTestProcess = new KarateTestProcess(serverSocket.accept());
                 if (singleThread) {

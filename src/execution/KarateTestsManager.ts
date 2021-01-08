@@ -16,7 +16,7 @@ export function getDebugFile() {
 export function launchTest(feature, line, type: 'RUN' | 'DEBUG') {
     lastExecution = feature + (line > 1 ? `:${line}` : '');
     lastExecutionType = type;
-    runHandler(type === 'DEBUG', { include: [testItems.get(lastExecution)] }, null);
+    runHandler(type === 'DEBUG', { include: [testItems.get(lastExecution)], exclude: null, profile: null }, null);
 }
 
 export function relaunchTest(type: 'RUN' | 'DEBUG' = lastExecutionType) {

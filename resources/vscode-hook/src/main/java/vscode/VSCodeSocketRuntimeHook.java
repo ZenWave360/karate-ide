@@ -1,21 +1,19 @@
 package vscode;
 
-import com.intuit.karate.JsonUtils;
-import com.intuit.karate.RuntimeHook;
 import com.intuit.karate.StringUtils;
 import com.intuit.karate.Suite;
 import com.intuit.karate.core.Feature;
 import com.intuit.karate.core.FeatureRuntime;
-import com.intuit.karate.core.Scenario;
 import com.intuit.karate.core.ScenarioOutline;
 import com.intuit.karate.core.ScenarioRuntime;
-import com.intuit.karate.core.Step;
-import com.intuit.karate.core.StepResult;
 import com.intuit.karate.http.HttpRequest;
 import com.intuit.karate.http.Response;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
@@ -57,9 +55,6 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
         String rootFeature;
         /* root scenario name */
         String rootScenario;
-
-        /* parent hashcode */
-        // int parent;
         /* feature name */
         String feature;
         /* scenario name */
@@ -83,174 +78,6 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
         String failureMessage;
         Map<String, String> headers;
         String payload;
-
-        public String getCurrentDir() {
-            return currentDir;
-        }
-
-        public void setCurrentDir(String currentDir) {
-            this.currentDir = currentDir;
-        }
-
-        public int getCallDepth() {
-            return callDepth;
-        }
-
-        public void setCallDepth(int callDepth) {
-            this.callDepth = callDepth;
-        }
-
-        public String getCaller() {
-            return caller;
-        }
-
-        public void setCaller(String caller) {
-            this.caller = caller;
-        }
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
-
-        public String getMethod() {
-            return method;
-        }
-
-        public void setMethod(String method) {
-            this.method = method;
-        }
-
-        public Long getTimestamp() {
-            return timestamp;
-        }
-
-        public void setTimestamp(Long timestamp) {
-            this.timestamp = timestamp;
-        }
-
-        public EventType getEventType() {
-            return eventType;
-        }
-
-        public void setEventType(EventType eventType) {
-            this.eventType = eventType;
-        }
-
-        public String getThread() {
-            return thread;
-        }
-
-        public void setThread(String thread) {
-            this.thread = thread;
-        }
-
-        public String getRootFeature() {
-            return rootFeature;
-        }
-
-        public void setRootFeature(String rootFeature) {
-            this.rootFeature = rootFeature;
-        }
-
-        public String getRootScenario() {
-            return rootScenario;
-        }
-
-        public void setRootScenario(String rootScenario) {
-            this.rootScenario = rootScenario;
-        }
-
-        public String getFeature() {
-            return feature;
-        }
-
-        public void setFeature(String feature) {
-            this.feature = feature;
-        }
-
-        public String getScenario() {
-            return scenario;
-        }
-
-        public void setScenario(String scenario) {
-            this.scenario = scenario;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getResource() {
-            return resource;
-        }
-
-        public void setResource(String resource) {
-            this.resource = resource;
-        }
-
-        public Boolean getIsOutline() {
-            return isOutline;
-        }
-
-        public void setIsOutline(Boolean outline) {
-            isOutline = outline;
-        }
-
-        public Boolean getIsDinamic() {
-            return isDinamic;
-        }
-
-        public void setIsDinamic(Boolean dinamic) {
-            isDinamic = dinamic;
-        }
-
-        public int getLine() {
-            return line;
-        }
-
-        public void setLine(int line) {
-            this.line = line;
-        }
-
-        public String getStatus() {
-            return status;
-        }
-
-        public void setStatus(String status) {
-            this.status = status;
-        }
-
-        public String getFailureMessage() {
-            return failureMessage;
-        }
-
-        public void setFailureMessage(String failureMessage) {
-            this.failureMessage = failureMessage;
-        }
-
-        public Map<String, String> getHeaders() {
-            return headers;
-        }
-
-        public void setHeaders(Map<String, String> headers) {
-            this.headers = headers;
-        }
-
-        public String getPayload() {
-            return payload;
-        }
-
-        public void setPayload(String payload) {
-            this.payload = payload;
-        }
     }
 
     public VSCodeSocketRuntimeHook() {
@@ -274,12 +101,12 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
         log.debug("SocketChannel connection: {}", connected);
     }
 
-    private void send(Event event) throws IOException, ExecutionException, InterruptedException, TimeoutException {
+    private void send(Event event) throws IOException, IllegalAccessException {
         if (port == null || client == null) {
             return;
         }
         log.trace("VSCodeSocketRuntimeHook " + event.eventType + " " + event.feature + " " + event.status + " " + event.callDepth);
-        int out = client.write(ByteBuffer.wrap(JsonUtils.toJson(event).getBytes(UTF_8)));
+        client.write(ByteBuffer.wrap(toJson(event).getBytes(UTF_8)));
     }
 
     private ThreadLocal<String> threadName = new ThreadLocal<>();
@@ -579,4 +406,113 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSZ");
 
+    public static String toJson(Event event) throws IllegalAccessException {
+        Map<String, Object> map = new HashMap<>();
+        for(Field field: event.getClass().getDeclaredFields()) {
+            map.put(field.getName(), field.get(event));
+        }
+        return toJson(map);
+    }
+
+    public static String toJson(Map<String, Object> map) {
+        java.io.Writer writer = new StringWriter();
+        try {
+            boolean needsComma = false;
+            writer.write('{');
+            for (final Map.Entry<String,?> entry : map.entrySet()) {
+                if (needsComma) {
+                    writer.write(',');
+                }
+                final String key = entry.getKey();
+                quote(key, writer);
+                writer.write(':');
+                try {
+                    writeValue(writer, entry.getValue());
+                } catch (Exception e) {
+                    throw new RuntimeException("Unable to write JSONObject value for key: " + key, e);
+                }
+                needsComma = true;
+            }
+            writer.write('}');
+            return writer.toString();
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
+    static final Writer writeValue(Writer writer, Object value) throws IOException {
+        if (value == null || value.equals(null)) {
+            writer.write("null");
+        } else if (value instanceof Number) {
+                writer.write(value.toString());
+        } else if (value instanceof Boolean) {
+            writer.write(value.toString());
+        } else if (value instanceof Enum<?>) {
+            quote(((Enum<?>)value).name(), writer);
+        } else if (value instanceof Map) {
+            writer.write(toJson((Map) value));
+        } else {
+            quote(value.toString(), writer);
+        }
+        return writer;
+    }
+
+    public static Writer quote(String string, Writer w) throws IOException {
+        if (string == null || string.isEmpty()) {
+            w.write("\"\"");
+            return w;
+        }
+
+        char b;
+        char c = 0;
+        String hhhh;
+        int i;
+        int len = string.length();
+
+        w.write('"');
+        for (i = 0; i < len; i += 1) {
+            b = c;
+            c = string.charAt(i);
+            switch (c) {
+                case '\\':
+                case '"':
+                    w.write('\\');
+                    w.write(c);
+                    break;
+                case '/':
+                    if (b == '<') {
+                        w.write('\\');
+                    }
+                    w.write(c);
+                    break;
+                case '\b':
+                    w.write("\\b");
+                    break;
+                case '\t':
+                    w.write("\\t");
+                    break;
+                case '\n':
+                    w.write("\\n");
+                    break;
+                case '\f':
+                    w.write("\\f");
+                    break;
+                case '\r':
+                    w.write("\\r");
+                    break;
+                default:
+                    if (c < ' ' || (c >= '\u0080' && c < '\u00a0')
+                            || (c >= '\u2000' && c < '\u2100')) {
+                        w.write("\\u");
+                        hhhh = Integer.toHexString(c);
+                        w.write("0000", 0, 4 - hhhh.length());
+                        w.write(hhhh);
+                    } else {
+                        w.write(c);
+                    }
+            }
+        }
+        w.write('"');
+        return w;
+    }
 }
