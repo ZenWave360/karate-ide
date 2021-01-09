@@ -341,6 +341,18 @@
                     "description": "Command line template for debug action. Karate Runner will handle setting 'karate options' and the command line with the feature file being tested and suffixing the feature file with a ':number' when running individual Scenarios.",
                     "scope": "resource"
                 },
+                "karateRunner.karateRunner.default": {
+                    "type": "string",
+                    "default": "KarateJunitRunner",
+                    "description": "Default Karate Junit Runner to use for running Karate tests",
+                    "scope": "resource"
+                },
+                "karateRunner.karateRunner.promptToSpecify": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Prompt to specify Karate Runner before running Karate tests",
+                    "scope": "resource"
+                },
                 "karateRunner.buildReports.openAfterEachRun": {
                     "type": "boolean",
                     "default": false,

@@ -120,12 +120,16 @@ function getDebugCommandLine() {
         .replace('${karateOptions}', karateOptions);
 }
 
-function getRunCommandLine(feature: string) {
+async function getRunCommandLine(feature: string) {
     let vscodePort: string = vscode.workspace.getConfiguration('karateRunner.eventLogsServer').get('port');
     let karateEnv: string = vscode.workspace.getConfiguration('karateRunner.karateCli').get('karateEnv');
     let classpath: string = vscode.workspace.getConfiguration('karateRunner.karateCli').get('classpath');
     let karateOptions: string = vscode.workspace.getConfiguration('karateRunner.karateCli').get('karateOptions');
     let debugCommandTemplate: string = vscode.workspace.getConfiguration('karateRunner.karateCli').get('runCommandTemplate');
+
+    if (debugCommandTemplate.includes('${KarateTestRunner}')) {
+        debugCommandTemplate = debugCommandTemplate.replace('${KarateTestRunner}', await getKarateTestRunnerName());
+    }
 
     return debugCommandTemplate
         .replace('${vscodePort}', vscodePort)
@@ -133,6 +137,17 @@ function getRunCommandLine(feature: string) {
         .replace('${classpath}', classpath)
         .replace('${karateOptions}', karateOptions)
         .replace('${feature}', feature);
+}
+
+async function getKarateTestRunnerName() {
+    let karateRunner = String(vscode.workspace.getConfiguration('karateRunner.karateRunner').get('default'));
+    if (Boolean(vscode.workspace.getConfiguration('karateRunner.karateRunner').get('promptToSpecify'))) {
+        karateRunner = await vscode.window.showInputBox({ prompt: 'Karate Runner', value: karateRunner });
+        if (karateRunner !== undefined && karateRunner !== '') {
+            await vscode.workspace.getConfiguration().update('karateRunner.karateRunner.default', karateRunner);
+        }
+    }
+    return karateRunner;
 }
 
 function getActiveDocumentExecution() {
@@ -148,14 +163,14 @@ function getActiveDocumentExecution() {
     return activeEditor.document.uri.fsPath;
 }
 
-function runKarateTest(args) {
+async function runKarateTest(args) {
     console.log('launchKarateTest', args);
     if (args === null) {
         args = [getActiveDocumentExecution()];
     }
     const path = args[0];
     const fileAndRootPath = getFileAndRootPath(vscode.Uri.file(path));
-    const runCommand = getRunCommandLine(fileAndRootPath.file);
+    const runCommand = await getRunCommandLine(fileAndRootPath.file);
 
     const openReports = Boolean(vscode.workspace.getConfiguration('karateRunner.buildReports').get('openAfterEachRun'));
     let watcher = null;
