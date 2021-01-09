@@ -349,7 +349,7 @@
                 },
                 "karateRunner.buildReports.toTarget": {
                     "type": "string",
-                    "default": "**/{jacoco/test/html/index,cucumber-html-reports/overview-features,surefire-reports/timeline}.htm*",
+                    "default": "**/{jacoco/test/html/index,cucumber-html-reports/overview-features,karate-reports/karate-timeline}.htm*",
                     "description": "Display reports targeted by glob pattern within Activity Bar.",
                     "scope": "resource"
                 },
