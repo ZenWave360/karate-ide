@@ -331,13 +331,13 @@
                 },
                 "karateRunner.karateCli.runCommandTemplate": {
                     "type": "string",
-                    "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.cli.Main ${karateOptions} '${feature}'",
+                    "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.Main ${karateOptions} '${feature}'",
                     "description": "Command line template for run action. Karate Runner will handle setting the command line with the feature file being tested and suffixing the feature file with a ':number' when running individual Scenarios.",
                     "scope": "resource"
                 },
                 "karateRunner.karateCli.debugCommandTemplate": {
                     "type": "string",
-                    "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.cli.Main -d",
+                    "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.Main -d",
                     "description": "Command line template for debug action. Karate Runner will handle setting 'karate options' and the command line with the feature file being tested and suffixing the feature file with a ':number' when running individual Scenarios.",
                     "scope": "resource"
                 },
