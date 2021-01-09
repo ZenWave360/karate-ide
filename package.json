@@ -149,8 +149,16 @@
                 "command": "karateRunner.tests.runAll",
                 "title": "Run All Tests",
                 "icon": {
-                    "light": "resources/light/run-all.svg",
-                    "dark": "resources/dark/run-all.svg"
+                    "light": "resources/light/run-all-2.svg",
+                    "dark": "resources/dark/run-all-2.svg"
+                }
+            },
+            {
+                "command": "karateRunner.tests.debugAll",
+                "title": "Debug All Tests",
+                "icon": {
+                    "light": "resources/light/debug-alt-small.svg",
+                    "dark": "resources/dark/debug-alt-small.svg"
                 }
             },
             {
@@ -237,24 +245,34 @@
                 {
                     "command": "karateRunner.karateNetworkLogs.clearTree",
                     "when": "view == karate-network-logs",
-                    "group": "navigation@1"
+                    "group": "navigation"
                 },
                 {
                     "command": "karateRunner.karateNetworkLogs.showScenarios.true",
                     "when": "view == karate-network-logs",
-                    "group": "navigation@1"
+                    "group": "navigation"
                 },
                 {
                     "command": "karateRunner.karateNetworkLogs.showScenarios.false",
                     "when": "view == karate-network-logs",
-                    "group": "navigation@1"
+                    "group": "navigation"
                 }
             ],
             "view/item/context": [
                 {
+                    "command": "karateRunner.tests.debugAll",
+                    "when": "view == karate-tests && viewItem =~ /^testFile$|^test$/",
+                    "group": "inline@1"
+                },
+                {
+                    "command": "karateRunner.tests.runAll",
+                    "when": "view == karate-tests && viewItem =~ /^testFile$|^test$/",
+                    "group": "inline@2"
+                },
+                {
                     "command": "karateRunner.tests.open",
-                    "when": "view == karate-tests && viewItem == testFile",
-                    "group": "inline"
+                    "when": "view == karate-tests && viewItem =~ /^testFile$|^file$/",
+                    "group": "inline@3"
                 },
                 {
                     "command": "karateRunner.tests.runAll",
@@ -262,8 +280,18 @@
                     "group": "inline"
                 },
                 {
+                    "command": "karateRunner.tests.debugAll",
+                    "when": "view == karate-tests && viewItem == testDirectory",
+                    "group": "inline"
+                },
+                {
                     "command": "karateRunner.karateExecutionsTree.launch",
                     "when": "view == karate-executions",
+                    "group": "inline"
+                },
+                {
+                    "command": "karateRunner.tests.open",
+                    "when": "view == karate-executions && viewItem == testFile",
                     "group": "inline"
                 },
                 {
@@ -311,16 +339,6 @@
                     "type": "string",
                     "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.cli.Main -d",
                     "description": "Command line template for debug action. Karate Runner will handle setting 'karate options' and the command line with the feature file being tested and suffixing the feature file with a ':number' when running individual Scenarios.",
-                    "scope": "resource"
-                },
-                "karateRunner.karateCli.defaultAction": {
-                    "type": "string",
-                    "default": "debug",
-                    "enum": [
-                        "run",
-                        "debug"
-                    ],
-                    "description": "Which action to run by default command in Tests Explorer, Executions, etc... views",
                     "scope": "resource"
                 },
                 "karateRunner.buildReports.openAfterEachRun": {

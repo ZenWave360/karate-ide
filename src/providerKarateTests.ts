@@ -151,6 +151,7 @@ interface IEntry {
     uri: any;
     type: vscode.FileType;
     command?: vscode.Command;
+    commands?: vscode.Command[];
 }
 
 export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry>, vscode.FileSystemProvider {
@@ -276,35 +277,22 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry>, vsc
 
     async getChildren(element?: IEntry): Promise<IEntry[]> {
         let glob = String(vscode.workspace.getConfiguration('karateRunner.tests').get('toTarget'));
-        let karateTestFiles = await vscode.workspace.findFiles(glob).then(value => {
-            return value;
-        });
+        let karateTestFiles = (await vscode.workspace.findFiles(glob)).sort((a, b) => a.fsPath.localeCompare(b.fsPath));
 
         if (element) {
-            if (element.type === vscode.FileType.File) {
-                let karateTests: IEntry[] = [];
+            if (element.type === vscode.FileType.File && element.uri.fsPath.endsWith('.feature')) {
                 let tedArray: ITestExecutionDetail[] = await getTestExecutionDetail(element.uri, vscode.FileType.File);
-
-                tedArray.forEach(ted => {
-                    let commandArgs = new Array();
-                    commandArgs.push(ted.karateOptions);
-                    commandArgs.push(ted.karateJarOptions);
-                    commandArgs.push(element.uri);
-                    commandArgs.push(vscode.FileType.File);
-                    let karateTestCommand: vscode.Command = {
-                        arguments: [commandArgs],
-                        command: 'karateRunner.tests.run',
-                        title: ted.codelensRunTitle,
-                    };
-
-                    karateTests.push({
+                return tedArray.map(ted => {
+                    return {
                         uri: ted.testTitle,
                         type: vscode.FileType.Unknown,
-                        command: karateTestCommand,
-                    });
+                        command: {
+                            command: 'karateRunner.tests.open',
+                            title: ted.codelensRunTitle,
+                            arguments: [element.uri, ted.testLine],
+                        },
+                    };
                 });
-
-                return karateTests;
             }
 
             let displayType = String(vscode.workspace.getConfiguration('karateRunner.tests').get('activityBarDisplayType'));
@@ -317,10 +305,6 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry>, vsc
                 return karateTestFilesFiltered.map(karateTestFile => ({
                     uri: karateTestFile,
                     type: vscode.FileType.File,
-                    command: {
-                        command: 'karateRunner.tests.open',
-                        title: 'karateRunner.tests.open',
-                    },
                 }));
             } else {
                 let children = await this.readDirectory(element.uri);
@@ -342,12 +326,14 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry>, vsc
                         type === vscode.FileType.File
                             ? {
                                   command: 'karateRunner.tests.open',
-                                  title: 'karateRunner.tests.open',
+                                  title: `karateRunner.tests.open`,
+                                  arguments: [vscode.Uri.file(path.join(element.uri.fsPath, name))],
                               }
                             : {
                                   command: 'karateRunner.tests.runAll',
                                   title: 'karateRunner.tests.runAll',
                               },
+                    commands: [null],
                 }));
             }
         }
@@ -389,32 +375,29 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry>, vsc
 
     getTreeItem(element: IEntry): vscode.TreeItem {
         let collapsibleState: vscode.TreeItemCollapsibleState;
-        switch (element.type) {
-            case vscode.FileType.Directory: {
-                collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-                break;
-            }
-            case vscode.FileType.File: {
-                collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-                break;
-            }
-            default: {
-                collapsibleState = vscode.TreeItemCollapsibleState.None;
-                break;
-            }
+        if (element.type === vscode.FileType.Directory || (element.type === vscode.FileType.File && element.uri.fsPath.endsWith('.feature'))) {
+            collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+        } else {
+            collapsibleState = vscode.TreeItemCollapsibleState.None;
         }
 
         const treeItem = new vscode.TreeItem(element.uri, collapsibleState);
+        treeItem.command = element.command;
 
-        if (collapsibleState === vscode.TreeItemCollapsibleState.None && element.command !== undefined) {
+        if (collapsibleState === vscode.TreeItemCollapsibleState.None && element.type !== vscode.FileType.File) {
             treeItem.iconPath = {
                 light: path.join(__dirname, '..', 'resources', 'light', 'karate-test.svg'),
                 dark: path.join(__dirname, '..', 'resources', 'dark', 'karate-test.svg'),
             };
-            treeItem.command = element.command;
             treeItem.contextValue = 'test';
-        } else if (element.type === vscode.FileType.File) {
+        } else if (element.type === vscode.FileType.File && element.uri.fsPath.endsWith('.feature')) {
+            treeItem.iconPath = {
+                light: path.join(__dirname, '..', 'resources', 'light', 'karate-test.svg'),
+                dark: path.join(__dirname, '..', 'resources', 'dark', 'karate-test.svg'),
+            };
             treeItem.contextValue = 'testFile';
+        } else if (element.type === vscode.FileType.File) {
+            treeItem.contextValue = 'file';
         } else if (element.type === vscode.FileType.Directory) {
             treeItem.contextValue = 'testDirectory';
         }

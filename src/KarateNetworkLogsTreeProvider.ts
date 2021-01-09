@@ -29,13 +29,8 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
         this._onDidChangeTreeData.fire();
     }
 
-    public processLoggingEvent(data: Buffer) {
-        data.toString()
-            .split('\n')
-            .forEach(log => {
-                const json = JSON.parse(log);
-                this.addITreeEntry(json);
-            });
+    public processLoggingEvent(event: LoggingEventVO) {
+        this.addITreeEntry(event);
     }
 
     addITreeEntry(event: LoggingEventVO): any {

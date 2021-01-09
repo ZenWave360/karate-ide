@@ -6,7 +6,7 @@ const DEFAULT_CONFIG = {
     request: 'launch',
     feature: '${command:karateRunner.getDebugFile}',
     karateOptions: '${config:karateRunner.karateCli.karateOptions}',
-    karateCli: '${command:karateRunner.karateCli.debugCommand}',
+    karateCli: '${command:karateRunner.karateCli.getDebugCommandLine}',
 };
 
 class ProviderDebugConfiguration implements vscode.DebugConfigurationProvider {

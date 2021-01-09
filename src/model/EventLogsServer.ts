@@ -1,9 +1,10 @@
 import * as net from 'net';
+import { LoggingEventVO } from './KarateEventLogsModels';
 
 export default class EventLogsServer {
     public port = 0;
     public server: net.Server = null;
-    constructor(private callback: (data: Buffer) => void) {}
+    constructor(private callback: (event: LoggingEventVO) => void) {}
 
     createServer() {
         this.server = net.createServer((socket: net.Socket) => {
@@ -25,7 +26,9 @@ export default class EventLogsServer {
             socket.on('data', data => {
                 // console.log(data.toString());
                 if (this.callback) {
-                    this.callback(data);
+                    data.toString()
+                        .split('\n')
+                        .forEach(log => this.callback(JSON.parse(log)));
                 }
             });
 

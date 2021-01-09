@@ -6,6 +6,7 @@ import parse = require('parse-curl');
 import * as vscode from 'vscode';
 import { TreeEntry } from './model/KarateEventLogsModels';
 
+let debugAllFile: string = null;
 let debugLineNumber: number = 0;
 let lastDebugExecution = null;
 let isRelaunchLastDebugExecution = false;
@@ -77,10 +78,17 @@ async function getDebugFile() {
         return lastDebugExecution;
     }
 
+    if (debugAllFile) {
+        const debugFile = debugAllFile;
+        debugAllFile = null;
+        return debugFile;
+    }
+
     let debugLine: string = debugLineNumber === 0 ? '' : `:${debugLineNumber}`;
     debugLineNumber = 0;
 
     let activeKarateFile: string = await getActiveFeatureFile();
+    debugAllFile == null;
 
     if (activeKarateFile !== null) {
         return (lastDebugExecution = activeKarateFile + debugLine);
@@ -89,32 +97,13 @@ async function getDebugFile() {
     }
 }
 
-async function getDebugBuildFile() {
-    let activeKarateFile: string = await getActiveFeatureFile();
-
-    if (activeKarateFile !== null) {
-        return getFileAndRootPath(vscode.Uri.file(activeKarateFile)).file;
-    } else {
-        return '';
-    }
+function runAllKarateTests(args) {
+    runKarateTest([args.uri ? args.uri.fsPath : args]);
 }
 
-async function runAllKarateTests(args = null) {
-    if (args === null) {
-        args = {};
-        args.uri = vscode.window.activeTextEditor.document.uri;
-        args.type = vscode.FileType.File;
-    }
-
-    let tedArray: ITestExecutionDetail[] = await getTestExecutionDetail(args.uri, args.type);
-
-    let commandArgs = new Array();
-    commandArgs.push(tedArray[0].karateOptions);
-    commandArgs.push(tedArray[0].karateJarOptions);
-    commandArgs.push(args.uri);
-    commandArgs.push(args.type);
-
-    runKarateTest(commandArgs);
+function debugAllKarateTests(args) {
+    debugAllFile = args.uri ? args.uri.fsPath : args;
+    debugKarateTest();
 }
 
 function getDebugCommandLine() {
@@ -146,8 +135,24 @@ function getRunCommandLine(feature: string) {
         .replace('${feature}', feature);
 }
 
+function getActiveDocumentExecution() {
+    const activeEditor: vscode.TextEditor = vscode.window.activeTextEditor;
+    if (!activeEditor.document.fileName.toLowerCase().endsWith('.feature')) {
+        return null;
+    }
+    let line = activeEditor.selection.active.line + 1;
+    while (!activeEditor.document.lineAt(--line).text.match(/^\s*(?:Scenario)|\|/)) {}
+    if (line > 1) {
+        return activeEditor.document.uri.fsPath + ':' + (line + 1);
+    }
+    return activeEditor.document.uri.fsPath;
+}
+
 function runKarateTest(args) {
     console.log('launchKarateTest', args);
+    if (args === null) {
+        args = [getActiveDocumentExecution()];
+    }
     const path = args[0];
     const fileAndRootPath = getFileAndRootPath(vscode.Uri.file(path));
     const runCommand = getRunCommandLine(fileAndRootPath.file);
@@ -237,20 +242,22 @@ function openBuildReport(reportUri) {
     vscode.env.openExternal(reportUri);
 }
 
-function openFileInEditor(args) {
-    let fileUri = args.uri;
-    vscode.window.showTextDocument(fileUri);
+function openFileInEditor(uri, line = 1) {
+    var position = new vscode.Position(line, 0);
+    vscode.window.showTextDocument(uri).then(editor => {
+        editor.selections = [new vscode.Selection(position, position)];
+        editor.revealRange(new vscode.Range(position, position));
+    });
 }
 
 export {
     smartPaste,
-    getDebugCommandLine,
-    getRunCommandLine,
     getDebugFile,
-    getDebugBuildFile,
+    getDebugCommandLine,
     debugKarateTest,
     runKarateTest,
     runAllKarateTests,
+    debugAllKarateTests,
     displayReportsTree,
     displayTestsTree,
     openBuildReport,
