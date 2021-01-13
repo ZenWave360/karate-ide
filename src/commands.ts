@@ -4,7 +4,7 @@ import ProviderStatusBar from './providerStatusBar';
 import ProviderExecutions from './providerExecutions';
 import parse = require('parse-curl');
 import * as vscode from 'vscode';
-import { TreeEntry } from './model/KarateEventLogsModels';
+import { TreeEntry } from './events-log-server/KarateEventLogsModels';
 
 let debugAllFile: string = null;
 let debugLineNumber: number = 0;

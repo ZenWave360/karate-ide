@@ -8,7 +8,7 @@ import ProviderStatusBar from './providerStatusBar';
 import ProviderCodeLens from './providerCodeLens';
 import ProviderDefinition from './providerDefinition';
 import KarateNetworkLogsTreeProvider from './KarateNetworkLogsTreeProvider';
-import EventLogsServer from './model/EventLogsServer';
+import EventLogsServer from './events-log-server/EventLogsServer';
 import HoverRunDebugProvider from './HoverRunDebugProvider';
 //import ProviderFoldingRange from "./providerFoldingRange";
 import {
@@ -28,6 +28,7 @@ import {
 } from './commands';
 import * as vscode from 'vscode';
 import KarateExecutionsTreeProvider from './KarateExecutionsTreeProvider';
+import { generateKarateTestFromOpenAPI } from './generators/openapi';
 
 // let buildReportsTreeView = null;
 // let karateTestsTreeView = null;
@@ -71,6 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateRunner.buildReports.refreshTree', () => buildReportsProvider.refresh());
     registerCommand('karateRunner.tests.refreshTree', () => karateTestsProvider.refresh());
     registerCommand('karateRunner.tests.open', openFileInEditor);
+    registerCommand('karateRunner.generators.openapi', generateKarateTestFromOpenAPI);
 
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('karate', debugAdapterProvider));
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('karate', debugConfigurationProvider));

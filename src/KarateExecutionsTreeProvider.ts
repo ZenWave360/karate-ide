@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { ITreeEntry, ITreeEntryCommand, LoggingEventVO, ThreadTreeEntry, TreeEntry } from './model/KarateEventLogsModels';
+import { ITreeEntry, ITreeEntryCommand, LoggingEventVO, ThreadTreeEntry, TreeEntry } from './events-log-server/KarateEventLogsModels';
 
 export default class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<ITreeEntry> {
     private eventLogsTree: { [key: string]: ThreadTreeEntry } = {};

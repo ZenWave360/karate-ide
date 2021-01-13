@@ -208,6 +208,14 @@
                     "light": "resources/light/display-shallow.svg",
                     "dark": "resources/dark/display-shallow.svg"
                 }
+            },
+            {
+                "command": "karateRunner.generators.openapi",
+                "title": "Generate Karate Test",
+                "icon": {
+                    "light": "resources/light/karate-test.svg",
+                    "dark": "resources/dark/karate-test.svg"
+                }
             }
         ],
         "menus": {
@@ -256,6 +264,11 @@
                     "command": "karateRunner.karateNetworkLogs.showScenarios.false",
                     "when": "view == karate-network-logs",
                     "group": "navigation"
+                },
+                {
+                    "command": "karateRunner.karateExecutionsTree.relaunchLast",
+                    "when": "view == karate-executions",
+                    "group": "navigation"
                 }
             ],
             "view/item/context": [
@@ -293,11 +306,28 @@
                     "command": "karateRunner.tests.open",
                     "when": "view == karate-executions && viewItem == testFile",
                     "group": "inline"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "when": "resourceLangId == yaml",
+                    "command": "karateRunner.generators.openapi",
+                    "group": "Generate Karate Test for Operation"
                 },
                 {
-                    "command": "karateRunner.karateExecutionsTree.relaunchLast",
-                    "when": "view == karate-executions",
-                    "group": "navigation@1"
+                    "when": "resourceLangId == yml",
+                    "command": "karateRunner.generators.openapi",
+                    "group": "Generate Karate Test for Operation"
+                }
+            ],
+            "editor/title": [
+                {
+                    "when": "resourceLangId == yaml",
+                    "command": "karateRunner.generators.openapi"
+                },
+                {
+                    "when": "resourceLangId == yml",
+                    "command": "karateRunner.generators.openapi"
                 }
             ]
         },
@@ -536,7 +566,7 @@
         "@types/node": "^12.6.9",
         "@types/vscode": "^1.44.0",
         "glob": "^7.1.4",
-        "js-yaml": "^3.13.1",
+        "js-yaml": "^3.14.1",
         "mocha": "^7.1.2",
         "prettier": "^2.2.1",
         "tslint": "^6.1.2",
@@ -544,7 +574,12 @@
         "vscode-test": "^1.1.0"
     },
     "dependencies": {
+        "@apidevtools/json-schema-ref-parser": "^9.0.6",
+        "@types/lodash": "^4.14.167",
+        "ejs": "^3.1.5",
         "fs-extra": "^8.1.0",
+        "json-schema": "^0.3.0",
+        "lodash": "^4.17.20",
         "mkdirp": "^1.0.4",
         "parse-curl": "0.2.6",
         "rimraf": "^2.6.3"
