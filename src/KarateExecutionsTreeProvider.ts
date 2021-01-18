@@ -23,7 +23,7 @@ export default class KarateExecutionsTreeProvider implements vscode.TreeDataProv
 
     addITreeEntry(event: LoggingEventVO): any {
         // console.log('event', event.eventType, event.callDepth, event.feature, event.scenario, event.url)
-        if (event.callDepth > 1) {
+        if (event.callDepth >= 1) {
             return;
         }
         const threadName = event.thread;

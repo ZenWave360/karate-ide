@@ -35,6 +35,10 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
 
     addITreeEntry(event: LoggingEventVO): any {
         // console.log('event', event.eventType, event.feature, event.scenario, event.url)
+        if (event.eventType.startsWith('FEATURE') && event.callDepth >= 1) {
+            return;
+        }
+
         const threadName = event.thread;
         const threadTree = this.eventLogsTree[threadName] || new ThreadTreeEntry(threadName);
         this.eventLogsTree[threadName] = threadTree;
