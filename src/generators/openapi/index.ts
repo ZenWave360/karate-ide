@@ -11,7 +11,6 @@ export async function generateKarateTestFromOpenAPI(file: vscode.Uri) {
     const api = await parseOpenAPI(file.fsPath);
     const operations = getOperationsFor(api);
     const selected = await askForOperations(operations);
-    console.log(selected);
     const apiname = path.basename(file.fsPath).replace(path.extname(file.fsPath), '');
     generateKarateTest(api, apiname, selected);
 }
@@ -75,7 +74,8 @@ function getOperationsFor(api) {
 }
 
 function prepareData(operation) {
-    operation.responseBody = Object.values(operation.responses)[0];
+    const firstResponse: any = Object.values(operation.responses)[0];
+    operation.responseBody = firstResponse.content ? Object.values(firstResponse.content)[0] : null;
     operation.responseCode = Object.keys(operation.responses)[0];
     operation.operationName = _.upperFirst(operation.operationId);
 

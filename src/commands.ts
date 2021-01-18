@@ -5,6 +5,7 @@ import ProviderExecutions from './providerExecutions';
 import parse = require('parse-curl');
 import * as vscode from 'vscode';
 import { TreeEntry } from './events-log-server/KarateEventLogsModels';
+import { IEntry } from './providerKarateTests';
 
 let debugAllFile: string = null;
 let debugLineNumber: number = 0;
@@ -97,12 +98,12 @@ async function getDebugFile() {
     }
 }
 
-function runAllKarateTests(args) {
-    runKarateTest([args.uri ? args.uri.fsPath : args]);
+function runAllKarateTests(entry: IEntry) {
+    runKarateTest([entry.feature.path, entry.feature.line]);
 }
 
-function debugAllKarateTests(args) {
-    debugAllFile = args.uri ? args.uri.fsPath : args;
+function debugAllKarateTests(entry: IEntry) {
+    debugAllFile = `${entry.feature.path}:${entry.feature.line}`;
     debugKarateTest();
 }
 
@@ -219,6 +220,7 @@ async function runKarateTest(args) {
     };
 
     let isTaskExecuting = true;
+    vscode.commands.executeCommand('karateRunner.karateExecutionsTree.clearTree');
     vscode.tasks.executeTask(task).then(task => showProgress(task));
 }
 

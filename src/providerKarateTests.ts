@@ -147,11 +147,12 @@ export class FileStat implements vscode.FileStat {
     }
 }
 
-interface IEntry {
+export interface IEntry {
     uri: any;
     type: vscode.FileType;
     command?: vscode.Command;
-    commands?: vscode.Command[];
+    title: string;
+    feature: { path: string; line?: number };
 }
 
 export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry>, vscode.FileSystemProvider {
@@ -286,10 +287,12 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry>, vsc
                     return {
                         uri: ted.testTitle,
                         type: vscode.FileType.Unknown,
+                        title: ted.testTitle,
+                        feature: { path: element.uri.fsPath, line: ted.debugLine },
                         command: {
                             command: 'karateRunner.tests.open',
                             title: ted.codelensRunTitle,
-                            arguments: [element.uri, ted.testLine],
+                            arguments: [element.uri, ted.debugLine],
                         },
                     };
                 });
@@ -305,6 +308,8 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry>, vsc
                 return karateTestFilesFiltered.map(karateTestFile => ({
                     uri: karateTestFile,
                     type: vscode.FileType.File,
+                    title: karateTestFile.fsPath,
+                    feature: { path: karateTestFile.fsPath },
                 }));
             } else {
                 let children = await this.readDirectory(element.uri);
@@ -322,6 +327,8 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry>, vsc
                 return childrenFiltered.map(([name, type]) => ({
                     uri: vscode.Uri.file(path.join(element.uri.fsPath, name)),
                     type: type,
+                    title: vscode.Uri.file(path.join(element.uri.fsPath, name)).fsPath,
+                    feature: { path: vscode.Uri.file(path.join(element.uri.fsPath, name)).fsPath },
                     command:
                         type === vscode.FileType.File
                             ? {
@@ -333,7 +340,6 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry>, vsc
                                   command: 'karateRunner.tests.runAll',
                                   title: 'karateRunner.tests.runAll',
                               },
-                    commands: [null],
                 }));
             }
         }
@@ -353,7 +359,7 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry>, vsc
             });
 
             if (childrenFiltered.length <= 0) {
-                return [{ uri: 'No tests found...', type: vscode.FileType.Unknown }];
+                return [{ uri: 'No tests found...', type: vscode.FileType.Unknown, title: 'No tests found...', feature: null }];
             }
 
             childrenFiltered.sort((a, b) => {
@@ -367,10 +373,12 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry>, vsc
             return childrenFiltered.map(([name, type]) => ({
                 uri: vscode.Uri.file(path.join(workspaceFolder.uri.fsPath, name)),
                 type: type,
+                title: vscode.Uri.file(path.join(workspaceFolder.uri.fsPath, name)).fsPath,
+                feature: null,
             }));
         }
 
-        return [{ uri: 'No tests found...', type: vscode.FileType.Unknown }];
+        return [{ uri: 'No tests found...', type: vscode.FileType.Unknown, title: 'No tests found...', feature: null }];
     }
 
     getTreeItem(element: IEntry): vscode.TreeItem {
