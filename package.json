@@ -1,13 +1,13 @@
 {
-    "name": "karate-runner",
-    "displayName": "Karate Runner",
+    "name": "karate-ide",
+    "displayName": "Karate IDE",
     "description": "Open/Run/Debug Karate Tests and Build Reports by leveraging Codelens, Activity Bar, Debugger and much more.",
     "icon": "resources/karate.png",
     "repository": {
         "type": "git",
         "url": "https://github.com/kirksl/karate-runner"
     },
-    "version": "0.9.5-fork",
+    "version": "0.0.1",
     "license": "MIT",
     "author": {
         "name": "Kirk Slota"
