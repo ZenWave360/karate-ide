@@ -1,79 +1,18 @@
-import { getFileAndRootPath, getTestExecutionDetail, getActiveFeatureFile, ITestExecutionDetail } from './helper';
-import { Feature, ISection } from './feature';
-import ProviderStatusBar from './providerStatusBar';
-import ProviderExecutions from './providerExecutions';
-import parse = require('parse-curl');
+import { getFileAndRootPath, getActiveFeatureFile } from '../helper';
+import ProviderStatusBar from '../providerStatusBar';
+import ProviderExecutions from '../providerExecutions';
+
 import * as vscode from 'vscode';
-import { TreeEntry } from './events-log-server/KarateEventLogsModels';
-import { IEntry } from './providerKarateTests';
+import { TreeEntry } from '../events-log-server/KarateEventLogsModels';
+import { IEntry } from '../providerKarateTests';
+import { openBuildReport } from './DisplayCommands';
 
 let debugAllFile: string = null;
 let debugLineNumber: number = 0;
 let lastDebugExecution = null;
 let isRelaunchLastDebugExecution = false;
 
-async function smartPaste() {
-    const curlIgnores = ['accept-', 'upgrade-', 'user-', 'connection', 'referer', 'sec-', 'origin', 'host', 'content-length'];
-
-    let curlIgnoreHeader = (header: string) => {
-        for (let ignore of curlIgnores) {
-            if (header.toLowerCase().startsWith(ignore)) {
-                return true;
-            }
-        }
-
-        return false;
-    };
-
-    let convertCurl = (raw: string) => {
-        let steps: Array<string> = [];
-        raw = raw.replace('--data-binary', '--data');
-        const curl: object = parse(raw);
-        steps.push("* url '" + curl['url'] + "'");
-        const headers: object = curl['header'] || {};
-
-        for (let key of Object.keys(headers)) {
-            if (curlIgnoreHeader(key)) {
-                continue;
-            }
-
-            let val: string = headers[key];
-            steps.push('* header ' + key + " = '" + val + "'");
-        }
-
-        let method: string = curl['method'];
-        let body = curl['body'];
-
-        if (!body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-            body = "''";
-        }
-
-        if (body) {
-            steps.push('* request ' + body);
-        }
-
-        steps.push('* method ' + method.toLowerCase());
-        return steps.join('\n');
-    };
-
-    let editor = vscode.window.activeTextEditor;
-    let start = editor.selection.start;
-
-    vscode.commands.executeCommand('editor.action.clipboardPasteAction').then(() => {
-        let end = editor.selection.end;
-        let selection = new vscode.Selection(start.line, start.character, end.line, end.character);
-        let selectedText = editor.document.getText(selection).trim();
-
-        if (selectedText.startsWith('curl')) {
-            editor.edit((editBuilder: vscode.TextEditorEdit) => {
-                editBuilder.replace(selection, convertCurl(selectedText) + '\n');
-                editor.revealRange(new vscode.Range(start, start));
-            });
-        }
-    });
-}
-
-async function getDebugFile() {
+export async function getDebugFile() {
     if (isRelaunchLastDebugExecution) {
         isRelaunchLastDebugExecution = false;
         return lastDebugExecution;
@@ -98,16 +37,16 @@ async function getDebugFile() {
     }
 }
 
-function runAllKarateTests(entry: IEntry) {
+export function runAllKarateTests(entry: IEntry) {
     runKarateTest([entry.feature.path, entry.feature.line]);
 }
 
-function debugAllKarateTests(entry: IEntry) {
+export function debugAllKarateTests(entry: IEntry) {
     debugAllFile = `${entry.feature.path}:${entry.feature.line}`;
     debugKarateTest();
 }
 
-function getDebugCommandLine() {
+export function getDebugCommandLine() {
     let vscodePort: string = vscode.workspace.getConfiguration('karateRunner.eventLogsServer').get('port');
     let karateEnv: string = vscode.workspace.getConfiguration('karateRunner.karateCli').get('karateEnv');
     let classpath: string = vscode.workspace.getConfiguration('karateRunner.karateCli').get('classpath');
@@ -164,7 +103,7 @@ function getActiveDocumentExecution() {
     return activeEditor.document.uri.fsPath;
 }
 
-async function runKarateTest(args) {
+export async function runKarateTest(args) {
     console.log('launchKarateTest', args);
     if (args === null) {
         args = [getActiveDocumentExecution()];
@@ -224,19 +163,19 @@ async function runKarateTest(args) {
     vscode.tasks.executeTask(task).then(task => showProgress(task));
 }
 
-function relaunchLastKarateDebugExecution() {
+export function relaunchLastKarateDebugExecution() {
     isRelaunchLastDebugExecution = true;
     debugKarateTest();
 }
 
-function launchKarateDebugExecution(entry: TreeEntry) {
+export function launchKarateDebugExecution(entry: TreeEntry) {
     console.log('launchKarateDebugExecution', entry);
     isRelaunchLastDebugExecution = true;
     lastDebugExecution = entry.eventStart.resource + ':' + entry.eventStart.line;
     debugKarateTest();
 }
 
-function debugKarateTest(args = null) {
+export function debugKarateTest(args = null) {
     if (args !== null) {
         debugLineNumber = args[0];
     } else {
@@ -246,39 +185,3 @@ function debugKarateTest(args = null) {
     vscode.commands.executeCommand('karateRunner.karateExecutionsTree.clearTree');
     vscode.commands.executeCommand('workbench.action.debug.start');
 }
-
-function displayReportsTree(displayType) {
-    vscode.workspace.getConfiguration().update('karateRunner.buildReports.activityBarDisplayType', displayType);
-}
-
-function displayTestsTree(displayType) {
-    vscode.workspace.getConfiguration().update('karateRunner.tests.activityBarDisplayType', displayType);
-}
-
-function openBuildReport(reportUri) {
-    vscode.env.openExternal(reportUri);
-}
-
-function openFileInEditor(uri, line = 1) {
-    var position = new vscode.Position(line, 0);
-    vscode.window.showTextDocument(uri).then(editor => {
-        editor.selections = [new vscode.Selection(position, position)];
-        editor.revealRange(new vscode.Range(position, position));
-    });
-}
-
-export {
-    smartPaste,
-    getDebugFile,
-    getDebugCommandLine,
-    debugKarateTest,
-    runKarateTest,
-    runAllKarateTests,
-    debugAllKarateTests,
-    displayReportsTree,
-    displayTestsTree,
-    openBuildReport,
-    openFileInEditor,
-    relaunchLastKarateDebugExecution,
-    launchKarateDebugExecution,
-};
