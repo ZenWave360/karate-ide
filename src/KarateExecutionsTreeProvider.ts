@@ -56,8 +56,8 @@ export default class KarateExecutionsTreeProvider implements vscode.TreeDataProv
         // console.log('getTreeItem', entry.eventStart.eventType, entry.eventEnd)
         const iconPath = entry.eventEnd ? (entry.eventEnd.status === 'OK' ? 'pass.svg' : 'error.svg') : 'loading.svg';
         treeItem.iconPath = {
-            light: path.join(__dirname, '..', 'resources', 'light', iconPath),
-            dark: path.join(__dirname, '..', 'resources', 'dark', iconPath),
+            light: path.join(__dirname, '..', '..', 'resources', 'light', iconPath),
+            dark: path.join(__dirname, '..', '..', 'resources', 'dark', iconPath),
         };
         treeItem.contextValue = entry.eventStart.eventType;
         return treeItem;

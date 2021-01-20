@@ -73,8 +73,8 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
         const treeItem = new vscode.TreeItem(item.label, item.state);
         if (item.iconPath) {
             treeItem.iconPath = {
-                light: path.join(__dirname, '..', 'resources', 'light', item.iconPath),
-                dark: path.join(__dirname, '..', 'resources', 'dark', item.iconPath),
+                light: path.join(__dirname, '..', '..', 'resources', 'light', item.iconPath),
+                dark: path.join(__dirname, '..', '..', 'resources', 'dark', item.iconPath),
             };
         }
         if (item.command) {

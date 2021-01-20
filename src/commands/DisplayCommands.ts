@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { LocalStorageService } from './LocalStorageService';
 
 export function displayReportsTree(displayType) {
     vscode.workspace.getConfiguration().update('karateRunner.buildReports.activityBarDisplayType', displayType);

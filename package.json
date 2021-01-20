@@ -29,7 +29,10 @@
     "activationEvents": [
         "*"
     ],
-    "main": "./out/extension",
+    "main": "./out/src/extension",
+    "directories": {
+        "test": "test"
+    },
     "contributes": {
         "viewsContainers": {
             "activitybar": [
@@ -557,18 +560,20 @@
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "pretest": "npm run compile",
-        "test": "node ./out/test/runTest.js"
+        "test": "ts-mocha test/**/*.spec.ts"
     },
     "devDependencies": {
+        "@types/chai": "^4.2.14",
         "@types/glob": "^7.1.1",
         "@types/mocha": "^5.2.7",
         "@types/node": "^12.6.9",
         "@types/vscode": "^1.44.0",
+        "chai": "^4.2.0",
         "glob": "^7.1.4",
         "js-yaml": "^3.14.1",
-        "mocha": "^7.1.2",
+        "mocha": "^7.2.0",
         "prettier": "^2.2.1",
+        "ts-mocha": "^8.0.0",
         "tslint": "^6.1.2",
         "typescript": "3.5.3",
         "vscode-test": "^1.1.0"
@@ -580,6 +585,7 @@
         "fs-extra": "^8.1.0",
         "json-schema": "^0.3.0",
         "lodash": "^4.17.20",
+        "minimatch": "^3.0.4",
         "mkdirp": "^1.0.4",
         "parse-curl": "0.2.6",
         "rimraf": "^2.6.3"

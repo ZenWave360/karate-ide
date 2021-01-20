@@ -5,7 +5,6 @@ import ProviderExecutions from '../providerExecutions';
 import * as vscode from 'vscode';
 import { TreeEntry } from '../events-log-server/KarateEventLogsModels';
 import { IEntry } from '../providerKarateTests';
-import { openBuildReport } from './DisplayCommands';
 
 let debugAllFile: string = null;
 let debugLineNumber: number = 0;
@@ -133,7 +132,7 @@ export async function runKarateTest(args) {
             ProviderExecutions.executionArgs = null;
 
             if (openReports) {
-                new Set(reportUrisFound).forEach(reportUri => openBuildReport(reportUri));
+                new Set(reportUrisFound).forEach(reportUri => vscode.env.openExternal(reportUri));
             }
         }
     });

@@ -12,23 +12,22 @@ import EventLogsServer from './events-log-server/EventLogsServer';
 import HoverRunDebugProvider from './HoverRunDebugProvider';
 //import ProviderFoldingRange from "./providerFoldingRange";
 import {
-    smartPaste,
     getDebugFile,
     getDebugCommandLine,
-    debugKarateTest,
     runKarateTest,
+    debugKarateTest,
     runAllKarateTests,
-    displayReportsTree,
-    displayTestsTree,
-    openBuildReport,
-    openFileInEditor,
+    debugAllKarateTests,
     launchKarateDebugExecution,
     relaunchLastKarateDebugExecution,
-    debugAllKarateTests,
-} from './commands';
+} from './commands/RunDebug';
+import { displayReportsTree, displayTestsTree, openBuildReport, openFileInEditor } from './commands/DisplayCommands';
+import { smartPaste } from './commands/SmartPaste';
+
 import * as vscode from 'vscode';
 import KarateExecutionsTreeProvider from './KarateExecutionsTreeProvider';
 import { generateKarateTestFromOpenAPI } from './generators/openapi';
+import { LocalStorageService } from './commands/LocalStorageService';
 
 // let buildReportsTreeView = null;
 // let karateTestsTreeView = null;
@@ -56,6 +55,8 @@ export function activate(context: vscode.ExtensionContext) {
     function registerCommand(command: string, callback: (...args: any[]) => any, thisArg?: any) {
         context.subscriptions.push(vscode.commands.registerCommand(command, callback));
     }
+
+    LocalStorageService.initialize(context.workspaceState);
 
     registerCommand('karateRunner.paste', smartPaste);
     registerCommand('karateRunner.getDebugFile', getDebugFile);

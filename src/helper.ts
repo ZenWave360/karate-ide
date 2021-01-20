@@ -14,6 +14,21 @@ interface ITestExecutionDetail {
     codelensLine: number;
 }
 
+function filterByTags(testTagString: string, filterTagString: string) {
+    // splits by whole word, or "quoted word"
+    let testTags = (testTagString || '').replace(/,/g, ' ').match(/(~|@|\w)+/g) || [];
+    let andTags = (filterTagString || '').replace(/,/g, ' ').match(/(~|@|\w)+|"[^"]+"/g) || [];
+    return andTags.reduce((and, tag) => {
+        const orTags = tag.replace(/\"/g, '').match(/\S+/g);
+        const test = orTags.reduce((or, tag) => {
+            const negate = tag.startsWith('~');
+            const test = testTags.includes(tag.replace('~', ''));
+            return or || (negate ? !test || testTags.length === 0 : test);
+        }, false);
+        return and && test;
+    }, true);
+}
+
 function getFileAndRootPath(uri): { file: string; root: string } {
     let rootFolderUri = vscode.workspace.getWorkspaceFolder(uri);
     let rootModuleMarkerFile: string = vscode.workspace.getConfiguration('karateRunner.multimodule').get('rootModuleMarkerFile');
@@ -217,4 +232,4 @@ async function getActiveFeatureFile(): Promise<string> {
     return activeFeatureFile;
 }
 
-export { getFileAndRootPath, getTestExecutionDetail, getChildAbsolutePath, getActiveFeatureFile, ITestExecutionDetail };
+export { filterByTags, getFileAndRootPath, getTestExecutionDetail, getChildAbsolutePath, getActiveFeatureFile, ITestExecutionDetail };
