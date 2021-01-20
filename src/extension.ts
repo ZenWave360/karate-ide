@@ -72,6 +72,8 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateRunner.buildReports.open', openBuildReport);
     registerCommand('karateRunner.buildReports.refreshTree', () => buildReportsProvider.refresh());
     registerCommand('karateRunner.tests.refreshTree', () => karateTestsProvider.refresh());
+    registerCommand('karateRunner.tests.switchKarateEnv', () => karateTestsProvider.switchKarateEnv());
+    registerCommand('karateRunner.tests.configureFocus', () => karateTestsProvider.configureTestsFocus());
     registerCommand('karateRunner.tests.open', openFileInEditor);
     registerCommand('karateRunner.generators.openapi', generateKarateTestFromOpenAPI);
 

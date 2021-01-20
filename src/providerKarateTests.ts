@@ -62,24 +62,30 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry> {
     async switchKarateEnv() {
         let karateEnv = String(vscode.workspace.getConfiguration('karateRunner.karateCli').get('karateEnv'));
         karateEnv = await vscode.window.showInputBox({ prompt: 'Karate Env', value: karateEnv });
-        if (karateEnv) {
+        if (karateEnv !== undefined) {
             await vscode.workspace.getConfiguration().update('karateRunner.karateCli.karateEnv', karateEnv);
         }
     }
 
     async configureTestsFocus() {
-        let focus = LocalStorageService.instance.getValue<string>('testView.focus');
+        let focus = LocalStorageService.instance.getValue<string>('karateRunner.testView.focus');
         focus = await vscode.window.showInputBox({ prompt: 'Focus', value: focus, placeHolder: '**/** -t ~@ignore' });
-        LocalStorageService.instance.setValue('testView.focus', focus);
+        if (focus !== undefined) {
+            LocalStorageService.instance.setValue('karateRunner.testView.focus', focus);
+            vscode.commands.executeCommand('karateRunner.tests.refreshTree');
+        }
     }
 
     async getChildren(element?: IEntry): Promise<IEntry[]> {
         let workspaceFolder = vscode.workspace.workspaceFolders.filter(folder => folder.uri.scheme === 'file')[0];
-        let [focus, t, tags] = LocalStorageService.instance.getValue<string>('testView.focus', '').trim().split(/\s+/);
+        let [focus, tags] = LocalStorageService.instance
+            .getValue<string>('karateRunner.testView.focus', '')
+            .split(/-t/)
+            .map(e => e && e.trim());
         let glob = String(vscode.workspace.getConfiguration('karateRunner.tests').get('toTarget'));
 
         let karateTestFiles = (await vscode.workspace.findFiles(glob))
-            .filter(f => true || minimatch(f.fsPath, focus, { matchBase: true }))
+            .filter(f => !focus || (focus.length > 0 && minimatch(f.fsPath, focus, { matchBase: true })))
             .sort((a, b) => a.fsPath.localeCompare(b.fsPath));
 
         if (element) {

@@ -141,6 +141,22 @@
                 }
             },
             {
+                "command": "karateRunner.tests.switchKarateEnv",
+                "title": "Karate Env",
+                "icon": {
+                    "light": "resources/light/gear.svg",
+                    "dark": "resources/dark/gear.svg"
+                }
+            },
+            {
+                "command": "karateRunner.tests.configureFocus",
+                "title": "Config Focus",
+                "icon": {
+                    "light": "resources/light/filter.svg",
+                    "dark": "resources/dark/filter.svg"
+                }
+            },
+            {
                 "command": "karateRunner.tests.open",
                 "title": "Open In Editor",
                 "icon": {
@@ -252,6 +268,16 @@
                     "command": "karateRunner.tests.displayDeep",
                     "when": "view == karate-tests && config.karateRunner.tests.activityBarDisplayType == Shallow",
                     "group": "navigation@2"
+                },
+                {
+                    "command": "karateRunner.tests.switchKarateEnv",
+                    "when": "view == karate-tests",
+                    "group": "navigation@3"
+                },
+                {
+                    "command": "karateRunner.tests.configureFocus",
+                    "when": "view == karate-tests",
+                    "group": "navigation@4"
                 },
                 {
                     "command": "karateRunner.karateNetworkLogs.clearTree",

@@ -6,7 +6,7 @@
         "lib": ["es6"],
         "sourceMap": true,
         // "rootDir": "src",
-        // "baseUrl": "./",
+        "baseUrl": "./src",
         "paths": {
             "@/*": ["src/*"]
         },
