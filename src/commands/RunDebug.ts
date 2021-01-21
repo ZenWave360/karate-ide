@@ -41,7 +41,7 @@ export function runAllKarateTests(entry: IEntry) {
 }
 
 export function debugAllKarateTests(entry: IEntry) {
-    debugAllFile = `${entry.feature.path}:${entry.feature.line}`;
+    debugAllFile = entry.feature.path + (entry.feature.line ? `:${entry.feature.line}` : '');
     debugKarateTest();
 }
 
