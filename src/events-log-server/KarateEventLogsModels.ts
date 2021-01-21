@@ -1,3 +1,4 @@
+import Icons from '../Icons';
 import * as vscode from 'vscode';
 
 enum EventType {
@@ -40,7 +41,7 @@ export class ITreeEntryCommand {
     label: string;
     state?: vscode.TreeItemCollapsibleState;
     command?: vscode.Command;
-    iconPath?: string;
+    iconPath?: vscode.ThemeIcon;
 }
 
 export class TreeEntry implements ITreeEntry {
@@ -84,7 +85,7 @@ export class TreeEntry implements ITreeEntry {
         return {
             label,
             state,
-            iconPath: 'karate-test.svg',
+            iconPath: Icons.karateTest,
         };
         // return new vscode.TreeItem(`${label}`, state);
     }

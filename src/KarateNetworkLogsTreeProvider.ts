@@ -71,21 +71,14 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
             return item;
         }
         const treeItem = new vscode.TreeItem(item.label, item.state);
-        if (item.iconPath) {
-            treeItem.iconPath = {
-                light: path.join(__dirname, '..', '..', 'resources', 'light', item.iconPath),
-                dark: path.join(__dirname, '..', '..', 'resources', 'dark', item.iconPath),
-            };
-        }
-        if (item.command) {
-            treeItem.command = item.command;
-        }
+        treeItem.iconPath = item.iconPath;
+        treeItem.command = item.command;
         if (element instanceof TreeEntry) {
             treeItem.contextValue = element.eventStart.eventType;
         }
-
         return treeItem;
     }
+
     getChildren(element?: ITreeEntry): vscode.ProviderResult<ITreeEntry[]> {
         if (!element) {
             return Object.values(this.eventLogsTree);

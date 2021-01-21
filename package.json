@@ -39,7 +39,7 @@
                 {
                     "id": "karate-runner",
                     "title": "Karate Runner",
-                    "icon": "resources/karate-activitybar.svg"
+                    "icon": "resources/karate-icons/karate-activitybar.svg"
                 }
             ]
         },
@@ -96,144 +96,144 @@
                 "command": "karateRunner.buildReports.refreshTree",
                 "title": "Refresh",
                 "icon": {
-                    "light": "resources/light/refresh.svg",
-                    "dark": "resources/dark/refresh.svg"
+                    "light": "resources/vscode-icons/light/refresh.svg",
+                    "dark": "resources/vscode-icons/dark/refresh.svg"
                 }
             },
             {
                 "command": "karateRunner.karateExecutionsTree.clearTree",
                 "title": "Clear",
                 "icon": {
-                    "light": "resources/light/refresh.svg",
-                    "dark": "resources/dark/refresh.svg"
+                    "light": "resources/vscode-icons/light/clear-all.svg",
+                    "dark": "resources/vscode-icons/dark/clear-all.svg"
                 }
             },
             {
                 "command": "karateRunner.karateNetworkLogs.clearTree",
                 "title": "Clear",
                 "icon": {
-                    "light": "resources/light/refresh.svg",
-                    "dark": "resources/dark/refresh.svg"
+                    "light": "resources/vscode-icons/light/clear-all.svg",
+                    "dark": "resources/vscode-icons/dark/clear-all.svg"
                 }
             },
             {
                 "command": "karateRunner.karateNetworkLogs.showScenarios.true",
                 "title": "Show Scenarios",
                 "icon": {
-                    "light": "resources/light/display-deep.svg",
-                    "dark": "resources/dark/display-deep.svg"
+                    "light": "resources/vscode-icons/light/list-tree.svg",
+                    "dark": "resources/vscode-icons/dark/list-tree.svg"
                 }
             },
             {
                 "command": "karateRunner.karateNetworkLogs.showScenarios.false",
                 "title": "Hide Scenarios",
                 "icon": {
-                    "light": "resources/light/display-shallow.svg",
-                    "dark": "resources/dark/display-shallow.svg"
+                    "light": "resources/vscode-icons/light/list-unordered.svg",
+                    "dark": "resources/vscode-icons/dark/list-unordered.svg"
                 }
             },
             {
                 "command": "karateRunner.tests.refreshTree",
                 "title": "Refresh",
                 "icon": {
-                    "light": "resources/light/refresh.svg",
-                    "dark": "resources/dark/refresh.svg"
+                    "light": "resources/vscode-icons/light/refresh.svg",
+                    "dark": "resources/vscode-icons/dark/refresh.svg"
                 }
             },
             {
                 "command": "karateRunner.tests.switchKarateEnv",
                 "title": "Karate Env",
                 "icon": {
-                    "light": "resources/light/gear.svg",
-                    "dark": "resources/dark/gear.svg"
+                    "light": "resources/vscode-icons/light/gear.svg",
+                    "dark": "resources/vscode-icons/dark/gear.svg"
                 }
             },
             {
                 "command": "karateRunner.tests.configureFocus",
                 "title": "Config Focus",
                 "icon": {
-                    "light": "resources/light/filter.svg",
-                    "dark": "resources/dark/filter.svg"
+                    "light": "resources/vscode-icons/light/filter.svg",
+                    "dark": "resources/vscode-icons/dark/filter.svg"
                 }
             },
             {
                 "command": "karateRunner.tests.open",
                 "title": "Open In Editor",
                 "icon": {
-                    "light": "resources/light/open-file.svg",
-                    "dark": "resources/dark/open-file.svg"
+                    "light": "resources/vscode-icons/light/go-to-file.svg",
+                    "dark": "resources/vscode-icons/dark/go-to-file.svg"
                 }
             },
             {
                 "command": "karateRunner.tests.runAll",
                 "title": "Run All Tests",
                 "icon": {
-                    "light": "resources/light/run-all-2.svg",
-                    "dark": "resources/dark/run-all-2.svg"
+                    "light": "resources/vscode-icons/light/run-all.svg",
+                    "dark": "resources/vscode-icons/dark/run-all.svg"
                 }
             },
             {
                 "command": "karateRunner.tests.debugAll",
                 "title": "Debug All Tests",
                 "icon": {
-                    "light": "resources/light/debug-alt-small.svg",
-                    "dark": "resources/dark/debug-alt-small.svg"
+                    "light": "resources/vscode-icons/light/debug-alt-small.svg",
+                    "dark": "resources/vscode-icons/dark/debug-alt-small.svg"
                 }
             },
             {
                 "command": "karateRunner.karateExecutionsTree.relaunchLast",
                 "title": "Relaunch Last Karate Debug Execution",
                 "icon": {
-                    "light": "resources/light/run-all.svg",
-                    "dark": "resources/dark/run-all.svg"
+                    "light": "resources/vscode-icons/light/run-all.svg",
+                    "dark": "resources/vscode-icons/dark/run-all.svg"
                 }
             },
             {
                 "command": "karateRunner.karateExecutionsTree.launch",
                 "title": "Debug this Execution",
                 "icon": {
-                    "light": "resources/light/run-all.svg",
-                    "dark": "resources/dark/run-all.svg"
+                    "light": "resources/vscode-icons/light/run-all.svg",
+                    "dark": "resources/vscode-icons/dark/run-all.svg"
                 }
             },
             {
                 "command": "karateRunner.buildReports.displayShallow",
                 "title": "Display Shallow",
                 "icon": {
-                    "light": "resources/light/display-deep.svg",
-                    "dark": "resources/dark/display-deep.svg"
+                    "light": "resources/vscode-icons/light/list-tree.svg",
+                    "dark": "resources/vscode-icons/dark/list-tree.svg"
                 }
             },
             {
                 "command": "karateRunner.buildReports.displayDeep",
                 "title": "Display Deep",
                 "icon": {
-                    "light": "resources/light/display-shallow.svg",
-                    "dark": "resources/dark/display-shallow.svg"
+                    "light": "resources/vscode-icons/light/list-unordered.svg",
+                    "dark": "resources/vscode-icons/dark/list-unordered.svg"
                 }
             },
             {
                 "command": "karateRunner.tests.displayShallow",
                 "title": "Display Shallow",
                 "icon": {
-                    "light": "resources/light/display-deep.svg",
-                    "dark": "resources/dark/display-deep.svg"
+                    "light": "resources/vscode-icons/light/list-tree.svg",
+                    "dark": "resources/vscode-icons/dark/list-tree.svg"
                 }
             },
             {
                 "command": "karateRunner.tests.displayDeep",
                 "title": "Display Deep",
                 "icon": {
-                    "light": "resources/light/display-shallow.svg",
-                    "dark": "resources/dark/display-shallow.svg"
+                    "light": "resources/vscode-icons/light/list-unordered.svg",
+                    "dark": "resources/vscode-icons/dark/list-unordered.svg"
                 }
             },
             {
                 "command": "karateRunner.generators.openapi",
                 "title": "Generate Karate Test",
                 "icon": {
-                    "light": "resources/light/karate-test.svg",
-                    "dark": "resources/dark/karate-test.svg"
+                    "light": "resources/vscode-icons/light/karate-test.svg",
+                    "dark": "resources/vscode-icons/dark/karate-test.svg"
                 }
             }
         ],

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { ITreeEntry, ITreeEntryCommand, LoggingEventVO, ThreadTreeEntry, TreeEntry } from './events-log-server/KarateEventLogsModels';
+import Icons from './Icons';
 
 export default class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<ITreeEntry> {
     private eventLogsTree: { [key: string]: ThreadTreeEntry } = {};
@@ -54,11 +55,7 @@ export default class KarateExecutionsTreeProvider implements vscode.TreeDataProv
         const treeItem = new vscode.TreeItem(asTreeItem.label, state);
 
         // console.log('getTreeItem', entry.eventStart.eventType, entry.eventEnd)
-        const iconPath = entry.eventEnd ? (entry.eventEnd.status === 'OK' ? 'pass.svg' : 'error.svg') : 'loading.svg';
-        treeItem.iconPath = {
-            light: path.join(__dirname, '..', '..', 'resources', 'light', iconPath),
-            dark: path.join(__dirname, '..', '..', 'resources', 'dark', iconPath),
-        };
+        treeItem.iconPath = entry.eventEnd ? (entry.eventEnd.status === 'OK' ? Icons.pass : Icons.error) : Icons.loading;
         treeItem.contextValue = entry.eventStart.eventType;
         return treeItem;
     }
