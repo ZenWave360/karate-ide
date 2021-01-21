@@ -2,15 +2,11 @@ import path = require('path');
 import fs = require('fs');
 import * as vscode from 'vscode';
 
-interface ITestExecutionDetail {
+class ITestExecutionDetail {
     testTag: string;
     testTitle: string;
+    testFeature: string;
     testLine: number;
-    debugLine: number;
-    karateOptions: string;
-    karateJarOptions: string;
-    codelensRunTitle: string;
-    codelensDebugTitle: string;
     codelensLine: number;
 }
 
@@ -55,28 +51,13 @@ async function getTestExecutionDetail(uri: vscode.Uri, type: vscode.FileType): P
     let tedArray: ITestExecutionDetail[] = [];
 
     if (type === vscode.FileType.File) {
-        let runTitle = 'Karate: Run';
-        let debugTitle = 'Karate: Debug';
-
         let document = await vscode.workspace.openTextDocument(uri);
 
         let lineTestRegExp = new RegExp('^\\s*(Feature|Scenario|Scenario Outline):.*$');
         let lineTagRegExp = new RegExp('^\\s*@.+$');
         for (let line = 0; line < document.lineCount; line++) {
-            let ted: ITestExecutionDetail = {
-                testTag: '',
-                testTitle: '',
-                testLine: 0,
-                debugLine: 0,
-                karateOptions: '',
-                karateJarOptions: '',
-                codelensRunTitle: '',
-                codelensDebugTitle: '',
-                codelensLine: 0,
-            };
-
-            ted.karateOptions = uri.fsPath;
-            ted.karateJarOptions = uri.fsPath;
+            let ted: ITestExecutionDetail = new ITestExecutionDetail();
+            ted.testFeature = uri.fsPath;
 
             let lineText = document.lineAt(line).text;
             let lineTestMatch = lineText.match(lineTestRegExp);
@@ -97,17 +78,9 @@ async function getTestExecutionDetail(uri: vscode.Uri, type: vscode.FileType): P
                 let lineScenarioRegExp = new RegExp('^\\s*(Scenario|Scenario Outline):(.*)$');
                 let lineScenarioMatch = lineText.match(lineScenarioRegExp);
                 if (lineScenarioMatch !== null && lineScenarioMatch.index !== undefined) {
-                    ted.testLine = line;
-                    ted.debugLine = ted.testLine + 1;
-                    ted.codelensRunTitle = runTitle;
-                    ted.codelensDebugTitle = debugTitle;
-                    ted.karateOptions += `:${ted.testLine + 1}`;
-                    ted.karateJarOptions += `:${ted.testLine + 1}`;
+                    ted.testLine = line + 1;
                 } else {
                     ted.testLine = 0;
-                    ted.debugLine = 0;
-                    ted.codelensRunTitle = runTitle;
-                    ted.codelensDebugTitle = debugTitle;
                 }
 
                 tedArray.push(ted);
@@ -153,11 +126,7 @@ async function getTestExecutionDetail(uri: vscode.Uri, type: vscode.FileType): P
             testTag: '',
             testTitle: '',
             testLine: 0,
-            debugLine: 0,
-            karateOptions: classPathNormalized,
-            karateJarOptions: classPathNormalized,
-            codelensRunTitle: '',
-            codelensDebugTitle: '',
+            testFeature: classPathNormalized,
             codelensLine: 0,
         };
 

@@ -5,6 +5,7 @@ import * as minimatch from 'minimatch';
 import { LocalStorageService } from './commands/LocalStorageService';
 import { FileStat } from './providerBuildReports';
 import { filterByTags, getTestExecutionDetail, ITestExecutionDetail } from './helper';
+import Icons from './Icons';
 
 function normalizeNFC(items: string): string;
 function normalizeNFC(items: string[]): string[];
@@ -20,25 +21,39 @@ function normalizeNFC(items: string | string[]): string | string[] {
     return items.normalize('NFC');
 }
 
-export interface IEntry {
-    uri: any;
+export class KarateTestTreeEntry {
+    uri: vscode.Uri;
     type: vscode.FileType;
     command?: vscode.Command;
     title: string;
+    tooltip?: string;
     feature: { path: string; line?: number };
+    tags: any;
+    constructor(partial: Partial<KarateTestTreeEntry>) {
+        Object.assign(this, partial);
+    }
 }
 
-export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry> {
+export class ProviderKarateTests implements vscode.TreeDataProvider<KarateTestTreeEntry> {
     private _onDidChangeFile: vscode.EventEmitter<vscode.FileChangeEvent[]>;
     private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
+    karateTestFiles: vscode.Uri[];
 
     constructor() {
         console.log('ProviderKarateTests');
         // this._onDidChangeFile = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
     }
 
+    private async getKarateFiles(focus: string) {
+        let glob = String(vscode.workspace.getConfiguration('karateRunner.tests').get('toTarget'));
+        return (this.karateTestFiles =
+            this.karateTestFiles ||
+            (await vscode.workspace.findFiles(glob)).filter(f => !focus || (focus.length > 0 && minimatch(f.path, focus, { matchBase: true }))));
+    }
+
     public refresh(): any {
+        this.karateTestFiles = null;
         this._onDidChangeTreeData.fire();
     }
 
@@ -72,126 +87,87 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry> {
         focus = await vscode.window.showInputBox({ prompt: 'Focus', value: focus, placeHolder: '**/** -t ~@ignore' });
         if (focus !== undefined) {
             LocalStorageService.instance.setValue('karateRunner.testView.focus', focus);
-            vscode.commands.executeCommand('karateRunner.tests.refreshTree');
+            this.refresh();
         }
     }
 
-    async getChildren(element?: IEntry): Promise<IEntry[]> {
-        let workspaceFolder = vscode.workspace.workspaceFolders.filter(folder => folder.uri.scheme === 'file')[0];
-        let [focus, tags] = LocalStorageService.instance
+    private _getTitle(file: string, workspaceFolder: vscode.WorkspaceFolder) {
+        let title = path.relative(workspaceFolder.uri.path, file);
+        // const tokens = title.split(path.sep);
+        // if (tokens.length > 5) {
+        //     title = [tokens[0], '...', tokens[tokens.length - 3], tokens[tokens.length - 2], tokens[tokens.length - 1]].join(path.sep);
+        // }
+        return title;
+    }
+
+    private getConfiguredFocusAndTags() {
+        return LocalStorageService.instance
             .getValue<string>('karateRunner.testView.focus', '')
             .split(/-t/)
             .map(e => e && e.trim());
-        let glob = String(vscode.workspace.getConfiguration('karateRunner.tests').get('toTarget'));
-
-        let karateTestFiles = (await vscode.workspace.findFiles(glob))
-            .filter(f => !focus || (focus.length > 0 && minimatch(f.fsPath, focus, { matchBase: true })))
-            .sort((a, b) => a.fsPath.localeCompare(b.fsPath));
-
-        if (element) {
-            if (element.type === vscode.FileType.File && element.uri.fsPath.endsWith('.feature')) {
-                let tedArray: ITestExecutionDetail[] = await getTestExecutionDetail(element.uri, vscode.FileType.File);
-                return tedArray
-                    .map(ted => {
-                        return {
-                            tags: ted.testTag,
-                            uri: ted.testTitle,
-                            type: vscode.FileType.Unknown,
-                            title: ted.testTitle,
-                            feature: { path: element.uri.fsPath, line: ted.debugLine },
-                            command: {
-                                command: 'karateRunner.tests.open',
-                                title: ted.codelensRunTitle,
-                                arguments: [element.uri, ted.debugLine],
-                            },
-                        };
-                    })
-                    .filter(t => filterByTags(t.tags, tags));
-            }
-
-            let displayType = String(vscode.workspace.getConfiguration('karateRunner.tests').get('activityBarDisplayType'));
-
-            if (displayType === 'Shallow') {
-                let karateTestFilesFiltered = karateTestFiles.filter(karateTestFile => {
-                    return karateTestFile.toString().startsWith(element.uri.toString());
-                });
-
-                return karateTestFilesFiltered.map(karateTestFile => ({
-                    uri: karateTestFile,
-                    type: vscode.FileType.File,
-                    title: karateTestFile.fsPath,
-                    feature: { path: karateTestFile.fsPath },
-                }));
-            } else {
-                let children = await this._readDirectory(element.uri);
-
-                let childrenFiltered = children.filter(child => {
-                    let childUri = vscode.Uri.file(path.join(element.uri.fsPath, child[0]));
-
-                    let found = karateTestFiles.find(file => {
-                        return file.toString().startsWith(childUri.toString());
-                    });
-
-                    return found !== undefined;
-                });
-
-                return childrenFiltered.map(([name, type]) => ({
-                    uri: vscode.Uri.file(path.join(element.uri.fsPath, name)),
-                    type: type,
-                    title: vscode.Uri.file(path.join(element.uri.fsPath, name)).fsPath,
-                    feature: { path: vscode.Uri.file(path.join(element.uri.fsPath, name)).fsPath },
-                    command:
-                        type === vscode.FileType.File
-                            ? {
-                                  command: 'karateRunner.tests.open',
-                                  title: `karateRunner.tests.open`,
-                                  arguments: [vscode.Uri.file(path.join(element.uri.fsPath, name))],
-                              }
-                            : {
-                                  command: 'karateRunner.tests.runAll',
-                                  title: 'karateRunner.tests.runAll',
-                              },
-                }));
-            }
-        }
-
-        if (workspaceFolder) {
-            let children = await this._readDirectory(workspaceFolder.uri);
-
-            let childrenFiltered = children.filter(child => {
-                let childUri = vscode.Uri.file(path.join(workspaceFolder.uri.fsPath, child[0]));
-
-                let found = karateTestFiles.find(file => {
-                    return file.toString().startsWith(childUri.toString());
-                });
-
-                return found !== undefined;
-            });
-
-            if (childrenFiltered.length <= 0) {
-                return [{ uri: 'No tests found...', type: vscode.FileType.Unknown, title: 'No tests found...', feature: null }];
-            }
-
-            childrenFiltered.sort((a, b) => {
-                if (a[1] === b[1]) {
-                    return a[0].localeCompare(b[0]);
-                }
-
-                return a[1] === vscode.FileType.Directory ? -1 : 1;
-            });
-
-            return childrenFiltered.map(([name, type]) => ({
-                uri: vscode.Uri.file(path.join(workspaceFolder.uri.fsPath, name)),
-                type: type,
-                title: vscode.Uri.file(path.join(workspaceFolder.uri.fsPath, name)).fsPath,
-                feature: null,
-            }));
-        }
-
-        return [{ uri: 'No tests found...', type: vscode.FileType.Unknown, title: 'No tests found...', feature: null }];
     }
 
-    getTreeItem(element: IEntry): vscode.TreeItem {
+    async getChildren(element?: KarateTestTreeEntry): Promise<KarateTestTreeEntry[]> {
+        let workspaceFolder = vscode.workspace.workspaceFolders.filter(folder => folder.uri.scheme === 'file')[0];
+        let [focus, tags] = this.getConfiguredFocusAndTags();
+        let karateFilesInFolders = (await this.getKarateFiles(focus))
+            .map(f => f.path)
+            .filter(f => !focus || (focus.length > 0 && minimatch(f, focus, { matchBase: true })))
+            .reduce((folders, file) => {
+                const folder = path.dirname(file);
+                const filename = path.basename(file);
+                folders[folder] = folders[folder] || [];
+                folders[folder].push(filename);
+                return folders;
+            }, {});
+
+        if (!element) {
+            return Object.keys(karateFilesInFolders).map(
+                folder =>
+                    new KarateTestTreeEntry({
+                        uri: vscode.Uri.file(folder),
+                        type: vscode.FileType.Directory,
+                        title: this._getTitle(folder, workspaceFolder),
+                        feature: { path: vscode.Uri.file(folder).fsPath, line: null },
+                    })
+            );
+        }
+        if (element.type === vscode.FileType.Directory) {
+            return karateFilesInFolders[element.uri.path].map(
+                file =>
+                    new KarateTestTreeEntry({
+                        uri: vscode.Uri.file(path.join(element.uri.fsPath, file)),
+                        type: vscode.FileType.File,
+                        title: file,
+                        feature: { path: vscode.Uri.file(path.join(element.uri.fsPath, file)).fsPath },
+                    })
+            );
+        } else if (element.type === vscode.FileType.File && element.uri.fsPath.endsWith('.feature')) {
+            let tedArray: ITestExecutionDetail[] = await getTestExecutionDetail(element.uri, vscode.FileType.File);
+            return tedArray
+                .map(
+                    ted =>
+                        new KarateTestTreeEntry({
+                            tags: ted.testTag,
+                            uri: vscode.Uri.file(ted.testTitle),
+                            type: vscode.FileType.Unknown,
+                            title: path.basename(ted.testTitle),
+                            feature: { path: element.uri.fsPath, line: ted.testLine },
+                            command: {
+                                command: 'karateRunner.tests.open',
+                                title: 'ted.codelensRunTitle',
+                                arguments: [element.uri, ted.testLine],
+                            },
+                        })
+                )
+                .filter(t => filterByTags(t.tags, tags));
+        }
+        if (!karateFilesInFolders || !Object.keys(karateFilesInFolders).length) {
+            return [new KarateTestTreeEntry({ uri: null, type: vscode.FileType.Unknown, title: 'No tests found...', feature: null })];
+        }
+    }
+
+    getTreeItem(element: KarateTestTreeEntry): vscode.TreeItem {
         let collapsibleState: vscode.TreeItemCollapsibleState;
         if (element.type === vscode.FileType.Directory || (element.type === vscode.FileType.File && element.uri.fsPath.endsWith('.feature'))) {
             collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
@@ -199,20 +175,14 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<IEntry> {
             collapsibleState = vscode.TreeItemCollapsibleState.None;
         }
 
-        const treeItem = new vscode.TreeItem(element.uri, collapsibleState);
+        const treeItem = new vscode.TreeItem(element.title, collapsibleState);
         treeItem.command = element.command;
 
         if (collapsibleState === vscode.TreeItemCollapsibleState.None && element.type !== vscode.FileType.File) {
-            treeItem.iconPath = {
-                light: path.join(__dirname, '..', '..', 'resources', 'light', 'karate-test.svg'),
-                dark: path.join(__dirname, '..', '..', 'resources', 'dark', 'karate-test.svg'),
-            };
+            treeItem.iconPath = Icons.karateTest;
             treeItem.contextValue = 'test';
         } else if (element.type === vscode.FileType.File && element.uri.fsPath.endsWith('.feature')) {
-            treeItem.iconPath = {
-                light: path.join(__dirname, '..', '..', 'resources', 'light', 'karate-test.svg'),
-                dark: path.join(__dirname, '..', '..', 'resources', 'dark', 'karate-test.svg'),
-            };
+            treeItem.iconPath = Icons.karateTest;
             treeItem.contextValue = 'testFile';
         } else if (element.type === vscode.FileType.File) {
             treeItem.contextValue = 'file';

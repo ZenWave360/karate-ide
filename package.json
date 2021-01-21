@@ -78,11 +78,19 @@
             },
             {
                 "command": "karateRunner.tests.run",
-                "title": "Run Karate Test"
+                "title": "Run Karate Test",
+                "icon": {
+                    "light": "resources/vscode-icons/light/run.svg",
+                    "dark": "resources/vscode-icons/dark/run.svg"
+                }
             },
             {
                 "command": "karateRunner.tests.debug",
-                "title": "Debug Karate Test"
+                "title": "Debug Karate Test",
+                "icon": {
+                    "light": "resources/vscode-icons/light/debug-alt-small.svg",
+                    "dark": "resources/vscode-icons/dark/debug-alt-small.svg"
+                }
             },
             {
                 "command": "karateRunner.karateCli.debugCommand",
@@ -280,19 +288,19 @@
                     "group": "navigation@4"
                 },
                 {
-                    "command": "karateRunner.karateNetworkLogs.clearTree",
-                    "when": "view == karate-network-logs",
-                    "group": "navigation"
-                },
-                {
                     "command": "karateRunner.karateNetworkLogs.showScenarios.true",
                     "when": "view == karate-network-logs",
-                    "group": "navigation"
+                    "group": "navigation@1"
                 },
                 {
                     "command": "karateRunner.karateNetworkLogs.showScenarios.false",
                     "when": "view == karate-network-logs",
-                    "group": "navigation"
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "karateRunner.karateNetworkLogs.clearTree",
+                    "when": "view == karate-network-logs",
+                    "group": "navigation@3"
                 },
                 {
                     "command": "karateRunner.karateExecutionsTree.relaunchLast",
@@ -303,12 +311,22 @@
             "view/item/context": [
                 {
                     "command": "karateRunner.tests.debugAll",
-                    "when": "view == karate-tests && viewItem =~ /^testFile$|^test$/",
+                    "when": "view == karate-tests && viewItem =~ /^testFile$|^testDirectory$/",
                     "group": "inline@1"
                 },
                 {
                     "command": "karateRunner.tests.runAll",
-                    "when": "view == karate-tests && viewItem =~ /^testFile$|^test$/",
+                    "when": "view == karate-tests && viewItem =~ /^testFile$|^testDirectory$/",
+                    "group": "inline@2"
+                },
+                {
+                    "command": "karateRunner.tests.debug",
+                    "when": "view == karate-tests && viewItem == test",
+                    "group": "inline@1"
+                },
+                {
+                    "command": "karateRunner.tests.run",
+                    "when": "view == karate-tests && viewItem == test",
                     "group": "inline@2"
                 },
                 {
@@ -317,23 +335,13 @@
                     "group": "inline@3"
                 },
                 {
-                    "command": "karateRunner.tests.runAll",
-                    "when": "view == karate-tests && viewItem == testDirectory",
-                    "group": "inline"
-                },
-                {
-                    "command": "karateRunner.tests.debugAll",
-                    "when": "view == karate-tests && viewItem == testDirectory",
-                    "group": "inline"
-                },
-                {
                     "command": "karateRunner.karateExecutionsTree.launch",
                     "when": "view == karate-executions",
                     "group": "inline"
                 },
                 {
                     "command": "karateRunner.tests.open",
-                    "when": "view == karate-executions && viewItem == testFile",
+                    "when": "view == karate-executions",
                     "group": "inline"
                 }
             ],

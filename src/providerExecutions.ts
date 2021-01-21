@@ -70,7 +70,7 @@ class ProviderExecutions {
         if (quickPickExecution !== undefined) {
             try {
                 let execution = ProviderExecutions.executionHistory.filter(item => item.quickPickItem.label == quickPickExecution.label);
-                runKarateTest(execution[0].executionArgs);
+                runKarateTest.apply(execution[0].executionArgs);
             } catch (e) {
                 console.debug(e);
             }

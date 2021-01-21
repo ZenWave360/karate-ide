@@ -4,45 +4,31 @@ import ProviderExecutions from '../providerExecutions';
 
 import * as vscode from 'vscode';
 import { TreeEntry } from '../events-log-server/KarateEventLogsModels';
-import { IEntry } from '../providerKarateTests';
+import { KarateTestTreeEntry } from '../providerKarateTests';
 
-let debugAllFile: string = null;
-let debugLineNumber: number = 0;
-let lastDebugExecution = null;
-let isRelaunchLastDebugExecution = false;
+let debugFeature: string = null;
+let lastExecution = null;
+
+export function debugAllKarateTests(entry: KarateTestTreeEntry) {
+    debugKarateTest(entry.feature.path, entry.feature.line);
+}
+
+export function debugKarateTest(feature, line) {
+    if (feature instanceof KarateTestTreeEntry) {
+        return runAllKarateTests(feature);
+    }
+    debugFeature = feature + (line ? `:${line}` : '');
+    vscode.commands.executeCommand('karateRunner.karateExecutionsTree.clearTree');
+    vscode.commands.executeCommand('workbench.action.debug.start');
+}
 
 export async function getDebugFile() {
-    if (isRelaunchLastDebugExecution) {
-        isRelaunchLastDebugExecution = false;
-        return lastDebugExecution;
+    lastExecution = debugFeature;
+    if (!lastExecution) {
+        lastExecution = await getActiveFeatureFile();
     }
-
-    if (debugAllFile) {
-        const debugFile = debugAllFile;
-        debugAllFile = null;
-        return debugFile;
-    }
-
-    let debugLine: string = debugLineNumber === 0 ? '' : `:${debugLineNumber}`;
-    debugLineNumber = 0;
-
-    let activeKarateFile: string = await getActiveFeatureFile();
-    debugAllFile == null;
-
-    if (activeKarateFile !== null) {
-        return (lastDebugExecution = activeKarateFile + debugLine);
-    } else {
-        return '';
-    }
-}
-
-export function runAllKarateTests(entry: IEntry) {
-    runKarateTest([entry.feature.path, entry.feature.line]);
-}
-
-export function debugAllKarateTests(entry: IEntry) {
-    debugAllFile = entry.feature.path + (entry.feature.line ? `:${entry.feature.line}` : '');
-    debugKarateTest();
+    debugFeature = null;
+    return lastExecution;
 }
 
 export function getDebugCommandLine() {
@@ -102,12 +88,18 @@ function getActiveDocumentExecution() {
     return activeEditor.document.uri.fsPath;
 }
 
-export async function runKarateTest(args) {
-    console.log('launchKarateTest', args);
-    if (args === null) {
-        args = [getActiveDocumentExecution()];
+export function runAllKarateTests(entry: KarateTestTreeEntry) {
+    runKarateTest(entry.feature.path, entry.feature.line);
+}
+
+export async function runKarateTest(feature, line) {
+    if (feature instanceof KarateTestTreeEntry) {
+        return runAllKarateTests(feature);
     }
-    const path = args[0];
+    feature = feature || getActiveDocumentExecution();
+    //args = args.feature ? [args.feature.path, args.feature.line] : args;
+
+    const path = feature + (line ? `:${line}` : '');
     const fileAndRootPath = getFileAndRootPath(vscode.Uri.file(path));
     const runCommand = await getRunCommandLine(fileAndRootPath.file);
 
@@ -142,7 +134,7 @@ export async function runKarateTest(args) {
     let task = new vscode.Task({ type: 'karate' }, vscode.TaskScope.Workspace, 'Karate Runner', 'karate', exec, []);
 
     ProviderStatusBar.reset();
-    ProviderExecutions.executionArgs = args;
+    ProviderExecutions.executionArgs = [feature, line];
 
     let showProgress = (task: vscode.TaskExecution) => {
         vscode.window.withProgress({ location: { viewId: 'karate-tests' }, cancellable: false }, async progress => {
@@ -163,24 +155,13 @@ export async function runKarateTest(args) {
 }
 
 export function relaunchLastKarateDebugExecution() {
-    isRelaunchLastDebugExecution = true;
-    debugKarateTest();
+    if (lastExecution) {
+        const feature = lastExecution.replace(/:\d+$/, '');
+        const line = lastExecution.replace(feature + ':', '');
+        debugKarateTest(feature, +line);
+    }
 }
 
 export function launchKarateDebugExecution(entry: TreeEntry) {
-    console.log('launchKarateDebugExecution', entry);
-    isRelaunchLastDebugExecution = true;
-    lastDebugExecution = entry.eventStart.resource + ':' + entry.eventStart.line;
-    debugKarateTest();
-}
-
-export function debugKarateTest(args = null) {
-    if (args !== null) {
-        debugLineNumber = args[0];
-    } else {
-        debugLineNumber = 0;
-    }
-
-    vscode.commands.executeCommand('karateRunner.karateExecutionsTree.clearTree');
-    vscode.commands.executeCommand('workbench.action.debug.start');
+    debugKarateTest(entry.eventStart.resource, entry.eventStart.line + 1);
 }
