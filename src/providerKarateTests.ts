@@ -61,19 +61,6 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<KarateTestTr
         return this._onDidChangeFile.event;
     }
 
-    async _readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
-        const children = fs.readdirSync(uri.fsPath);
-
-        const result: [string, vscode.FileType][] = [];
-        for (let i = 0; i < children.length; i++) {
-            const child = children[i];
-            const stat = new FileStat(await fs.statSync(path.join(uri.fsPath, child)));
-            result.push([child, stat.type]);
-        }
-
-        return Promise.resolve(result);
-    }
-
     async switchKarateEnv() {
         let karateEnv = String(vscode.workspace.getConfiguration('karateRunner.karateCli').get('karateEnv'));
         karateEnv = await vscode.window.showInputBox({ prompt: 'Karate Env', value: karateEnv });
@@ -91,13 +78,13 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<KarateTestTr
         }
     }
 
-    private _getTitle(file: string, workspaceFolder: vscode.WorkspaceFolder) {
-        let title = path.relative(workspaceFolder.uri.path, file);
-        // const tokens = title.split(path.sep);
+    private getDirShowName(file: string, workspaceFolder: vscode.WorkspaceFolder) {
+        let name = path.relative(workspaceFolder.uri.path, file);
+        // const tokens = name.split(path.sep);
         // if (tokens.length > 5) {
-        //     title = [tokens[0], '...', tokens[tokens.length - 3], tokens[tokens.length - 2], tokens[tokens.length - 1]].join(path.sep);
+        //     name = [tokens[0], '...', tokens[tokens.length - 3], tokens[tokens.length - 2], tokens[tokens.length - 1]].join(path.sep);
         // }
-        return title;
+        return name;
     }
 
     private getConfiguredFocusAndTags() {
@@ -122,26 +109,30 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<KarateTestTr
             }, {});
 
         if (!element) {
-            return Object.keys(karateFilesInFolders).map(
-                folder =>
-                    new KarateTestTreeEntry({
-                        uri: vscode.Uri.file(folder),
-                        type: vscode.FileType.Directory,
-                        title: this._getTitle(folder, workspaceFolder),
-                        feature: { path: vscode.Uri.file(folder).fsPath, line: null },
-                    })
-            );
+            return Object.keys(karateFilesInFolders)
+                .sort((a, b) => a.localeCompare(b))
+                .map(
+                    folder =>
+                        new KarateTestTreeEntry({
+                            uri: vscode.Uri.file(folder),
+                            type: vscode.FileType.Directory,
+                            title: this.getDirShowName(folder, workspaceFolder),
+                            feature: { path: vscode.Uri.file(folder).fsPath, line: null },
+                        })
+                );
         }
         if (element.type === vscode.FileType.Directory) {
-            return karateFilesInFolders[element.uri.path].map(
-                file =>
-                    new KarateTestTreeEntry({
-                        uri: vscode.Uri.file(path.join(element.uri.fsPath, file)),
-                        type: vscode.FileType.File,
-                        title: file,
-                        feature: { path: vscode.Uri.file(path.join(element.uri.fsPath, file)).fsPath },
-                    })
-            );
+            return karateFilesInFolders[element.uri.path]
+                .sort((a, b) => b.localeCompare(a))
+                .map(
+                    file =>
+                        new KarateTestTreeEntry({
+                            uri: vscode.Uri.file(path.join(element.uri.fsPath, file)),
+                            type: vscode.FileType.File,
+                            title: file,
+                            feature: { path: vscode.Uri.file(path.join(element.uri.fsPath, file)).fsPath },
+                        })
+                );
         } else if (element.type === vscode.FileType.File && element.uri.fsPath.endsWith('.feature')) {
             let tedArray: ITestExecutionDetail[] = await getTestExecutionDetail(element.uri, vscode.FileType.File);
             return tedArray
