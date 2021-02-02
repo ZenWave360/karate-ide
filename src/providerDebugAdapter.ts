@@ -7,18 +7,11 @@ class ProviderDebugAdapter implements vscode.DebugAdapterDescriptorFactory {
         session: vscode.DebugSession,
         executable: vscode.DebugAdapterExecutable | undefined
     ): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
-        let projectRootPath = '';
         let settingsTimeout = Number(vscode.workspace.getConfiguration('karateRunner.debugger').get('serverPortTimeout'));
         settingsTimeout = settingsTimeout <= 0 ? 1 : settingsTimeout;
 
-        let featureFile = String(session.configuration.feature);
-        featureFile = featureFile.replace(/^['"]|['"]$/g, '');
-        if (featureFile.endsWith('.feature')) {
-            let projectDetail = getFileAndRootPath(vscode.Uri.file(featureFile));
-            projectRootPath = projectDetail.root;
-        } else {
-            projectRootPath = vscode.workspace.rootPath;
-        }
+        const featureFile = String(session.configuration.feature).replace(/^['"]|['"]$/g, '');
+        const { root: projectRootPath } = getFileAndRootPath(vscode.Uri.file(featureFile));
 
         let relativePattern = new vscode.RelativePattern(projectRootPath, '**/karate-debug-port.txt');
         let watcher = vscode.workspace.createFileSystemWatcher(relativePattern);
