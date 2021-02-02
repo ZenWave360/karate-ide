@@ -35,7 +35,7 @@ function generateKarateTest(api, apiname, operations: any[]) {
     operations.forEach(operation => {
         const model: any = { api, apiname, operationId: operation.operationId };
         model.operation = prepareData(operation);
-        template('../../../src/generators/openapi/template.feature.ejs', path.join(apiTargetFolder, `${model.operationId}.feature`), model);
+        template('../../../../src/generators/openapi/template.feature.ejs', path.join(apiTargetFolder, `${model.operationId}.feature`), model);
 
         Object.keys(model.operation.responses).forEach(statusCode => {
             if (statusCode !== '500') {
