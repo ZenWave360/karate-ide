@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import parse = require('parse-curl');
+import * as parse from 'parse-curl';
 
 export async function smartPaste() {
     const curlIgnores = ['accept-', 'upgrade-', 'user-', 'connection', 'referer', 'sec-', 'origin', 'host', 'content-length'];

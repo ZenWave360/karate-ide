@@ -1,4 +1,3 @@
-import ProviderBuildReports from './providerBuildReports';
 import ProviderKarateTests from './providerKarateTests';
 import ProviderDebugAdapter from './providerDebugAdapter';
 import ProviderDebugConfiguration from './providerDebugConfiguration';
@@ -29,15 +28,9 @@ import KarateExecutionsTreeProvider from './KarateExecutionsTreeProvider';
 import { generateKarateTestFromOpenAPI } from './generators/openapi';
 import { LocalStorageService } from './commands/LocalStorageService';
 
-// let buildReportsTreeView = null;
-// let karateTestsTreeView = null;
-let buildReportsWatcher = null;
 let karateTestsWatcher = null;
-// let karateNetworkTreeView = null;
-// let karateExecutionsTreeView = null;
 
 export function activate(context: vscode.ExtensionContext) {
-    let buildReportsProvider = new ProviderBuildReports();
     let karateTestsProvider = new ProviderKarateTests();
     let debugAdapterProvider = new ProviderDebugAdapter();
     let debugConfigurationProvider = new ProviderDebugConfiguration();
@@ -65,12 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateRunner.tests.run', runKarateTest);
     registerCommand('karateRunner.tests.runAll', runAllKarateTests);
     registerCommand('karateRunner.tests.debugAll', debugAllKarateTests);
-    registerCommand('karateRunner.buildReports.displayShallow', () => displayReportsTree('Shallow'));
-    registerCommand('karateRunner.buildReports.displayDeep', () => displayReportsTree('Deep'));
-    registerCommand('karateRunner.tests.displayShallow', () => displayTestsTree('Shallow'));
-    registerCommand('karateRunner.tests.displayDeep', () => displayTestsTree('Deep'));
     registerCommand('karateRunner.buildReports.open', openBuildReport);
-    registerCommand('karateRunner.buildReports.refreshTree', () => buildReportsProvider.refresh());
     registerCommand('karateRunner.tests.refreshTree', () => karateTestsProvider.refresh());
     registerCommand('karateRunner.tests.switchKarateEnv', () => karateTestsProvider.switchKarateEnv());
     registerCommand('karateRunner.tests.configureFocus', () => karateTestsProvider.configureTestsFocus());
@@ -83,7 +71,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(definitionTarget, definitionProvider));
     //let registerFoldingRangeProvider = vscode.languages.registerFoldingRangeProvider(foldingRangeTarget, foldingRangeProvider);
 
-    context.subscriptions.push(vscode.window.createTreeView('karate-reports', { showCollapseAll: true, treeDataProvider: buildReportsProvider }));
     context.subscriptions.push(vscode.window.createTreeView('karate-tests', { showCollapseAll: true, treeDataProvider: karateTestsProvider }));
 
     context.subscriptions.push(vscode.languages.registerHoverProvider(codeLensTarget, new HoverRunDebugProvider(context)));
@@ -110,31 +97,9 @@ export function activate(context: vscode.ExtensionContext) {
         eventLogsServer.start(logsServerPort);
     }
 
-    setupWatcher(buildReportsWatcher, String(vscode.workspace.getConfiguration('karateRunner.buildReports').get('toTarget')), buildReportsProvider);
     setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateRunner.tests').get('toTarget')), karateTestsProvider);
 
     vscode.workspace.onDidChangeConfiguration(e => {
-        let buildReportsDisplayType = e.affectsConfiguration('karateRunner.buildReports.activityBarDisplayType');
-        let buildReportsToTarget = e.affectsConfiguration('karateRunner.buildReports.toTarget');
-
-        if (buildReportsDisplayType) {
-            buildReportsProvider.refresh();
-        }
-
-        if (buildReportsToTarget) {
-            try {
-                buildReportsWatcher.dispose();
-            } catch (e) {
-                // do nothing
-            }
-
-            setupWatcher(
-                buildReportsWatcher,
-                String(vscode.workspace.getConfiguration('karateRunner.buildReports').get('toTarget')),
-                buildReportsProvider
-            );
-        }
-
         let karateTestsDisplayType = e.affectsConfiguration('karateRunner.tests.activityBarDisplayType');
         let karateTestsToTarget = e.affectsConfiguration('karateRunner.tests.toTarget');
 
@@ -160,32 +125,10 @@ export function activate(context: vscode.ExtensionContext) {
             }
         }
     });
-
-    // context.subscriptions.push(refreshTestsTreeCommand);
-    // context.subscriptions.push(openFileCommand);
-    // context.subscriptions.push(registerDebugAdapterProvider);
-    // context.subscriptions.push(registerDebugConfigurationProvider);
-    // context.subscriptions.push(registerCodeLensProvider);
-    // context.subscriptions.push(registerDefinitionProvider);
-    // context.subscriptions.push(resultsProvider);
-    // //context.subscriptions.push(registerFoldingRangeProvider);
-    // context.subscriptions.push(registerHoverRunDebugProvider);
-    // context.subscriptions.push(clearExecutionsTreeCommand);
-    // context.subscriptions.push(karateExecutionsTreeView);
-    // context.subscriptions.push(karateNetworkTreeView);
-    // context.subscriptions.push(clearNetworkLogsTreeCommand);
-    // context.subscriptions.push(showScenariosCommand);
-    // context.subscriptions.push(dontShowScenariosCommand);
-    // context.subscriptions.push(relaunchLastCommand);
-    // context.subscriptions.push(launchExecutionCommand);
 }
 
 export function deactivate() {
-    // buildReportsTreeView.dispose();
-    // karateTestsTreeView.dispose();
-    buildReportsWatcher.dispose();
     karateTestsWatcher.dispose();
-    // karateNetworkTreeView.dispose();
 }
 
 function setupWatcher(watcher, watcherGlob, provider) {

@@ -1,5 +1,5 @@
 import { getTestExecutionDetail, ITestExecutionDetail } from './helper';
-import path = require('path');
+import * as path from 'path';
 import * as vscode from 'vscode';
 
 class ProviderCodeLens implements vscode.CodeLensProvider {

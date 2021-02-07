@@ -1,5 +1,5 @@
 import { getFileAndRootPath } from './helper';
-import fs = require('fs');
+import * as fs from 'fs';
 import * as vscode from 'vscode';
 
 class ProviderDebugAdapter implements vscode.DebugAdapterDescriptorFactory {

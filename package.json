@@ -101,14 +101,6 @@
                 "title": "Open Build Report"
             },
             {
-                "command": "karateRunner.buildReports.refreshTree",
-                "title": "Refresh",
-                "icon": {
-                    "light": "resources/vscode-icons/light/refresh.svg",
-                    "dark": "resources/vscode-icons/dark/refresh.svg"
-                }
-            },
-            {
                 "command": "karateRunner.karateExecutionsTree.clearTree",
                 "title": "Clear",
                 "icon": {
@@ -205,22 +197,6 @@
                 }
             },
             {
-                "command": "karateRunner.buildReports.displayShallow",
-                "title": "Display Shallow",
-                "icon": {
-                    "light": "resources/vscode-icons/light/list-tree.svg",
-                    "dark": "resources/vscode-icons/dark/list-tree.svg"
-                }
-            },
-            {
-                "command": "karateRunner.buildReports.displayDeep",
-                "title": "Display Deep",
-                "icon": {
-                    "light": "resources/vscode-icons/light/list-unordered.svg",
-                    "dark": "resources/vscode-icons/dark/list-unordered.svg"
-                }
-            },
-            {
                 "command": "karateRunner.tests.displayShallow",
                 "title": "Display Shallow",
                 "icon": {
@@ -248,34 +224,9 @@
         "menus": {
             "view/title": [
                 {
-                    "command": "karateRunner.buildReports.refreshTree",
-                    "when": "view == karate-reports",
-                    "group": "navigation@1"
-                },
-                {
                     "command": "karateRunner.tests.refreshTree",
                     "when": "view == karate-tests",
                     "group": "navigation@1"
-                },
-                {
-                    "command": "karateRunner.buildReports.displayShallow",
-                    "when": "view == karate-reports && config.karateRunner.buildReports.activityBarDisplayType == Deep",
-                    "group": "navigation@2"
-                },
-                {
-                    "command": "karateRunner.buildReports.displayDeep",
-                    "when": "view == karate-reports && config.karateRunner.buildReports.activityBarDisplayType == Shallow",
-                    "group": "navigation@2"
-                },
-                {
-                    "command": "karateRunner.tests.displayShallow",
-                    "when": "view == karate-tests && config.karateRunner.tests.activityBarDisplayType == Deep",
-                    "group": "navigation@2"
-                },
-                {
-                    "command": "karateRunner.tests.displayDeep",
-                    "when": "view == karate-tests && config.karateRunner.tests.activityBarDisplayType == Shallow",
-                    "group": "navigation@2"
                 },
                 {
                     "command": "karateRunner.tests.switchKarateEnv",
@@ -424,22 +375,6 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Open reports in default program after running Karate tests.",
-                    "scope": "resource"
-                },
-                "karateRunner.buildReports.toTarget": {
-                    "type": "string",
-                    "default": "**/{jacoco/test/html/index,cucumber-html-reports/overview-features,karate-reports/karate-timeline}.htm*",
-                    "description": "Display reports targeted by glob pattern within Activity Bar.",
-                    "scope": "resource"
-                },
-                "karateRunner.buildReports.activityBarDisplayType": {
-                    "type": "string",
-                    "default": "Shallow",
-                    "enum": [
-                        "Shallow",
-                        "Deep"
-                    ],
-                    "description": "Display reports as a flat list (Shallow) or natural directory structure (Deep) within Activity Bar.",
                     "scope": "resource"
                 },
                 "karateRunner.debugger.serverPortTimeout": {

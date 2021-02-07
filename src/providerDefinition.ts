@@ -1,7 +1,7 @@
 import { getFileAndRootPath, getChildAbsolutePath } from './helper';
 import { Feature, IUriToken, ILineToken } from './feature';
-import path = require('path');
-import fs = require('fs');
+import * as path from 'path';
+import * as fs from 'fs';
 import * as vscode from 'vscode';
 
 class ProviderDefinition implements vscode.DefinitionProvider {
