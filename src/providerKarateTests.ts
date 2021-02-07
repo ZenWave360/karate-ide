@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as minimatch from 'minimatch';
 import { LocalStorageService } from './commands/LocalStorageService';
-import { FileStat } from './providerBuildReports';
 import { filterByTags, getTestExecutionDetail, ITestExecutionDetail } from './helper';
 import Icons from './Icons';
 
@@ -28,6 +27,7 @@ export class KarateTestTreeEntry {
     title: string;
     tooltip?: string;
     feature: { path: string; line?: number };
+    children: KarateTestTreeEntry[];
     tags: any;
     constructor(partial: Partial<KarateTestTreeEntry>) {
         Object.assign(this, partial);
@@ -35,26 +35,104 @@ export class KarateTestTreeEntry {
 }
 
 export class ProviderKarateTests implements vscode.TreeDataProvider<KarateTestTreeEntry> {
+    private workspaceFolder = vscode.workspace.workspaceFolders.filter(folder => folder.uri.scheme === 'file')[0];
     private _onDidChangeFile: vscode.EventEmitter<vscode.FileChangeEvent[]>;
     private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
-    karateTestFiles: vscode.Uri[];
 
-    constructor() {
-        console.log('ProviderKarateTests');
-        // this._onDidChangeFile = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
+    private async getKarateFiles(focus: string): Promise<KarateTestTreeEntry[]> {
+        let glob = String(vscode.workspace.getConfiguration('karateRunner.tests').get('toTarget'));
+        const karateTestFiles = (await vscode.workspace.findFiles(glob))
+            .filter(f => !focus || (focus.length > 0 && minimatch(f.path, focus, { matchBase: true })))
+            .map(f => path.relative(this.workspaceFolder.uri.path, f.path))
+            .map(f => f.replace(/\\/g, '/'));
+
+        // map of folders (no intermediate levels) and their files (as map)
+        const flatFolders: { [index: string]: string[] } = karateTestFiles.reduce((folders, file) => {
+            const lastSlash = file.lastIndexOf('/');
+            const folder = file.substring(0, lastSlash);
+            const filename = file.substring(lastSlash + 1, file.length);
+            folders[folder] = folders[folder] || {};
+            folders[folder][filename] = file;
+            return folders;
+        }, {});
+
+        // added intermediate (empty) folders
+        const foldersTree = Object.keys(flatFolders).reduce((tree, key) => {
+            const folders = key.split('/');
+            while (folders.pop()) {
+                const folder = folders.join('/');
+                tree[folder] = tree[folder] || {};
+            }
+            tree[key] = { ...tree[key], ...flatFolders[key] };
+            return tree;
+        }, {});
+
+        // removes itermediate folder that will be empty (no files and just one folder)
+        function isEmptyFolder(folderName, folders) {
+            if (foldersTree[folderName] && Object.keys(foldersTree[folderName]).length) {
+                return false;
+            }
+            const children = folders.filter(f => f.startsWith(folderName + '/'));
+            const childrenDirect = children.map(f => f.substring(folderName.length + 1)).map(f => f.split('/')[0]);
+            return new Set(childrenDirect).size < 2;
+        }
+        const folderNames = Object.keys(foldersTree);
+        folderNames.forEach(folderName => {
+            if (isEmptyFolder(folderName, folderNames)) {
+                delete foldersTree[folderName];
+            }
+        });
+
+        // builds folder tree by moving each "non empty" folder to its "non empty" parent
+        Object.keys(foldersTree)
+            // .filter(f => Object.keys(foldersTree[f]).length)
+            .sort((a, b) => ((b.match(/\//g) || []).length - (a.match(/\//g) || []).length) * 10 + b.localeCompare(a))
+            .forEach(folderKey => {
+                const folders = folderKey.split('/');
+                while (folders.pop()) {
+                    const parent = folders.join('/');
+                    if (foldersTree[parent]) {
+                        const folder = folderKey.substring(parent.length + 1, folderKey.length);
+                        foldersTree[parent][folder] = foldersTree[folderKey];
+                        delete foldersTree[folderKey];
+                        break;
+                    }
+                }
+            });
+
+        return this.convertToEntryTree(foldersTree);
     }
 
-    private async getKarateFiles(focus: string) {
-        let glob = String(vscode.workspace.getConfiguration('karateRunner.tests').get('toTarget'));
-        return (this.karateTestFiles =
-            this.karateTestFiles ||
-            (await vscode.workspace.findFiles(glob)).filter(f => !focus || (focus.length > 0 && minimatch(f.path, focus, { matchBase: true }))));
+    private convertToEntryTree(foldersEntry): KarateTestTreeEntry[] {
+        if (typeof foldersEntry === 'object') {
+            return Object.entries(foldersEntry)
+                .map(([key, value]) => {
+                    const isDirectory = typeof value === 'object';
+                    if (isDirectory) {
+                        return new KarateTestTreeEntry({
+                            uri: vscode.Uri.file(path.join(this.workspaceFolder.uri.fsPath, key)),
+                            type: vscode.FileType.Directory,
+                            title: this.getDirShowName(key),
+                            feature: { path: key },
+                            children: this.convertToEntryTree(value),
+                        });
+                    } else {
+                        return new KarateTestTreeEntry({
+                            uri: vscode.Uri.file(path.join(this.workspaceFolder.uri.fsPath, value as string)),
+                            type: vscode.FileType.File,
+                            title: this.getDirShowName(key),
+                            feature: { path: value as string },
+                        });
+                    }
+                })
+                .sort((a, b) => b.type.toString().localeCompare(a.type.toString()) * 10 + a.title.localeCompare(b.title));
+        }
+        return foldersEntry;
     }
 
     public refresh(): any {
-        this.karateTestFiles = null;
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(null);
     }
 
     get onDidChangeFile(): vscode.Event<vscode.FileChangeEvent[]> {
@@ -78,13 +156,13 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<KarateTestTr
         }
     }
 
-    private getDirShowName(file: string, workspaceFolder: vscode.WorkspaceFolder) {
-        let name = path.relative(workspaceFolder.uri.path, file);
+    private getDirShowName(file: string) {
+        let name = path.relative(this.workspaceFolder.uri.path, file);
         // const tokens = name.split(path.sep);
         // if (tokens.length > 5) {
         //     name = [tokens[0], '...', tokens[tokens.length - 3], tokens[tokens.length - 2], tokens[tokens.length - 1]].join(path.sep);
         // }
-        return name;
+        return file; // name;
     }
 
     private getConfiguredFocusAndTags() {
@@ -95,44 +173,13 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<KarateTestTr
     }
 
     async getChildren(element?: KarateTestTreeEntry): Promise<KarateTestTreeEntry[]> {
-        let workspaceFolder = vscode.workspace.workspaceFolders.filter(folder => folder.uri.scheme === 'file')[0];
         let [focus, tags] = this.getConfiguredFocusAndTags();
-        let karateFilesInFolders = (await this.getKarateFiles(focus))
-            .map(f => f.path)
-            .filter(f => !focus || (focus.length > 0 && minimatch(f, focus, { matchBase: true })))
-            .reduce((folders, file) => {
-                const folder = path.dirname(file);
-                const filename = path.basename(file);
-                folders[folder] = folders[folder] || [];
-                folders[folder].push(filename);
-                return folders;
-            }, {});
 
         if (!element) {
-            return Object.keys(karateFilesInFolders)
-                .sort((a, b) => a.localeCompare(b))
-                .map(
-                    folder =>
-                        new KarateTestTreeEntry({
-                            uri: vscode.Uri.file(folder),
-                            type: vscode.FileType.Directory,
-                            title: this.getDirShowName(folder, workspaceFolder),
-                            feature: { path: vscode.Uri.file(folder).fsPath, line: null },
-                        })
-                );
+            return await this.getKarateFiles(focus);
         }
         if (element.type === vscode.FileType.Directory) {
-            return karateFilesInFolders[element.uri.path]
-                .sort((a, b) => b.localeCompare(a))
-                .map(
-                    file =>
-                        new KarateTestTreeEntry({
-                            uri: vscode.Uri.file(path.join(element.uri.fsPath, file)),
-                            type: vscode.FileType.File,
-                            title: file,
-                            feature: { path: vscode.Uri.file(path.join(element.uri.fsPath, file)).fsPath },
-                        })
-                );
+            return element.children;
         } else if (element.type === vscode.FileType.File && element.uri.fsPath.endsWith('.feature')) {
             let tedArray: ITestExecutionDetail[] = await getTestExecutionDetail(element.uri, vscode.FileType.File);
             return tedArray
@@ -153,9 +200,9 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<KarateTestTr
                 )
                 .filter(t => filterByTags(t.tags, tags));
         }
-        if (!karateFilesInFolders || !Object.keys(karateFilesInFolders).length) {
-            return [new KarateTestTreeEntry({ uri: null, type: vscode.FileType.Unknown, title: 'No tests found...', feature: null })];
-        }
+        // if (!karateFilesInFolders || !Object.keys(karateFilesInFolders).length) {
+        //     return [new KarateTestTreeEntry({ uri: null, type: vscode.FileType.Unknown, title: 'No tests found...', feature: null })];
+        // }
     }
 
     getTreeItem(element: KarateTestTreeEntry): vscode.TreeItem {
