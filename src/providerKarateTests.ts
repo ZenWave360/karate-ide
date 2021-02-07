@@ -109,22 +109,15 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<KarateTestTr
             return Object.entries(foldersEntry)
                 .map(([key, value]) => {
                     const isDirectory = typeof value === 'object';
-                    if (isDirectory) {
-                        return new KarateTestTreeEntry({
-                            uri: vscode.Uri.file(path.join(this.workspaceFolder.uri.fsPath, key)),
-                            type: vscode.FileType.Directory,
-                            title: this.getDirShowName(key),
-                            feature: { path: key },
-                            children: this.convertToEntryTree(value),
-                        });
-                    } else {
-                        return new KarateTestTreeEntry({
-                            uri: vscode.Uri.file(path.join(this.workspaceFolder.uri.fsPath, value as string)),
-                            type: vscode.FileType.File,
-                            title: this.getDirShowName(key),
-                            feature: { path: value as string },
-                        });
-                    }
+                    const file = isDirectory ? key : (value as string);
+                    const uri = vscode.Uri.file(path.join(this.workspaceFolder.uri.fsPath, file));
+                    return new KarateTestTreeEntry({
+                        uri,
+                        type: isDirectory ? vscode.FileType.Directory : vscode.FileType.File,
+                        title: this.getDirShowName(key),
+                        feature: { path: uri.fsPath, line: null },
+                        children: isDirectory ? this.convertToEntryTree(value) : null,
+                    });
                 })
                 .sort((a, b) => b.type.toString().localeCompare(a.type.toString()) * 10 + a.title.localeCompare(b.title));
         }

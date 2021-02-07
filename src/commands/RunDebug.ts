@@ -15,7 +15,7 @@ export function debugAllKarateTests(entry: KarateTestTreeEntry) {
 
 export function debugKarateTest(feature, line) {
     if (feature instanceof KarateTestTreeEntry) {
-        return runAllKarateTests(feature);
+        return debugAllKarateTests(feature);
     }
     debugFeature = feature + (line ? `:${line}` : '');
     vscode.commands.executeCommand('karateRunner.karateExecutionsTree.clearTree');
