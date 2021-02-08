@@ -17,6 +17,7 @@ export class LoggingEventVO {
     rootFeature: string;
     rootScenario: string;
 
+    currentDir: string;
     feature: string;
     scenario: string;
     outline: boolean;

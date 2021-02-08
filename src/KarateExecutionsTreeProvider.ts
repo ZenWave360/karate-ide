@@ -11,11 +11,11 @@ export default class KarateExecutionsTreeProvider implements vscode.TreeDataProv
 
     public clear(): any {
         this.eventLogsTree = {};
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(null);
     }
 
     public setShowScenarios(showScenarios) {
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(null);
     }
 
     public processLoggingEvent(event: LoggingEventVO) {
@@ -43,7 +43,7 @@ export default class KarateExecutionsTreeProvider implements vscode.TreeDataProv
             const scenario = feature.children[feature.children.length - 1] as TreeEntry;
             scenario.eventEnd = event;
         }
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(null);
     }
 
     getTreeItem(entry: TreeEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {

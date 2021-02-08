@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { getFileAndRootPath, getActiveFeatureFile } from '../helper';
 import ProviderStatusBar from '../providerStatusBar';
 import ProviderExecutions from '../providerExecutions';
@@ -154,7 +155,7 @@ export async function runKarateTest(feature, line) {
     vscode.tasks.executeTask(task).then(task => showProgress(task));
 }
 
-export function relaunchLastKarateDebugExecution() {
+export function relaunchDebugAll() {
     if (lastExecution) {
         const feature = lastExecution.replace(/:\d+$/, '');
         const line = lastExecution.replace(feature + ':', '');
@@ -162,6 +163,20 @@ export function relaunchLastKarateDebugExecution() {
     }
 }
 
-export function launchKarateDebugExecution(entry: TreeEntry) {
-    debugKarateTest(entry.eventStart.resource, entry.eventStart.line + 1);
+export function relaunchRunAll() {
+    if (lastExecution) {
+        const feature = lastExecution.replace(/:\d+$/, '');
+        const line = lastExecution.replace(feature + ':', '');
+        runKarateTest(feature, +line);
+    }
+}
+
+export function relaunchDebug(entry: TreeEntry) {
+    const feature = path.join(entry.eventStart.currentDir, entry.eventStart.resource);
+    debugKarateTest(feature, entry.eventStart.line);
+}
+
+export function relaunchRun(entry: TreeEntry) {
+    const feature = path.join(entry.eventStart.currentDir, entry.eventStart.resource);
+    runKarateTest(feature, entry.eventStart.line);
 }

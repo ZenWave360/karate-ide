@@ -17,8 +17,10 @@ import {
     debugKarateTest,
     runAllKarateTests,
     debugAllKarateTests,
-    launchKarateDebugExecution,
-    relaunchLastKarateDebugExecution,
+    relaunchDebugAll,
+    relaunchRunAll,
+    relaunchDebug,
+    relaunchRun,
 } from './commands/RunDebug';
 import { displayReportsTree, displayTestsTree, openBuildReport, openFileInEditor } from './commands/DisplayCommands';
 import { smartPaste } from './commands/SmartPaste';
@@ -83,8 +85,10 @@ export function activate(context: vscode.ExtensionContext) {
     // Executions View
     const executionsTreeProvider = new KarateExecutionsTreeProvider();
     registerCommand('karateRunner.karateExecutionsTree.clearTree', () => executionsTreeProvider.clear());
-    registerCommand('karateRunner.karateExecutionsTree.relaunchLast', relaunchLastKarateDebugExecution);
-    registerCommand('karateRunner.karateExecutionsTree.launch', launchKarateDebugExecution);
+    registerCommand('karateRunner.karateExecutionsTree.relaunchDebugAll', relaunchDebugAll);
+    registerCommand('karateRunner.karateExecutionsTree.relaunchDebug', relaunchDebug);
+    registerCommand('karateRunner.karateExecutionsTree.relaunchRunAll', relaunchRunAll);
+    registerCommand('karateRunner.karateExecutionsTree.relaunchRun', relaunchRun);
     context.subscriptions.push(
         vscode.window.createTreeView('karate-executions', { showCollapseAll: false, treeDataProvider: executionsTreeProvider })
     );

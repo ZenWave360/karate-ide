@@ -181,16 +181,32 @@
                 }
             },
             {
-                "command": "karateRunner.karateExecutionsTree.relaunchLast",
+                "command": "karateRunner.karateExecutionsTree.relaunchDebugAll",
                 "title": "Relaunch Last Karate Debug Execution",
+                "icon": {
+                    "light": "resources/vscode-icons/light/debug-alt-small.svg",
+                    "dark": "resources/vscode-icons/dark/debug-alt-small.svg"
+                }
+            },
+            {
+                "command": "karateRunner.karateExecutionsTree.relaunchDebug",
+                "title": "Debug this Execution",
+                "icon": {
+                    "light": "resources/vscode-icons/light/debug-alt-small.svg",
+                    "dark": "resources/vscode-icons/dark/debug-alt-small.svg"
+                }
+            },
+            {
+                "command": "karateRunner.karateExecutionsTree.relaunchRunAll",
+                "title": "Relaunch Last Karate Run Execution",
                 "icon": {
                     "light": "resources/vscode-icons/light/run-all.svg",
                     "dark": "resources/vscode-icons/dark/run-all.svg"
                 }
             },
             {
-                "command": "karateRunner.karateExecutionsTree.launch",
-                "title": "Debug this Execution",
+                "command": "karateRunner.karateExecutionsTree.relaunchRun",
+                "title": "Run this Execution",
                 "icon": {
                     "light": "resources/vscode-icons/light/run-all.svg",
                     "dark": "resources/vscode-icons/dark/run-all.svg"
@@ -254,7 +270,12 @@
                     "group": "navigation@3"
                 },
                 {
-                    "command": "karateRunner.karateExecutionsTree.relaunchLast",
+                    "command": "karateRunner.karateExecutionsTree.relaunchDebugAll",
+                    "when": "view == karate-executions",
+                    "group": "navigation"
+                },
+                {
+                    "command": "karateRunner.karateExecutionsTree.relaunchRunAll",
                     "when": "view == karate-executions",
                     "group": "navigation"
                 }
@@ -286,14 +307,19 @@
                     "group": "inline@3"
                 },
                 {
-                    "command": "karateRunner.karateExecutionsTree.launch",
+                    "command": "karateRunner.karateExecutionsTree.relaunchDebug",
                     "when": "view == karate-executions",
-                    "group": "inline"
+                    "group": "inline@1"
+                },
+                {
+                    "command": "karateRunner.karateExecutionsTree.relaunchRun",
+                    "when": "view == karate-executions",
+                    "group": "inline@2"
                 },
                 {
                     "command": "karateRunner.tests.open",
                     "when": "view == karate-executions",
-                    "group": "inline"
+                    "group": "inline@3"
                 }
             ],
             "explorer/context": [
