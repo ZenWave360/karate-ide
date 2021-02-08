@@ -21,12 +21,12 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
 
     public clear(): any {
         this.eventLogsTree = {};
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(null);
     }
 
     public setShowScenarios(showScenarios) {
         this.showScenarios = showScenarios;
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(null);
     }
 
     public processLoggingEvent(event: LoggingEventVO) {
@@ -62,7 +62,7 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
             parent.eventEnd = event;
             parent.children.push(response);
         }
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(null);
     }
 
     getTreeItem(element: ITreeEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {

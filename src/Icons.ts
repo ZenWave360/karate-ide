@@ -1,14 +1,14 @@
 import * as path from 'path';
 import { ThemeIcon } from 'vscode';
 
-function icon(name): ThemeIcon {
+function icon(name) {
     return {
         light: path.join(__dirname, '..', '..', 'resources', 'vscode-icons', 'light', name),
         dark: path.join(__dirname, '..', '..', 'resources', 'vscode-icons', 'dark', name),
     };
 }
 
-function karateIcon(name): ThemeIcon {
+function karateIcon(name) {
     return {
         light: path.join(__dirname, '..', '..', 'resources', 'karate-icons', 'light', name),
         dark: path.join(__dirname, '..', '..', 'resources', 'karate-icons', 'dark', name),
