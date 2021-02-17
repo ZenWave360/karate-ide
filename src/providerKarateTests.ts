@@ -41,7 +41,7 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<KarateTestTr
     readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 
     private async getKarateFiles(focus: string): Promise<KarateTestTreeEntry[]> {
-        let glob = String(vscode.workspace.getConfiguration('karateIDE.tests').get('toTarget'));
+        let glob = String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter'));
         const karateTestFiles = (await vscode.workspace.findFiles(glob))
             .filter(f => !focus || (focus.length > 0 && minimatch(f.path, focus, { matchBase: true })))
             .map(f => path.relative(this.workspaceFolder.uri.path, f.path))

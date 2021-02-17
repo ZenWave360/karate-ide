@@ -3,18 +3,6 @@ import { KarateTestTreeEntry } from '../providerKarateTests';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-export function displayReportsTree(displayType) {
-    vscode.workspace.getConfiguration().update('karateIDE.buildReports.activityBarDisplayType', displayType);
-}
-
-export function displayTestsTree(displayType) {
-    vscode.workspace.getConfiguration().update('karateIDE.tests.activityBarDisplayType', displayType);
-}
-
-export function openBuildReport(reportUri) {
-    vscode.env.openExternal(reportUri);
-}
-
 export function openFileInEditor(uri, line = 1) {
     if (uri instanceof TreeEntry) {
         let workspaceFolder = vscode.workspace.workspaceFolders.filter(folder => folder.uri.scheme === 'file')[0];

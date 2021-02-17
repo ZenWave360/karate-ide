@@ -6,6 +6,7 @@ import * as yml from 'js-yaml';
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 import * as path from 'path';
+const templateFile = require('./template.feature.ejs');
 
 export async function generateKarateTestFromOpenAPI(file: vscode.Uri) {
     const api = await parseOpenAPI(file.fsPath);
@@ -35,7 +36,7 @@ function generateKarateTest(api, apiname, operations: any[]) {
     operations.forEach(operation => {
         const model: any = { api, apiname, operationId: operation.operationId };
         model.operation = prepareData(operation);
-        template('../../../../src/generators/openapi/template.feature.ejs', path.join(apiTargetFolder, `${model.operationId}.feature`), model);
+        render(templateFile, path.join(apiTargetFolder, `${model.operationId}.feature`), model);
 
         Object.keys(model.operation.responses).forEach(statusCode => {
             if (statusCode !== '500') {
@@ -94,10 +95,10 @@ function prepareData(operation) {
     return operation;
 }
 
-function template(source, target, model) {
+function render(template, target, model) {
     const options = {};
     try {
-        ejs.renderFile(path.join(__dirname, source), model, options, function (err, output) {
+        ejs.renderFile(path.join(__dirname, template), model, options, function (err, output) {
             fs.writeFileSync(target, err || output);
         });
     } catch (error) {

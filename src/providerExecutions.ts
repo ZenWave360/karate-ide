@@ -42,8 +42,7 @@ class ProviderExecutions {
             },
         };
 
-        let executionHistoryLimit: number = Number(vscode.workspace.getConfiguration('karateIDE.executionHistory').get('limit'));
-        executionHistoryLimit = executionHistoryLimit <= 0 ? 1 : executionHistoryLimit;
+        let executionHistoryLimit: 50;
 
         while (ProviderExecutions.executionHistory.length >= executionHistoryLimit) {
             ProviderExecutions.executionHistory.pop();

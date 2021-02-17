@@ -1,10 +1,24 @@
 {
     "name": "karate-ide",
     "displayName": "Karate IDE",
-    "description": "",
-    "version": "0.0.1",
+    "description": "Explore your APIs and debug Karate test scripts within VS Code",
+    "icon": "resources/karate.png",
+    "version": "0.0.2",
     "license": "MIT",
     "publisher": "karateide",
+    "bugs": {
+        "url": "https://github.com/ivangsa/karate-runner-fork/issues"
+    },
+    "homepage": "https://github.com/ivangsa/karate-runner-fork/blob/master/README.md",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ivangsa/karate-runner-fork.git"
+    },
+    "author": {
+        "name": "Iván García Sainz-Aja",
+        "email": "ivangsa@gmail.com",
+        "url": "https://github.com/ivangsa"
+    },
     "engines": {
         "vscode": "^1.52.0"
     },
@@ -33,6 +47,40 @@
         "lint": "eslint src --ext ts",
         "test": "ts-mocha test/**/*.spec.ts"
     },
+    "dependencies": {
+        "@apidevtools/json-schema-ref-parser": "^9.0.7",
+        "@types/lodash": "^4.14.168",
+        "ejs": "^3.1.5",
+        "fs-extra": "^9.1.0",
+        "json-schema": "^0.3.0",
+        "lodash": "^4.17.20",
+        "minimatch": "^3.0.4",
+        "mkdirp": "^1.0.4",
+        "parse-curl": "0.2.6",
+        "rimraf": "^3.0.2"
+    },
+    "devDependencies": {
+        "@types/chai": "^4.2.14",
+        "@types/glob": "^7.1.1",
+        "@types/mocha": "^5.2.7",
+        "@types/node": "^12.6.9",
+        "@types/vscode": "^1.44.0",
+        "@typescript-eslint/eslint-plugin": "^4.14.1",
+        "@typescript-eslint/parser": "^4.14.1",
+        "chai": "^4.2.0",
+        "eslint": "^7.19.0",
+        "file-loader": "^6.2.0",
+        "glob": "^7.1.6",
+        "js-yaml": "^4.0.0",
+        "mocha": "^8.2.1",
+        "prettier": "^2.2.1",
+        "ts-loader": "^8.0.14",
+        "ts-mocha": "^8.0.0",
+        "typescript": "^4.1.3",
+        "vscode-test": "^1.5.0",
+        "webpack": "^5.19.0",
+        "webpack-cli": "^4.5.0"
+    },
     "contributes": {
         "viewsContainers": {
             "activitybar": [
@@ -47,15 +95,16 @@
             "karate-ide": [
                 {
                     "id": "karate-tests",
-                    "name": "Tests"
-                },
-                {
-                    "id": "karate-network-logs",
-                    "name": "Karate Network Logs"
+                    "name": "Karate Tests",
+                    "contextualTitle": "Package Explorer"
                 },
                 {
                     "id": "karate-executions",
-                    "name": "Karate Executions"
+                    "name": "Executions"
+                },
+                {
+                    "id": "karate-network-logs",
+                    "name": "Network Logs"
                 }
             ]
         },
@@ -63,14 +112,6 @@
             {
                 "command": "karateIDE.paste",
                 "title": "Karate Smart Paste"
-            },
-            {
-                "command": "karateIDE.getDebugFile",
-                "title": "Get File To Debug"
-            },
-            {
-                "command": "karateIDE.getDebugBuildFile",
-                "title": "Get Build File To Debug"
             },
             {
                 "command": "karateIDE.tests.run",
@@ -91,10 +132,6 @@
             {
                 "command": "karateIDE.karateCli.debugCommand",
                 "title": "Returns processed 'karateIDE.karateCli.debugCommandTemplate' config"
-            },
-            {
-                "command": "karateIDE.buildReports.open",
-                "title": "Open Build Report"
             },
             {
                 "command": "karateIDE.karateExecutionsTree.clearTree",
@@ -251,12 +288,12 @@
                     "group": "navigation@4"
                 },
                 {
-                    "command": "karateIDE.karateNetworkLogs.showScenarios.true",
+                    "command": "karateIDE.karateNetworkLogs.showScenarios.false",
                     "when": "view == karate-network-logs",
                     "group": "navigation@1"
                 },
                 {
-                    "command": "karateIDE.karateNetworkLogs.showScenarios.false",
+                    "command": "karateIDE.karateNetworkLogs.showScenarios.true",
                     "when": "view == karate-network-logs",
                     "group": "navigation@2"
                 },
@@ -343,94 +380,66 @@
         },
         "configuration": {
             "type": "object",
-            "title": "Karate Runner",
+            "title": "Karate IDE",
             "properties": {
                 "karateIDE.multimodule.rootModuleMarkerFile": {
                     "type": "string",
-                    "default": "",
+                    "default": "pom.xml",
                     "description": "When using a multimodule project this file will be used to set the root of each module (i.e: pom.xml, build.gradle, karate.jar... ",
+                    "scope": "resource"
+                },
+                "karateIDE.karateCli.addHookToClasspath": {
+                    "type": "boolean",
+                    "default": "true",
+                    "description": "Karate comunicated with this vscode extension throught a karate RuntimeHook. If you preffer you can add this manually, see documentation.\n Would you like to add this atomatically to command line classpath?",
                     "scope": "resource"
                 },
                 "karateIDE.karateCli.karateOptions": {
                     "type": "string",
-                    "default": "-H com.intuit.karate.cli.VSCodeHook",
-                    "description": "Karate Options to be set in command templates, for e.g. '-t ~@ignore -T 5'. It must include '-H com.intuit.karate.cli.VSCodeHook' or equivalent hook",
+                    "default": "-H vscode.VSCodeHook",
+                    "description": "Karate Options to be set in command templates, for e.g. '-t ~@ignore -T 5'. It must include '-H vscode.VSCodeHook' or equivalent hook.",
                     "scope": "resource"
                 },
                 "karateIDE.karateCli.karateEnv": {
                     "type": "string",
-                    "default": "local",
-                    "description": "karate.env system property value to be set in command templates",
+                    "default": "",
+                    "description": "karate.env system property value to be set in command templates.",
                     "scope": "resource"
                 },
                 "karateIDE.karateCli.classpath": {
                     "type": "string",
-                    "default": "target/classes;target/test-classes;src/test/resources;karate.jar",
-                    "description": "Classpath expression to be set in command line templates.",
+                    "default": "karate.jar",
+                    "description": "Classpath expression to be set in command line templates. See documentation for different classpath recipies.",
                     "scope": "resource"
                 },
                 "karateIDE.karateCli.runCommandTemplate": {
                     "type": "string",
                     "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.Main ${karateOptions} '${feature}'",
-                    "description": "Command line template for run action. Karate Runner will handle setting the command line with the feature file being tested and suffixing the feature file with a ':number' when running individual Scenarios.",
+                    "description": "Command line template for run action. See documentation for available template variables and different recipies.",
                     "scope": "resource"
                 },
                 "karateIDE.karateCli.debugCommandTemplate": {
                     "type": "string",
                     "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.Main -d",
-                    "description": "Command line template for debug action. Karate Runner will handle setting 'karate options' and the command line with the feature file being tested and suffixing the feature file with a ':number' when running individual Scenarios.",
+                    "description": "Command line template for debug action. See documentation for available template variables and different recipies.",
                     "scope": "resource"
                 },
-                "karateIDE.karateIDE.default": {
+                "karateIDE.karateTestRunner.karateJunitRunner": {
                     "type": "string",
                     "default": "KarateJunitRunner",
-                    "description": "Default Karate Junit Runner to use for running Karate tests",
+                    "description": "Karate Junit Runner to use for running Karate tests (only if specified in run command template).",
                     "scope": "resource"
                 },
-                "karateIDE.karateIDE.promptToSpecify": {
+                "karateIDE.karateTestRunner.promptToSpecify": {
                     "type": "boolean",
                     "default": true,
-                    "description": "Prompt to specify Karate Runner before running Karate tests",
+                    "description": "Prompt to specify Karate Junit Runner before running Karate tests (only if specified in run command template).",
                     "scope": "resource"
                 },
-                "karateIDE.buildReports.openAfterEachRun": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Open reports in default program after running Karate tests.",
-                    "scope": "resource"
-                },
-                "karateIDE.debugger.serverPortTimeout": {
-                    "type": "number",
-                    "default": 60,
-                    "description": "Default time (seconds) to wait for debug server to start.",
-                    "scope": "resource"
-                },
-                "karateIDE.executionHistory.limit": {
-                    "type": "number",
-                    "default": 50,
-                    "description": "Maximum number of executions to store and re-execute from Karate status bar.",
-                    "scope": "resource"
-                },
-                "karateIDE.tests.toTarget": {
+                "karateIDE.tests.globFilter": {
                     "type": "string",
-                    "default": "**/src/test/**/*.feature",
-                    "description": "Display Karate tests targeted by glob pattern within Activity Bar.",
-                    "scope": "resource"
-                },
-                "karateIDE.tests.activityBarDisplayType": {
-                    "type": "string",
-                    "default": "Shallow",
-                    "enum": [
-                        "Shallow",
-                        "Deep"
-                    ],
-                    "description": "Display Karate tests as a flat list (Shallow) or natural directory structure (Deep) within Activity Bar.",
-                    "scope": "resource"
-                },
-                "karateIDE.eventLogsServer.port": {
-                    "type": "number",
-                    "default": 0,
-                    "description": "Events Log Server Port ('0' means disabled).",
+                    "default": "**/src/test/**/*[.feature|.yml|.json]",
+                    "description": "Glob pattern to filter files in Karate Tests view.",
                     "scope": "resource"
                 }
             }
@@ -442,36 +451,12 @@
         ],
         "debuggers": [
             {
-                "type": "karate",
-                "label": "Karate (debug)",
+                "type": "karate-ide",
+                "label": "Karate IDE (debug)",
                 "configurationAttributes": {
                     "launch": {
-                        "required": [
-                            "karateOptions",
-                            "karateCli"
-                        ],
-                        "properties": {
-                            "feature": {
-                                "type": "string",
-                                "description": "[feature]\n\nUsed by Karate Debug Server if [karateOptions] property not specified.",
-                                "default": "^\"\\${command:karateIDE.getDebugFile}\""
-                            },
-                            "karateOptions": {
-                                "type": "string",
-                                "description": "[karateOptions]\n\nThis property is used only by Karate Debug Server.\nOverrides [feature] property to enable advanced debugging and specifying all Karate Options(classpath, threads, tags, hooks).\n Should contain '-H com.intuit.karate.cli.VSCodeHook' or compatible hook for this extension to fully work",
-                                "default": "-H com.intuit.karate.cli.VSCodeHook ${command:karateIDE.getDebugFile}"
-                            },
-                            "karateCli": {
-                                "type": "string",
-                                "description": "[karateCli]\n\nThis property specifies the command to start Karate Debug Server.",
-                                "default": "${config:karateIDE.karateJar.commandLineArgs} -d"
-                            },
-                            "debugPreStep": {
-                                "type": "string",
-                                "description": "[debugPreStep]\n\nThis property specifies the command Karate Debug Server should run before resuming execution of the debug session.\nTypically used by Karate-Robot to switch focus to the application under test.",
-                                "default": "input(Key.ALT + Key.TAB)"
-                            }
-                        }
+                        "required": [],
+                        "properties": {}
                     }
                 }
             }
@@ -498,6 +483,22 @@
                 "key": "Ctrl+R Ctrl+A",
                 "linux": "Ctrl+Shift+R Ctrl+Shift+A",
                 "mac": "Cmd+R Cmd+A",
+                "when": "editorTextFocus && editorLangId == karate"
+            },
+            {
+                "command": "karateIDE.tests.debug",
+                "args": null,
+                "key": "Ctrl+D Ctrl+1",
+                "linux": "Ctrl+Shift+D Ctrl+Shift+1",
+                "mac": "Cmd+D Cmd+1",
+                "when": "editorTextFocus && editorLangId == karate"
+            },
+            {
+                "command": "karateIDE.tests.debugAll",
+                "args": null,
+                "key": "Ctrl+D Ctrl+A",
+                "linux": "Ctrl+Shift+D Ctrl+Shift+A",
+                "mac": "Cmd+D Cmd+A",
                 "when": "editorTextFocus && editorLangId == karate"
             }
         ],
@@ -543,38 +544,5 @@
                 ]
             }
         ]
-    },
-    "devDependencies": {
-        "@types/chai": "^4.2.14",
-        "@types/glob": "^7.1.1",
-        "@types/mocha": "^5.2.7",
-        "@types/node": "^12.6.9",
-        "@types/vscode": "^1.44.0",
-        "@typescript-eslint/eslint-plugin": "^4.14.1",
-        "@typescript-eslint/parser": "^4.14.1",
-        "chai": "^4.2.0",
-        "eslint": "^7.19.0",
-        "glob": "^7.1.6",
-        "js-yaml": "^4.0.0",
-        "mocha": "^8.2.1",
-        "prettier": "^2.2.1",
-        "ts-loader": "^8.0.14",
-        "ts-mocha": "^8.0.0",
-        "typescript": "^4.1.3",
-        "vscode-test": "^1.5.0",
-        "webpack": "^5.19.0",
-        "webpack-cli": "^4.5.0"
-    },
-    "dependencies": {
-        "@apidevtools/json-schema-ref-parser": "^9.0.7",
-        "@types/lodash": "^4.14.168",
-        "ejs": "^3.1.5",
-        "fs-extra": "^9.1.0",
-        "json-schema": "^0.3.0",
-        "lodash": "^4.17.20",
-        "minimatch": "^3.0.4",
-        "mkdirp": "^1.0.4",
-        "parse-curl": "0.2.6",
-        "rimraf": "^3.0.2"
     }
 }

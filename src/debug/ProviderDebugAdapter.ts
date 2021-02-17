@@ -1,16 +1,44 @@
-import { getFileAndRootPath } from './helper';
+import { getFileAndRootPath } from '../helper';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
+import { getDebugCommandLine, getDebugFile } from '../commands/RunDebug';
 
-class ProviderDebugAdapter implements vscode.DebugAdapterDescriptorFactory {
-    createDebugAdapterDescriptor(
+const KARATE_START_TIMEOUT = 60;
+const DEFAULT_CONFIG = {
+    type: 'karate-ide',
+    name: 'Karate IDE (debug)',
+    request: 'launch',
+};
+
+class ProviderDebugAdapter implements vscode.DebugAdapterDescriptorFactory, vscode.DebugConfigurationProvider {
+    provideDebugConfigurations(
+        folder: vscode.WorkspaceFolder | undefined,
+        token?: vscode.CancellationToken
+    ): vscode.ProviderResult<vscode.DebugConfiguration[]> {
+        // auto-fill new launch.json with default config
+        return Promise.resolve([DEFAULT_CONFIG]);
+    }
+
+    async resolveDebugConfiguration(
+        folder: vscode.WorkspaceFolder | undefined,
+        config: vscode.DebugConfiguration,
+        token?: vscode.CancellationToken
+    ): Promise<vscode.DebugConfiguration> {
+        if (!config.type && !config.request && !config.name) {
+            // open debug configurations/launch.json if non-existent
+            return null;
+        }
+        config.feature = getDebugFile();
+        config.karateOptions = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateOptions');
+        return config;
+    }
+
+    async createDebugAdapterDescriptor(
         session: vscode.DebugSession,
         executable: vscode.DebugAdapterExecutable | undefined
-    ): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
-        let settingsTimeout = Number(vscode.workspace.getConfiguration('karateIDE.debugger').get('serverPortTimeout'));
-        settingsTimeout = settingsTimeout <= 0 ? 1 : settingsTimeout;
-
-        const featureFile = String(session.configuration.feature).replace(/^['"]|['"]$/g, '');
+    ): Promise<vscode.ProviderResult<vscode.DebugAdapterDescriptor>> {
+        const featureFile = getDebugFile();
+        const debugCommandLine = getDebugCommandLine();
         const { root: projectRootPath } = getFileAndRootPath(vscode.Uri.file(featureFile));
 
         let relativePattern = new vscode.RelativePattern(projectRootPath, '**/karate-debug-port.txt');
@@ -31,7 +59,7 @@ class ProviderDebugAdapter implements vscode.DebugAdapterDescriptorFactory {
                             debugCanceledByUser = true;
                         });
 
-                        let incrementer = 100 / settingsTimeout;
+                        let incrementer = 100 / KARATE_START_TIMEOUT;
 
                         progress.report({ increment: incrementer });
 
@@ -60,14 +88,10 @@ class ProviderDebugAdapter implements vscode.DebugAdapterDescriptorFactory {
                                 clearInterval(interval);
                                 task.terminate();
                                 reject(new Error('Aborting debugger.  Timed out waiting for debug server to start.'));
-                            }, settingsTimeout * 1000);
+                            }, KARATE_START_TIMEOUT * 1000);
                         }).then(
-                            port => {
-                                resolve(Number(port));
-                            },
-                            error => {
-                                reject(error);
-                            }
+                            port => resolve(Number(port)),
+                            error => reject(error)
                         );
                     }
                 );
@@ -85,8 +109,8 @@ class ProviderDebugAdapter implements vscode.DebugAdapterDescriptorFactory {
         });
 
         let seo: vscode.ShellExecutionOptions = { cwd: projectRootPath };
-        let exec = new vscode.ShellExecution(session.configuration.karateCli, seo);
-        let task = new vscode.Task({ type: 'karate' }, vscode.TaskScope.Workspace, 'Karate Runner', 'karate', exec, []);
+        let exec = new vscode.ShellExecution(debugCommandLine, seo);
+        let task = new vscode.Task({ type: 'karate-ide' }, vscode.TaskScope.Workspace, 'Karate Debug', 'karate-ide', exec, []);
 
         return vscode.tasks
             .executeTask(task)

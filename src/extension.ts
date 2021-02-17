@@ -1,6 +1,5 @@
 import ProviderKarateTests from './providerKarateTests';
-import ProviderDebugAdapter from './providerDebugAdapter';
-import ProviderDebugConfiguration from './providerDebugConfiguration';
+import ProviderDebugAdapter from './debug/ProviderDebugAdapter';
 import ProviderResults from './providerResults';
 import ProviderExecutions from './providerExecutions';
 import ProviderStatusBar from './providerStatusBar';
@@ -22,7 +21,7 @@ import {
     relaunchDebug,
     relaunchRun,
 } from './commands/RunDebug';
-import { displayReportsTree, displayTestsTree, openBuildReport, openFileInEditor } from './commands/DisplayCommands';
+import { openFileInEditor } from './commands/DisplayCommands';
 import { smartPaste } from './commands/SmartPaste';
 
 import * as vscode from 'vscode';
@@ -35,7 +34,6 @@ let karateTestsWatcher = null;
 export function activate(context: vscode.ExtensionContext) {
     let karateTestsProvider = new ProviderKarateTests();
     let debugAdapterProvider = new ProviderDebugAdapter();
-    let debugConfigurationProvider = new ProviderDebugConfiguration();
     let resultsProvider = new ProviderResults();
     let executionsProvider = new ProviderExecutions();
     let statusBarProvider = new ProviderStatusBar(context);
@@ -54,21 +52,18 @@ export function activate(context: vscode.ExtensionContext) {
     LocalStorageService.initialize(context.workspaceState);
 
     registerCommand('karateIDE.paste', smartPaste);
-    registerCommand('karateIDE.getDebugFile', getDebugFile);
-    registerCommand('karateIDE.karateCli.getDebugCommandLine', getDebugCommandLine);
     registerCommand('karateIDE.tests.debug', debugKarateTest);
     registerCommand('karateIDE.tests.run', runKarateTest);
     registerCommand('karateIDE.tests.runAll', runAllKarateTests);
     registerCommand('karateIDE.tests.debugAll', debugAllKarateTests);
-    registerCommand('karateIDE.buildReports.open', openBuildReport);
     registerCommand('karateIDE.tests.refreshTree', () => karateTestsProvider.refresh());
     registerCommand('karateIDE.tests.switchKarateEnv', () => karateTestsProvider.switchKarateEnv());
     registerCommand('karateIDE.tests.configureFocus', () => karateTestsProvider.configureTestsFocus());
     registerCommand('karateIDE.tests.open', openFileInEditor);
     registerCommand('karateIDE.generators.openapi', generateKarateTestFromOpenAPI);
 
-    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('karate', debugAdapterProvider));
-    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('karate', debugConfigurationProvider));
+    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('karate-ide', debugAdapterProvider));
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('karate-ide', debugAdapterProvider));
     context.subscriptions.push(vscode.languages.registerCodeLensProvider(codeLensTarget, codeLensProvider));
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(definitionTarget, definitionProvider));
     //let registerFoldingRangeProvider = vscode.languages.registerFoldingRangeProvider(foldingRangeTarget, foldingRangeProvider);
@@ -96,37 +91,20 @@ export function activate(context: vscode.ExtensionContext) {
         networkLogsProvider.processLoggingEvent(data);
         executionsTreeProvider.processLoggingEvent(data);
     });
-    const logsServerPort: number = vscode.workspace.getConfiguration('karateIDE.eventLogsServer').get('port');
-    if (logsServerPort) {
-        eventLogsServer.start(logsServerPort);
-    }
+    eventLogsServer.start();
 
-    setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateIDE.tests').get('toTarget')), karateTestsProvider);
+    setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter')), karateTestsProvider);
 
     vscode.workspace.onDidChangeConfiguration(e => {
-        let karateTestsDisplayType = e.affectsConfiguration('karateIDE.tests.activityBarDisplayType');
-        let karateTestsToTarget = e.affectsConfiguration('karateIDE.tests.toTarget');
-
-        if (karateTestsDisplayType) {
-            karateTestsProvider.refresh();
-        }
-
-        if (karateTestsToTarget) {
+        let karateTestsGlobFilter = e.affectsConfiguration('karateIDE.tests.globFilter');
+        if (karateTestsGlobFilter) {
             try {
                 karateTestsWatcher.dispose();
             } catch (e) {
                 // do nothing
             }
 
-            setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateIDE.tests').get('toTarget')), karateTestsProvider);
-        }
-
-        const port: number = vscode.workspace.getConfiguration('karateIDE.eventLogsServer').get('port');
-        if (eventLogsServer.port !== port) {
-            eventLogsServer.stop();
-            if (port) {
-                eventLogsServer.start(port);
-            }
+            setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter')), karateTestsProvider);
         }
     });
 }

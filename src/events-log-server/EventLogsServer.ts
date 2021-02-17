@@ -2,9 +2,13 @@ import * as net from 'net';
 import { LoggingEventVO } from './KarateEventLogsModels';
 
 export default class EventLogsServer {
-    public port = 0;
+    private static port = null;
     public server: net.Server = null;
     constructor(private callback: (event: LoggingEventVO) => void) {}
+
+    public static getPort() {
+        return EventLogsServer.port;
+    }
 
     createServer() {
         this.server = net.createServer((socket: net.Socket) => {
@@ -57,10 +61,9 @@ export default class EventLogsServer {
             });
         });
     }
-    start(port = 9999) {
-        this.port = port;
+    start() {
         this.createServer();
-        this.server.listen(port, () => {
+        this.server.listen(0, () => {
             // Get server address info.
             console.log('TCP server listen on address : ' + JSON.stringify(this.server.address()));
 
@@ -72,6 +75,7 @@ export default class EventLogsServer {
                 console.error(JSON.stringify(error));
             });
         });
+        EventLogsServer.port = (this.server.address() as net.AddressInfo).port;
     }
     stop() {
         try {
@@ -79,6 +83,6 @@ export default class EventLogsServer {
                 console.error(JSON.stringify(error));
             });
         } catch (e) {}
-        this.port = this.server = null;
+        EventLogsServer.port = this.server = null;
     }
 }
