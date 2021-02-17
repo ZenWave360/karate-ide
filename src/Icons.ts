@@ -3,15 +3,15 @@ import { Uri } from 'vscode';
 
 function icon(name): { light: string; dark: string } {
     return {
-        light: path.join(__dirname, '..', '..', 'resources', 'vscode-icons', 'light', name),
-        dark: path.join(__dirname, '..', '..', 'resources', 'vscode-icons', 'dark', name),
+        light: path.join(__dirname, '..', 'resources', 'vscode-icons', 'light', name),
+        dark: path.join(__dirname, '..', 'resources', 'vscode-icons', 'dark', name),
     };
 }
 
 function karateIcon(name): { light: string; dark: string } {
     return {
-        light: path.join(__dirname, '..', '..', 'resources', 'karate-icons', 'light', name),
-        dark: path.join(__dirname, '..', '..', 'resources', 'karate-icons', 'dark', name),
+        light: path.join(__dirname, '..', 'resources', 'karate-icons', 'light', name),
+        dark: path.join(__dirname, '..', 'resources', 'karate-icons', 'dark', name),
     };
 }
 

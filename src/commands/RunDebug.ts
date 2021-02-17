@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { getFileAndRootPath, getActiveFeatureFile } from '../helper';
 import ProviderStatusBar from '../providerStatusBar';
 import ProviderExecutions from '../providerExecutions';
@@ -15,7 +16,7 @@ export function debugAllKarateTests(entry: KarateTestTreeEntry) {
 
 export function debugKarateTest(feature, line) {
     if (feature instanceof KarateTestTreeEntry) {
-        return runAllKarateTests(feature);
+        return debugAllKarateTests(feature);
     }
     debugFeature = feature + (line ? `:${line}` : '');
     vscode.commands.executeCommand('karateIDE.karateExecutionsTree.clearTree');
@@ -65,14 +66,14 @@ async function getRunCommandLine(feature: string) {
 }
 
 async function getKarateTestRunnerName() {
-    let karateRunner = String(vscode.workspace.getConfiguration('karateIDE.karateRunner').get('default'));
-    if (Boolean(vscode.workspace.getConfiguration('karateIDE.karateRunner').get('promptToSpecify'))) {
-        karateRunner = await vscode.window.showInputBox({ prompt: 'Karate Runner', value: karateRunner });
-        if (karateRunner !== undefined && karateRunner !== '') {
-            await vscode.workspace.getConfiguration().update('karateIDE.karateIDE.default', karateRunner);
+    let karateIDE = String(vscode.workspace.getConfiguration('karateIDE.karateIDE').get('default'));
+    if (Boolean(vscode.workspace.getConfiguration('karateIDE.karateIDE').get('promptToSpecify'))) {
+        karateIDE = await vscode.window.showInputBox({ prompt: 'Karate Runner', value: karateIDE });
+        if (karateIDE !== undefined && karateIDE !== '') {
+            await vscode.workspace.getConfiguration().update('karateIDE.karateIDE.default', karateIDE);
         }
     }
-    return karateRunner;
+    return karateIDE;
 }
 
 function getActiveDocumentExecution() {
@@ -154,7 +155,7 @@ export async function runKarateTest(feature, line) {
     vscode.tasks.executeTask(task).then(task => showProgress(task));
 }
 
-export function relaunchLastKarateDebugExecution() {
+export function relaunchDebugAll() {
     if (lastExecution) {
         const feature = lastExecution.replace(/:\d+$/, '');
         const line = lastExecution.replace(feature + ':', '');
@@ -162,6 +163,20 @@ export function relaunchLastKarateDebugExecution() {
     }
 }
 
-export function launchKarateDebugExecution(entry: TreeEntry) {
-    debugKarateTest(entry.eventStart.resource, entry.eventStart.line + 1);
+export function relaunchRunAll() {
+    if (lastExecution) {
+        const feature = lastExecution.replace(/:\d+$/, '');
+        const line = lastExecution.replace(feature + ':', '');
+        runKarateTest(feature, +line);
+    }
+}
+
+export function relaunchDebug(entry: TreeEntry) {
+    const feature = path.join(entry.eventStart.currentDir, entry.eventStart.resource);
+    debugKarateTest(feature, entry.eventStart.line);
+}
+
+export function relaunchRun(entry: TreeEntry) {
+    const feature = path.join(entry.eventStart.currentDir, entry.eventStart.resource);
+    runKarateTest(feature, entry.eventStart.line);
 }

@@ -1,14 +1,6 @@
 import Icons from '../Icons';
 import * as vscode from 'vscode';
 
-enum EventType {
-    REQUEST,
-    RESPONSE,
-    FEATURE_START,
-    FEATURE_END,
-    SCENARIO_START,
-    SCENARIO_END,
-}
 export class LoggingEventVO {
     timestamp: number;
     eventType: string;
@@ -17,6 +9,7 @@ export class LoggingEventVO {
     rootFeature: string;
     rootScenario: string;
 
+    currentDir: string;
     feature: string;
     scenario: string;
     outline: boolean;

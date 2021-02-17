@@ -37,25 +37,25 @@
         "viewsContainers": {
             "activitybar": [
                 {
-                    "id": "karate-runner",
-                    "title": "Karate Runner",
+                    "id": "karate-ide",
+                    "title": "Karate IDE",
                     "icon": "resources/karate-icons/karate-activitybar.svg"
                 }
             ]
         },
         "views": {
-            "karate-runner": [
+            "karate-ide": [
                 {
                     "id": "karate-tests",
                     "name": "Tests"
                 },
                 {
                     "id": "karate-network-logs",
-                    "name": "Network Logs"
+                    "name": "Karate Network Logs"
                 },
                 {
                     "id": "karate-executions",
-                    "name": "Executions"
+                    "name": "Karate Executions"
                 }
             ]
         },
@@ -177,16 +177,32 @@
                 }
             },
             {
-                "command": "karateIDE.karateExecutionsTree.relaunchLast",
+                "command": "karateIDE.karateExecutionsTree.relaunchDebugAll",
                 "title": "Relaunch Last Karate Debug Execution",
+                "icon": {
+                    "light": "resources/vscode-icons/light/debug-alt-small.svg",
+                    "dark": "resources/vscode-icons/dark/debug-alt-small.svg"
+                }
+            },
+            {
+                "command": "karateIDE.karateExecutionsTree.relaunchDebug",
+                "title": "Debug this Execution",
+                "icon": {
+                    "light": "resources/vscode-icons/light/debug-alt-small.svg",
+                    "dark": "resources/vscode-icons/dark/debug-alt-small.svg"
+                }
+            },
+            {
+                "command": "karateIDE.karateExecutionsTree.relaunchRunAll",
+                "title": "Relaunch Last Karate Run Execution",
                 "icon": {
                     "light": "resources/vscode-icons/light/run-all.svg",
                     "dark": "resources/vscode-icons/dark/run-all.svg"
                 }
             },
             {
-                "command": "karateIDE.karateExecutionsTree.launch",
-                "title": "Debug this Execution",
+                "command": "karateIDE.karateExecutionsTree.relaunchRun",
+                "title": "Run this Execution",
                 "icon": {
                     "light": "resources/vscode-icons/light/run-all.svg",
                     "dark": "resources/vscode-icons/dark/run-all.svg"
@@ -225,16 +241,6 @@
                     "group": "navigation@1"
                 },
                 {
-                    "command": "karateIDE.tests.displayShallow",
-                    "when": "view == karate-tests && config.karateIDE.tests.activityBarDisplayType == Deep",
-                    "group": "navigation@2"
-                },
-                {
-                    "command": "karateIDE.tests.displayDeep",
-                    "when": "view == karate-tests && config.karateIDE.tests.activityBarDisplayType == Shallow",
-                    "group": "navigation@2"
-                },
-                {
                     "command": "karateIDE.tests.switchKarateEnv",
                     "when": "view == karate-tests",
                     "group": "navigation@3"
@@ -260,7 +266,12 @@
                     "group": "navigation@3"
                 },
                 {
-                    "command": "karateIDE.karateExecutionsTree.relaunchLast",
+                    "command": "karateIDE.karateExecutionsTree.relaunchDebugAll",
+                    "when": "view == karate-executions",
+                    "group": "navigation"
+                },
+                {
+                    "command": "karateIDE.karateExecutionsTree.relaunchRunAll",
                     "when": "view == karate-executions",
                     "group": "navigation"
                 }
@@ -292,14 +303,19 @@
                     "group": "inline@3"
                 },
                 {
-                    "command": "karateIDE.karateExecutionsTree.launch",
+                    "command": "karateIDE.karateExecutionsTree.relaunchDebug",
                     "when": "view == karate-executions",
-                    "group": "inline"
+                    "group": "inline@1"
+                },
+                {
+                    "command": "karateIDE.karateExecutionsTree.relaunchRun",
+                    "when": "view == karate-executions",
+                    "group": "inline@2"
                 },
                 {
                     "command": "karateIDE.tests.open",
                     "when": "view == karate-executions",
-                    "group": "inline"
+                    "group": "inline@3"
                 }
             ],
             "explorer/context": [
@@ -495,11 +511,11 @@
                 "extensions": [
                     ".feature"
                 ],
-                "configuration": "./karate-language-configuration.json"
+                "configuration": "./syntaxes/karate-language-configuration.json"
             },
             {
                 "id": "karate-json",
-                "configuration": "./karate-json-language-configuration.json"
+                "configuration": "./syntaxes/karate-json-language-configuration.json"
             }
         ],
         "grammars": [
@@ -534,10 +550,10 @@
         "@types/mocha": "^5.2.7",
         "@types/node": "^12.6.9",
         "@types/vscode": "^1.44.0",
-        "chai": "^4.2.0",
-        "eslint": "^7.19.0",
         "@typescript-eslint/eslint-plugin": "^4.14.1",
         "@typescript-eslint/parser": "^4.14.1",
+        "chai": "^4.2.0",
+        "eslint": "^7.19.0",
         "glob": "^7.1.6",
         "js-yaml": "^4.0.0",
         "mocha": "^8.2.1",

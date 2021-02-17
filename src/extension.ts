@@ -17,8 +17,10 @@ import {
     debugKarateTest,
     runAllKarateTests,
     debugAllKarateTests,
-    launchKarateDebugExecution,
-    relaunchLastKarateDebugExecution,
+    relaunchDebugAll,
+    relaunchRunAll,
+    relaunchDebug,
+    relaunchRun,
 } from './commands/RunDebug';
 import { displayReportsTree, displayTestsTree, openBuildReport, openFileInEditor } from './commands/DisplayCommands';
 import { smartPaste } from './commands/SmartPaste';
@@ -58,8 +60,6 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.tests.run', runKarateTest);
     registerCommand('karateIDE.tests.runAll', runAllKarateTests);
     registerCommand('karateIDE.tests.debugAll', debugAllKarateTests);
-    registerCommand('karateIDE.tests.displayShallow', () => displayTestsTree('Shallow'));
-    registerCommand('karateIDE.tests.displayDeep', () => displayTestsTree('Deep'));
     registerCommand('karateIDE.buildReports.open', openBuildReport);
     registerCommand('karateIDE.tests.refreshTree', () => karateTestsProvider.refresh());
     registerCommand('karateIDE.tests.switchKarateEnv', () => karateTestsProvider.switchKarateEnv());
@@ -85,8 +85,10 @@ export function activate(context: vscode.ExtensionContext) {
     // Executions View
     const executionsTreeProvider = new KarateExecutionsTreeProvider();
     registerCommand('karateIDE.karateExecutionsTree.clearTree', () => executionsTreeProvider.clear());
-    registerCommand('karateIDE.karateExecutionsTree.relaunchLast', relaunchLastKarateDebugExecution);
-    registerCommand('karateIDE.karateExecutionsTree.launch', launchKarateDebugExecution);
+    registerCommand('karateIDE.karateExecutionsTree.relaunchDebugAll', relaunchDebugAll);
+    registerCommand('karateIDE.karateExecutionsTree.relaunchDebug', relaunchDebug);
+    registerCommand('karateIDE.karateExecutionsTree.relaunchRunAll', relaunchRunAll);
+    registerCommand('karateIDE.karateExecutionsTree.relaunchRun', relaunchRun);
     context.subscriptions.push(
         vscode.window.createTreeView('karate-executions', { showCollapseAll: false, treeDataProvider: executionsTreeProvider })
     );
