@@ -1,27 +1,150 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+import ProviderKarateTests from './providerKarateTests';
+import ProviderDebugAdapter from './providerDebugAdapter';
+import ProviderDebugConfiguration from './providerDebugConfiguration';
+import ProviderResults from './providerResults';
+import ProviderExecutions from './providerExecutions';
+import ProviderStatusBar from './providerStatusBar';
+import ProviderCodeLens from './providerCodeLens';
+import ProviderDefinition from './providerDefinition';
+import KarateNetworkLogsTreeProvider from './KarateNetworkLogsTreeProvider';
+import EventLogsServer from './events-log-server/EventLogsServer';
+import HoverRunDebugProvider from './HoverRunDebugProvider';
+//import ProviderFoldingRange from "./providerFoldingRange";
+import {
+    getDebugFile,
+    getDebugCommandLine,
+    runKarateTest,
+    debugKarateTest,
+    runAllKarateTests,
+    debugAllKarateTests,
+    launchKarateDebugExecution,
+    relaunchLastKarateDebugExecution,
+} from './commands/RunDebug';
+import { displayReportsTree, displayTestsTree, openBuildReport, openFileInEditor } from './commands/DisplayCommands';
+import { smartPaste } from './commands/SmartPaste';
+
 import * as vscode from 'vscode';
+import KarateExecutionsTreeProvider from './KarateExecutionsTreeProvider';
+import { generateKarateTestFromOpenAPI } from './generators/openapi';
+import { LocalStorageService } from './commands/LocalStorageService';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+let karateTestsWatcher = null;
+
 export function activate(context: vscode.ExtensionContext) {
+    let karateTestsProvider = new ProviderKarateTests();
+    let debugAdapterProvider = new ProviderDebugAdapter();
+    let debugConfigurationProvider = new ProviderDebugConfiguration();
+    let resultsProvider = new ProviderResults();
+    let executionsProvider = new ProviderExecutions();
+    let statusBarProvider = new ProviderStatusBar(context);
+    let codeLensProvider = new ProviderCodeLens();
+    let definitionProvider = new ProviderDefinition();
+    //let foldingRangeProvider = new ProviderFoldingRange();
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "karate-ide" is now active!');
+    let codeLensTarget = { language: 'karate', scheme: 'file' };
+    let definitionTarget = { language: 'karate', scheme: 'file' };
+    //let foldingRangeTarget = { language: "karate", scheme: "file" };
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('karate-ide.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
+    function registerCommand(command: string, callback: (...args: any[]) => any, thisArg?: any) {
+        context.subscriptions.push(vscode.commands.registerCommand(command, callback));
+    }
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Karate IDE!');
-	});
+    LocalStorageService.initialize(context.workspaceState);
 
-	context.subscriptions.push(disposable);
+    registerCommand('karateIDE.paste', smartPaste);
+    registerCommand('karateIDE.getDebugFile', getDebugFile);
+    registerCommand('karateIDE.karateCli.getDebugCommandLine', getDebugCommandLine);
+    registerCommand('karateIDE.tests.debug', debugKarateTest);
+    registerCommand('karateIDE.tests.run', runKarateTest);
+    registerCommand('karateIDE.tests.runAll', runAllKarateTests);
+    registerCommand('karateIDE.tests.debugAll', debugAllKarateTests);
+    registerCommand('karateIDE.tests.displayShallow', () => displayTestsTree('Shallow'));
+    registerCommand('karateIDE.tests.displayDeep', () => displayTestsTree('Deep'));
+    registerCommand('karateIDE.buildReports.open', openBuildReport);
+    registerCommand('karateIDE.tests.refreshTree', () => karateTestsProvider.refresh());
+    registerCommand('karateIDE.tests.switchKarateEnv', () => karateTestsProvider.switchKarateEnv());
+    registerCommand('karateIDE.tests.configureFocus', () => karateTestsProvider.configureTestsFocus());
+    registerCommand('karateIDE.tests.open', openFileInEditor);
+    registerCommand('karateIDE.generators.openapi', generateKarateTestFromOpenAPI);
+
+    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('karate', debugAdapterProvider));
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('karate', debugConfigurationProvider));
+    context.subscriptions.push(vscode.languages.registerCodeLensProvider(codeLensTarget, codeLensProvider));
+    context.subscriptions.push(vscode.languages.registerDefinitionProvider(definitionTarget, definitionProvider));
+    //let registerFoldingRangeProvider = vscode.languages.registerFoldingRangeProvider(foldingRangeTarget, foldingRangeProvider);
+
+    context.subscriptions.push(vscode.window.createTreeView('karate-tests', { showCollapseAll: true, treeDataProvider: karateTestsProvider }));
+
+    context.subscriptions.push(vscode.languages.registerHoverProvider(codeLensTarget, new HoverRunDebugProvider(context)));
+    // NetworkLogs View
+    const networkLogsProvider = new KarateNetworkLogsTreeProvider();
+    registerCommand('karateIDE.karateNetworkLogs.clearTree', () => networkLogsProvider.clear());
+    registerCommand('karateIDE.karateNetworkLogs.showScenarios.true', () => networkLogsProvider.setShowScenarios(true));
+    registerCommand('karateIDE.karateNetworkLogs.showScenarios.false', () => networkLogsProvider.setShowScenarios(false));
+    context.subscriptions.push(vscode.window.createTreeView('karate-network-logs', { showCollapseAll: true, treeDataProvider: networkLogsProvider }));
+    // Executions View
+    const executionsTreeProvider = new KarateExecutionsTreeProvider();
+    registerCommand('karateIDE.karateExecutionsTree.clearTree', () => executionsTreeProvider.clear());
+    registerCommand('karateIDE.karateExecutionsTree.relaunchLast', relaunchLastKarateDebugExecution);
+    registerCommand('karateIDE.karateExecutionsTree.launch', launchKarateDebugExecution);
+    context.subscriptions.push(
+        vscode.window.createTreeView('karate-executions', { showCollapseAll: false, treeDataProvider: executionsTreeProvider })
+    );
+    const eventLogsServer = new EventLogsServer(data => {
+        networkLogsProvider.processLoggingEvent(data);
+        executionsTreeProvider.processLoggingEvent(data);
+    });
+    const logsServerPort: number = vscode.workspace.getConfiguration('karateIDE.eventLogsServer').get('port');
+    if (logsServerPort) {
+        eventLogsServer.start(logsServerPort);
+    }
+
+    setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateIDE.tests').get('toTarget')), karateTestsProvider);
+
+    vscode.workspace.onDidChangeConfiguration(e => {
+        let karateTestsDisplayType = e.affectsConfiguration('karateIDE.tests.activityBarDisplayType');
+        let karateTestsToTarget = e.affectsConfiguration('karateIDE.tests.toTarget');
+
+        if (karateTestsDisplayType) {
+            karateTestsProvider.refresh();
+        }
+
+        if (karateTestsToTarget) {
+            try {
+                karateTestsWatcher.dispose();
+            } catch (e) {
+                // do nothing
+            }
+
+            setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateIDE.tests').get('toTarget')), karateTestsProvider);
+        }
+
+        const port: number = vscode.workspace.getConfiguration('karateIDE.eventLogsServer').get('port');
+        if (eventLogsServer.port !== port) {
+            eventLogsServer.stop();
+            if (port) {
+                eventLogsServer.start(port);
+            }
+        }
+    });
 }
 
-// this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+    karateTestsWatcher.dispose();
+}
+
+function setupWatcher(watcher, watcherGlob, provider) {
+    watcher = vscode.workspace.createFileSystemWatcher(watcherGlob);
+
+    watcher.onDidCreate(e => {
+        provider.refresh();
+    });
+    watcher.onDidChange(e => {
+        provider.refresh();
+    });
+    watcher.onDidDelete(e => {
+        provider.refresh();
+    });
+
+    provider.refresh();
+}
