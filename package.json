@@ -247,22 +247,6 @@
                 }
             },
             {
-                "command": "karateIDE.tests.displayShallow",
-                "title": "Display Shallow",
-                "icon": {
-                    "light": "resources/vscode-icons/light/list-tree.svg",
-                    "dark": "resources/vscode-icons/dark/list-tree.svg"
-                }
-            },
-            {
-                "command": "karateIDE.tests.displayDeep",
-                "title": "Display Deep",
-                "icon": {
-                    "light": "resources/vscode-icons/light/list-unordered.svg",
-                    "dark": "resources/vscode-icons/dark/list-unordered.svg"
-                }
-            },
-            {
                 "command": "karateIDE.generators.openapi",
                 "title": "Generate Karate Test",
                 "icon": {
@@ -392,7 +376,7 @@
                 "karateIDE.karateCli.addHookToClasspath": {
                     "type": "boolean",
                     "default": "true",
-                    "description": "Karate comunicated with this vscode extension throught a karate RuntimeHook. If you preffer you can add this manually, see documentation.\n Would you like to add this atomatically to command line classpath?",
+                    "description": "Karate comunicates with this vscode extension throught a karate RuntimeHook. If you preffer you can add this manually, see documentation. Would you like to add this atomatically to command line classpath?",
                     "scope": "resource"
                 },
                 "karateIDE.karateCli.karateOptions": {

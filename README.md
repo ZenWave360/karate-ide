@@ -15,7 +15,7 @@ You can Debug [Karate](https://github.com/intuit/karate) scripts, using:
 -   interactive debug console where you can print, update variable values or test jsonPath expressions
 -   hot reloading (with caveants)
 
-It uses the DebugAdapter originaly developed by [Peter Thomas] (https://github.com/intuit/karate/) and [Kirk Slota] (https://github.com/kirksl/karate-runner/).
+It uses the DebugAdapter originaly developed by [Peter Thomas](https://github.com/intuit/karate/) and [Kirk Slota](https://github.com/kirksl/karate-runner/).
 
 https://twitter.com/KarateDSL/status/1167533484560142336
 
@@ -45,10 +45,10 @@ With Karate 1.0.0+ you can inspect debuger variables as an structured tree, not 
 
 ### Generating Code from OpenAPI definitions
 
-If you want to quickly test/explore and you have an openapi definition you can generate
-You can generate reusable karate scenarios from you openapi definitions, with test data yml files.
+To quickly test/explore you can generate reusable karate scenarios from your openapi definitions, with test-data yml files.
 
 ![alt](resources/screenshots/Generate-Karate-Test.png)
+
 ![alt](resources/screenshots/OpenAPI-Test.png)
 
 ### Generating Code from cURL (Smart Paste)
@@ -91,17 +91,15 @@ When you click 'Karate Debug' for the first time if .vscode/launch.js does not e
 
 ### Karate classpath
 
-Karate-IDE classpath is the only configuration that won't work out of the box and you will need to make a decision about.
+Karate-IDE classpath is the one configuration that won't work out of the box and you will need to make a decision about.
 
-Karate runtime uses java JRE runtime to execute features but because it works with any JRE version (from 1.8 onwards) most probably you already have a compatible java JRE installed.
-
-You still need to provide a way for Karate-IDE to find karate java classes (namely karate.jar)
+You need to provide a way for Karate-IDE to find karate java classes (namely karate.jar)
 
 #### Using karate.jar (Karate fat jar)
 
-The easiest way is to download the latest executable form https://dl.bintray.com/ptrthomas/karate/ and rename it to your project root as `karate.jar`. You don't need to configure anything else but your classpath will be limited to karate.jar.
+Easiest way. Download the latest executable form https://dl.bintray.com/ptrthomas/karate/ and rename it to your project's root folder as `karate.jar`. You don't need to configure anything else but your classpath will be very limited.
 
-Alternatively you can configure in setting a different path to karate.jar.
+Alternatively you can configure a different path to karate.jar.
 
 ```json
 {
@@ -109,15 +107,17 @@ Alternatively you can configure in setting a different path to karate.jar.
 }
 ```
 
+(This is a very limited setup as no other project folders or dependencies will be added to karate runtime classpath)
+
 #### Using mvn dependency:copy-dependencies
 
-If you are using maven, this is our recommended way to get a full project classpath while debuging with vscode. First you need to run the following command in order to download all project dependencies to `target/dependency`:
+If you are using maven, this is our **recommended** way to get a full project classpath while debuging with vscode. First you need to run the following command in order to download all project dependencies to `target/dependency`:
 
 ```
 mvn dependency:copy-dependencies
 ```
 
-Now you can add this lines to .vscode/settings.json (Replace `;` (for windows) with `:` (for other OS))
+Configure this in `.vscode/settings.json` (Replace `;` (for windows) with `:` (for other OS))
 
 ```json
 {
@@ -125,7 +125,7 @@ Now you can add this lines to .vscode/settings.json (Replace `;` (for windows) w
 }
 ```
 
-NOTE: remember to re-download dependencies again after mvn clean os any dependency version upgrade.
+**NOTE:** always remember to re-download dependencies again after mvn clean os any dependency version upgrade.
 
 #### Using mvn dependency:build-classpath
 
@@ -139,9 +139,9 @@ mvn dependency:build-classpath
 
 Karate-IDE uses a template for configuring Run and Debug commands.
 
-Default configuration favors karate.jar cli but you can build any command line you would need for your Operating System, default shell and build system.
+Default configuration favors KarateCli but you can build any command line you would like for your Operating System, default shell and/or build system (mvn, gradle,...).
 
-Default configured templates works out of the box with PowerShell, bash and zsh so in most cases you shouldn't need to configure these.
+**Default configured templates works out of the box with PowerShell, bash and zsh so in most cases you shouldn't need to configure these.**
 
 ```json
 {
@@ -150,6 +150,6 @@ Default configured templates works out of the box with PowerShell, bash and zsh 
 }
 ```
 
-There is also `${KarateTestRunner}` template variable if you want to build a
+There is also `${KarateTestRunner}` template variable if you want to build a command line for JUnit tests.
 
 **Enjoy!**
