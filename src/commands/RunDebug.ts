@@ -25,14 +25,13 @@ export function debugKarateTest(feature, line) {
 }
 
 export function getDebugFile() {
-    lastExecution = debugFeature;
-    if (!lastExecution) {
+    if (!debugFeature) {
         let activeTextEditor: vscode.TextEditor = vscode.window.activeTextEditor;
         if (activeTextEditor !== undefined && activeTextEditor.document.fileName.endsWith('.feature')) {
-            lastExecution = activeTextEditor.document.fileName;
+            debugFeature = activeTextEditor.document.fileName;
         }
     }
-    debugFeature = null;
+    lastExecution = debugFeature;
     return lastExecution;
 }
 
@@ -43,11 +42,20 @@ function addHookToClasspath(classpath: string) {
     return classpath;
 }
 
+export function getKarateOptions() {
+    const karateEnv: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv');
+    const karateOptions: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateOptions');
+    if (Boolean(vscode.workspace.getConfiguration('karateIDE.karateCli').get('addHookToClasspath'))) {
+        return '-H vscode.VSCodeHook ' + karateOptions;
+    }
+    return karateOptions.replace('${karateEnv}', karateEnv);
+}
+
 export function getDebugCommandLine() {
     const vscodePort = EventLogsServer.getPort();
     const karateEnv: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv');
     const classpath: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('classpath');
-    const karateOptions: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateOptions');
+    const karateOptions: string = getKarateOptions();
     const debugCommandTemplate: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('debugCommandTemplate');
 
     return debugCommandTemplate
@@ -61,7 +69,7 @@ async function getRunCommandLine(feature: string) {
     const vscodePort = EventLogsServer.getPort();
     const karateEnv: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv');
     const classpath: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('classpath');
-    const karateOptions: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateOptions');
+    const karateOptions: string = getKarateOptions();
     let debugCommandTemplate: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('runCommandTemplate');
 
     if (debugCommandTemplate.includes('${KarateTestRunner}')) {

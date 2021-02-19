@@ -3,16 +3,16 @@
     "displayName": "Karate IDE",
     "description": "Explore your APIs and debug Karate test scripts within VS Code",
     "icon": "resources/karate.png",
-    "version": "0.0.2",
+    "version": "0.0.0",
     "license": "MIT",
-    "publisher": "karateide",
+    "publisher": "ivangsa",
     "bugs": {
-        "url": "https://github.com/ivangsa/karate-runner-fork/issues"
+        "url": "https://github.com/ivangsa/karate-ide/issues"
     },
-    "homepage": "https://github.com/ivangsa/karate-runner-fork/blob/master/README.md",
+    "homepage": "https://github.com/ivangsa/karate-ide/blob/master/README.md",
     "repository": {
         "type": "git",
-        "url": "https://github.com/ivangsa/karate-runner-fork.git"
+        "url": "https://github.com/ivangsa/karate-ide.git"
     },
     "author": {
         "name": "Iván García Sainz-Aja",
@@ -36,7 +36,8 @@
     ],
     "main": "./dist/extension.js",
     "scripts": {
-        "vscode:prepublish": "npm run package",
+        "vscode:prepublish": "npm run clean && npm run package",
+        "clean": "rimraf dist/",
         "compile": "webpack",
         "watch": "webpack --watch",
         "package": "webpack --mode production --devtool hidden-source-map",
@@ -396,8 +397,8 @@
                 },
                 "karateIDE.karateCli.karateOptions": {
                     "type": "string",
-                    "default": "-H vscode.VSCodeHook",
-                    "description": "Karate Options to be set in command templates, for e.g. '-t ~@ignore -T 5'. It must include '-H vscode.VSCodeHook' or equivalent hook.",
+                    "default": "",
+                    "description": "Karate Options to be set in command templates, for e.g. '-t ~@ignore -T 5'. If [karateIDE.karateCli.addHookToClasspath] is set to 'false' you must manually include '-H vscode.VSCodeHook' or equivalent hook.",
                     "scope": "resource"
                 },
                 "karateIDE.karateCli.karateEnv": {

@@ -1,7 +1,7 @@
 import { getFileAndRootPath } from '../helper';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { getDebugCommandLine, getDebugFile } from '../commands/RunDebug';
+import { getDebugCommandLine, getDebugFile, getKarateOptions } from '../commands/RunDebug';
 
 const KARATE_START_TIMEOUT = 60;
 const DEFAULT_CONFIG = {
@@ -29,7 +29,7 @@ class ProviderDebugAdapter implements vscode.DebugAdapterDescriptorFactory, vsco
             return null;
         }
         config.feature = getDebugFile();
-        config.karateOptions = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateOptions');
+        config.karateOptions = getKarateOptions();
         return config;
     }
 

@@ -1,13 +1,11 @@
 Feature: <%= operation.summary %>
 	<%= operation.description %>
 
-
 Background:
 * url baseUrl
 
-
 Scenario Outline: Test <%= operation.operationId %> for <status> status code
-	* def req = call utils.readTestData <testDataFile>
+	* def req = read(<testDataFile>)
 	* def result = call read(karate.info.featureFileName + '@operation') req
 	* match result.responseStatus == <status>
 		Examples:
@@ -37,7 +35,7 @@ _%>
 Scenario: <%= operation.operationId %>
 * def req = __arg
 # * def authHeader = call read('classpath:karate-auth.js') req.auth
-* def headers = karate.merge(req.headers || {}, authHeader || {})
+# * def headers = karate.merge(req.headers || {}, authHeader || {})
 Given path <%- ["'", operation.path, "'"].join('').replace(/{/g, "', req.params.").replace(/}/g, ", '").replace(/, ''/, '') %>
 <%_ if(Object.keys(operation.queryParams).length) { _%>
 	<%_ for(param of Object.values(operation.queryParams)) { _%>

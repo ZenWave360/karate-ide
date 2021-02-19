@@ -44,7 +44,7 @@ function generateKarateTest(api, apiname, operations: any[]) {
                     const testDataObject = buildKarateTestDataObject(model.operation, statusCode);
                     fs.writeFileSync(
                         path.join(apiTargetFolder, 'test-data', `${model.operationId}_${statusCode}.yml`),
-                        `${yml.safeDump(testDataObject)}`
+                        `${yml.dump(testDataObject)}`
                     );
                 } catch (error) {
                     fs.writeFileSync(path.join(apiTargetFolder, 'test-data', `${model.operationId}_${statusCode}.yml`), error);
