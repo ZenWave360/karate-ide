@@ -33,6 +33,16 @@ You can also use this extension to generate reusable tests scripts from OpenAPI 
 
 Forget about reading response payload from text log files.
 
+![Karate-IDE](resources/screenshots/Structured-Network-Logs.png)
+
+![Karate-IDE](resources/screenshots/Network-Logs.png)
+
+### Structured (tree-like) json variables in debuger
+
+With Karate 1.0.0+ you can inspect debuger variables as an structured tree, not just like json strings:
+
+![Karate-IDE](resources/screenshots/Structured-Variables-Debug.png)
+
 ### Generating Code from OpenAPI definitions
 
 If you want to quickly test/explore and you have an openapi definition you can generate
