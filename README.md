@@ -1,6 +1,6 @@
 # Karate IDE
 
-[Not Official] Explore your APIs and Debug [Karate](https://github.com/intuit/karate) test scripts within VS Code.
+Explore your APIs and Debug [Karate](https://github.com/intuit/karate) test scripts within VS Code.
 
 This is not the official vscode extension. Here you can find the original [Karate Runner](https://github.com/kirksl/karate-runner/)
 

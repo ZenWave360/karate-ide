@@ -16,7 +16,6 @@ function karateIcon(name): { light: string; dark: string } {
 }
 
 export default class Icons {
-    static karate = karateIcon('karate.svg');
     static karateTest = karateIcon('karate-test.svg');
 
     static account = icon('account.svg');
