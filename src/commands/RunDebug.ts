@@ -1,12 +1,12 @@
 import * as path from 'path';
-import { getFileAndRootPath } from '../helper';
-import ProviderStatusBar from '../providerStatusBar';
-import ProviderExecutions from '../providerExecutions';
+import { getFileAndRootPath } from '@/helper';
+import ProviderStatusBar from '@/views/status-bar/providerStatusBar';
+import ProviderExecutions from '@/views/status-bar/providerExecutions';
 
 import * as vscode from 'vscode';
-import { ITreeEntryCommand, TreeEntry } from '../events-log-server/KarateEventLogsModels';
-import { KarateTestTreeEntry } from '../providerKarateTests';
-import EventLogsServer from '../events-log-server/EventLogsServer';
+import { ITreeEntryCommand, TreeEntry } from '@/server/KarateEventLogsModels';
+import { KarateTestTreeEntry } from '@/views/tests/KarateTestsProvider';
+import EventLogsServer from '@/server/EventLogsServer';
 
 let debugFeature: string = null;
 let lastExecution = null;

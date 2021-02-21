@@ -1,17 +1,15 @@
-import ProviderKarateTests from './providerKarateTests';
-import ProviderDebugAdapter from './debug/ProviderDebugAdapter';
-import ProviderResults from './providerResults';
-import ProviderExecutions from './providerExecutions';
-import ProviderStatusBar from './providerStatusBar';
-import ProviderCodeLens from './providerCodeLens';
-import ProviderDefinition from './providerDefinition';
-import KarateNetworkLogsTreeProvider from './KarateNetworkLogsTreeProvider';
-import EventLogsServer from './events-log-server/EventLogsServer';
-import HoverRunDebugProvider from './HoverRunDebugProvider';
+import KarateTestsProvider from '@/views/tests/KarateTestsProvider';
+import ProviderDebugAdapter from '@/debug/ProviderDebugAdapter';
+import ProviderResults from '@/views/status-bar/providerResults';
+import ProviderExecutions from '@/views/status-bar/providerExecutions';
+import ProviderStatusBar from '@/views/status-bar/providerStatusBar';
+import ProviderCodeLens from '@/codelens/providerCodeLens';
+import ProviderDefinition from '@/codelens/providerDefinition';
+import KarateNetworkLogsTreeProvider from '@/views/logs/KarateNetworkLogsTreeProvider';
+import EventLogsServer from '@/server/EventLogsServer';
+import HoverRunDebugProvider from '@/codelens/HoverRunDebugProvider';
 //import ProviderFoldingRange from "./providerFoldingRange";
 import {
-    getDebugFile,
-    getDebugCommandLine,
     runKarateTest,
     debugKarateTest,
     runAllKarateTests,
@@ -20,19 +18,19 @@ import {
     relaunchRunAll,
     relaunchDebug,
     relaunchRun,
-} from './commands/RunDebug';
-import { openFileInEditor } from './commands/DisplayCommands';
-import { smartPaste } from './commands/SmartPaste';
+} from '@/commands/RunDebug';
+import { openFileInEditor } from '@/commands/DisplayCommands';
+import { smartPaste } from '@/commands/SmartPaste';
 
 import * as vscode from 'vscode';
-import KarateExecutionsTreeProvider from './KarateExecutionsTreeProvider';
-import { generateKarateTestFromOpenAPI } from './generators/openapi';
-import { LocalStorageService } from './commands/LocalStorageService';
+import KarateExecutionsTreeProvider from '@/views/executions/KarateExecutionsTreeProvider';
+import { generateKarateTestFromOpenAPI } from '@/generators/openapi/OpenAPITestGenerator';
+import { LocalStorageService } from '@/commands/LocalStorageService';
 
 let karateTestsWatcher = null;
 
 export function activate(context: vscode.ExtensionContext) {
-    let karateTestsProvider = new ProviderKarateTests();
+    let karateTestsProvider = new KarateTestsProvider();
     let debugAdapterProvider = new ProviderDebugAdapter();
     let resultsProvider = new ProviderResults();
     let executionsProvider = new ProviderExecutions();

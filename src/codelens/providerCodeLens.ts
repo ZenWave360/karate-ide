@@ -1,4 +1,4 @@
-import { getTestExecutionDetail, ITestExecutionDetail } from './helper';
+import { getTestExecutionDetail, ITestExecutionDetail } from '@/helper';
 import * as path from 'path';
 import * as vscode from 'vscode';
 

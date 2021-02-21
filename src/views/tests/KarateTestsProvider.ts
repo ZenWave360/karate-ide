@@ -2,9 +2,9 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as minimatch from 'minimatch';
-import { LocalStorageService } from './commands/LocalStorageService';
-import { filterByTags, getTestExecutionDetail, ITestExecutionDetail } from './helper';
-import Icons from './Icons';
+import { LocalStorageService } from '@/commands/LocalStorageService';
+import { filterByTags, getTestExecutionDetail, ITestExecutionDetail } from '@/helper';
+import Icons from '@/Icons';
 
 function normalizeNFC(items: string): string;
 function normalizeNFC(items: string[]): string[];
@@ -34,7 +34,7 @@ export class KarateTestTreeEntry {
     }
 }
 
-export class ProviderKarateTests implements vscode.TreeDataProvider<KarateTestTreeEntry> {
+export class KarateTestsProvider implements vscode.TreeDataProvider<KarateTestTreeEntry> {
     private workspaceFolder = vscode.workspace.workspaceFolders.filter(folder => folder.uri.scheme === 'file')[0];
     private _onDidChangeFile: vscode.EventEmitter<vscode.FileChangeEvent[]>;
     private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
@@ -225,4 +225,4 @@ export class ProviderKarateTests implements vscode.TreeDataProvider<KarateTestTr
     }
 }
 
-export default ProviderKarateTests;
+export default KarateTestsProvider;

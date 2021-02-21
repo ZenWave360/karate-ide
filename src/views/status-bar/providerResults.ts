@@ -1,4 +1,4 @@
-import { getFileAndRootPath } from './helper';
+import { getFileAndRootPath } from '@/helper';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 

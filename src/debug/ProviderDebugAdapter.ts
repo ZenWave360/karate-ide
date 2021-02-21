@@ -1,7 +1,7 @@
-import { getFileAndRootPath } from '../helper';
+import { getFileAndRootPath } from '@/helper';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { getDebugCommandLine, getDebugFile, getKarateOptions } from '../commands/RunDebug';
+import { getDebugCommandLine, getDebugFile, getKarateOptions } from '@/commands/RunDebug';
 
 const KARATE_START_TIMEOUT = 60;
 const DEFAULT_CONFIG = {

@@ -10,7 +10,7 @@ import {
     PayloadProperty,
     ThreadTreeEntry,
     TreeEntry,
-} from './events-log-server/KarateEventLogsModels';
+} from '@/server/KarateEventLogsModels';
 
 export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataProvider<ITreeEntry> {
     private eventLogsTree: { [key: string]: ThreadTreeEntry } = {};

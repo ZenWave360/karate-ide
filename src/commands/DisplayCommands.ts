@@ -1,5 +1,5 @@
-import { TreeEntry } from '../events-log-server/KarateEventLogsModels';
-import { KarateTestTreeEntry } from '../providerKarateTests';
+import { TreeEntry } from '@/server/KarateEventLogsModels';
+import { KarateTestTreeEntry } from '@/views/tests/KarateTestsProvider';
 import * as path from 'path';
 import * as vscode from 'vscode';
 

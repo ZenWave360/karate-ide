@@ -1,5 +1,5 @@
-import { getFileAndRootPath, getChildAbsolutePath } from './helper';
-import { Feature, IUriToken, ILineToken } from './feature';
+import { getFileAndRootPath, getChildAbsolutePath } from '@/helper';
+import { Feature, IUriToken, ILineToken } from '@/models/feature';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as vscode from 'vscode';

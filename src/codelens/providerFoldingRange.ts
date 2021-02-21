@@ -1,4 +1,4 @@
-import { getTestExecutionDetail, ITestExecutionDetail } from './helper';
+import { getTestExecutionDetail, ITestExecutionDetail } from '@/helper';
 import * as vscode from 'vscode';
 
 class ProviderFoldingRange implements vscode.FoldingRangeProvider {

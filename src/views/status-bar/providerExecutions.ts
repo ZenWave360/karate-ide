@@ -1,5 +1,5 @@
-import ProviderResults from './providerResults';
-import { runKarateTest } from './commands/RunDebug';
+import ProviderResults from '@/views/status-bar/providerResults';
+import { runKarateTest } from '@/commands/RunDebug';
 import * as vscode from 'vscode';
 
 interface IExecutionItem {
