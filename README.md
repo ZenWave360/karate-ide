@@ -8,6 +8,25 @@ This VS Code extension is only compatible with Karate 1.0.0+ while [Karate Runne
 
 > :warning: **Beta**: This is an unfinished and beta extension.
 
+- [Karate IDE](#karate-ide)
+  - [Debug Karate Scripts](#debug-karate-scripts)
+  - [Explore your APIs](#explore-your-apis)
+    - [Structured HTTP Log Viewer](#structured-http-log-viewer)
+    - [Structured (tree-like) json variables in debuger](#structured-tree-like-json-variables-in-debuger)
+    - [Generating Code from OpenAPI definitions](#generating-code-from-openapi-definitions)
+    - [Reusing generated Scenarios in complex flow/squence tests](#reusing-generated-scenarios-in-complex-flowsquence-tests)
+    - [Generating Code from cURL (Smart Paste)](#generating-code-from-curl-smart-paste)
+    - [Generating Mocks from cURL commands output (Smart Paste)](#generating-mocks-from-curl-commands-output-smart-paste)
+  - [Other functionality](#other-functionality)
+    - [Peek](#peek)
+  - [Configuration](#configuration)
+    - [.vscode/launch.json](#vscodelaunchjson)
+    - [Karate classpath](#karate-classpath)
+      - [Using karate.jar (Karate fat jar)](#using-karatejar-karate-fat-jar)
+      - [Using mvn dependency:copy-dependencies](#using-mvn-dependencycopy-dependencies)
+      - [Using mvn dependency:build-classpath](#using-mvn-dependencybuild-classpath)
+    - [Run/Debug command templates](#rundebug-command-templates)
+
 ## Debug Karate Scripts
 
 You can Debug [Karate](https://github.com/intuit/karate) scripts, using:
