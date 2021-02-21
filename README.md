@@ -2,6 +2,10 @@
 
 Explore your APIs and Debug [Karate](https://github.com/intuit/karate) test scripts within VS Code.
 
+This project started from original [Karate Runner](https://github.com/kirksl/karate-runner/). Lot of functionality has been added, configuration was refactored and prortions of code rewritten from scratch.
+
+This VS Code extension is only compatible with Karate 1.0.0+ while [Karate Runner](https://github.com/kirksl/karate-runner/) remains compatible with all versions of Karate.
+
 > :warning: **Beta**: This is an unfinished and beta extension.
 
 ## Debug Karate Scripts
@@ -15,7 +19,7 @@ You can Debug [Karate](https://github.com/intuit/karate) scripts, using:
 -   interactive debug console where you can print, update variable values or test jsonPath expressions
 -   hot reloading (with caveants)
 
-It uses the DebugAdapter originaly developed by [Peter Thomas](https://github.com/intuit/karate/) and [Kirk Slota](https://github.com/kirksl/karate-runner/).
+It includes DebugAdapter originaly developed by [Peter Thomas](https://github.com/intuit/karate/) and [Kirk Slota](https://github.com/kirksl/karate-runner/).
 
 https://twitter.com/KarateDSL/status/1167533484560142336
 
@@ -23,7 +27,7 @@ https://twitter.com/KarateDSL/status/1167533484560142336
 
 Now you can also explore your API from within VS Code. Karate is (one of) the best API testing automation tools.
 
-With this extension you can leverage your existing scripts to explore your API while you develop your test scripts. No need to maintain a separate collection or switch between different programs.
+With this extension you can leverage your existing scripts to explore your API while you developing your test scripts. No need to maintain a separate collection or switch between different programs.
 
 You can also use this extension to generate reusable tests scripts from OpenAPI and cURL to speed up your development and api exploration.
 
@@ -45,15 +49,23 @@ With Karate 1.0.0+ you can inspect debuger variables as an structured tree, not 
 
 ### Generating Code from OpenAPI definitions
 
-To quickly test/explore you can generate reusable karate scenarios from your openapi definitions, with test-data yml files.
+To quickly test/explore your APIs you can generate reusable karate scenarios from your openapi definitions, with test-data yml files.
 
 ![alt](resources/screenshots/Generate-Karate-Test.png)
 
 ![alt](resources/screenshots/OpenAPI-Test.png)
 
+### Reusing generated Scenarios in complex flow/squence tests
+
+This generated scenarios can be reused and invoked from inside other tests, implementing more complex sequences or flows.
+
+You don't need to keep writting http based scenarios but directly reference your API operations by the very name they are documented in your OpenAPI definition.
+
+![alt](resources/screenshots/SequenceTestWithGeneratedScenarios.png)
+
 ### Generating Code from cURL (Smart Paste)
 
-If a `curl` command is detected while pasint into feature files it will be transformed into Karate syntax and pasted into the VSCode Editor.
+If a `curl` command is detected while pasting into feature files it will be transformed into Karate syntax and pasted into the VSCode Editor.
 
 ### Generating Mocks from cURL commands output (Smart Paste)
 
@@ -65,13 +77,13 @@ If a `curl` command... TODO
 
 You can navigate between files, features and scenario @tags using `Control-Click`
 
-You can also navigate to scenarios by @tag in the same or in different feature file (TODO)
+You can also navigate to scenarios by _@tag_ in the same or in different feature file (TODO)
 
 ## Configuration
 
 ### .vscode/launch.json
 
-When you click 'Karate Debug' for the first time if .vscode/launch.js does not exist one will be created for you with this contents. This is a one time step, after this file is created you can start debuging normally.
+When you click `Karate Debug` for the first time if `.vscode/launch.js` does not exist one will be created for you with this contents. This is a one time step, after this file is created you can start debuging normally.
 
 ```json
 {
@@ -99,7 +111,7 @@ You need to provide a way for Karate-IDE to find karate java classes (namely kar
 
 Easiest way. Download the latest executable form https://dl.bintray.com/ptrthomas/karate/ and rename it to your project's root folder as `karate.jar`. You don't need to configure anything else but your classpath will be very limited.
 
-Alternatively you can configure a different path to karate.jar.
+Alternatively you can download it to a different path configure in `.vscode/settings.json` where your karate.jar is located.
 
 ```json
 {
@@ -107,7 +119,7 @@ Alternatively you can configure a different path to karate.jar.
 }
 ```
 
-(This is a very limited setup as no other project folders or dependencies will be added to karate runtime classpath)
+(This is a very limited setup as no other project folders or dependencies will be added to karate runtime classpath, and that includes `karate-config.js`)
 
 #### Using mvn dependency:copy-dependencies
 
@@ -137,11 +149,11 @@ mvn dependency:build-classpath
 
 ### Run/Debug command templates
 
-Karate-IDE uses a template for configuring Run and Debug commands.
+Karate-IDE uses a _template_ for configuring Run and Debug commands.
 
 Default configuration favors KarateCli but you can build any command line you would like for your Operating System, default shell and/or build system (mvn, gradle,...).
 
-**Default configured templates works out of the box with PowerShell, bash and zsh so in most cases you shouldn't need to configure these.**
+**Default configured templates works out of the box with PowerShell, Bash and Zsh so in most cases you shouldn't need to configure these.**
 
 ```json
 {
