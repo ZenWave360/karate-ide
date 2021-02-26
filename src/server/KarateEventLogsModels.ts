@@ -13,6 +13,7 @@ export class LoggingEventVO {
     feature: string;
     scenario: string;
     outline: boolean;
+    isDinamic: boolean;
     line: number;
     name: string;
     resource: string;
@@ -73,7 +74,7 @@ export class TreeEntry implements ITreeEntry {
                 label = 'Scenario Outline';
                 state = vscode.TreeItemCollapsibleState.Collapsed;
             }
-            label = label + ':' + this.eventStart.scenario;
+            label = label + ' :' + this.eventStart.scenario;
         }
         return {
             label,

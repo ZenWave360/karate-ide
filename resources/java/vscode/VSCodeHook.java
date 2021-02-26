@@ -1,26 +1,3 @@
-/*
- * The MIT License
- *
- * Copyright 2019 Intuit Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 package vscode;
 
 import ch.qos.logback.classic.Level;
@@ -72,7 +49,6 @@ public class VSCodeHook implements RuntimeHook {
     Queue<Event> queue = new ConcurrentLinkedDeque();
     AsynchronousSocketChannel client;
     Future out;
-
 
     enum EventType {
         REQUEST, RESPONSE, FEATURE_START, FEATURE_END, SCENARIO_START, SCENARIO_END
@@ -328,7 +304,7 @@ public class VSCodeHook implements RuntimeHook {
             ThresholdFilter filter = new ThresholdFilter() {
                 @Override
                 public FilterReply decide(ILoggingEvent event) {
-                    if(event.getLoggerName().startsWith("com.intuit.karate.")) {
+                    if (event.getLoggerName().startsWith("com.intuit.karate.")) {
                         return super.decide(event);
                     } else {
                         return FilterReply.NEUTRAL;
@@ -365,11 +341,12 @@ public class VSCodeHook implements RuntimeHook {
 
     @Override
     public void beforeSuite(Suite suite) {
-
+        log.trace("beforeSuite");
     }
 
     @Override
     public void afterSuite(Suite suite) {
+        log.trace("afterSuite");
     }
 
     private boolean isSame(Feature f1, Feature f2) {
@@ -386,6 +363,7 @@ public class VSCodeHook implements RuntimeHook {
     public boolean beforeFeature(FeatureRuntime fr) {
         try {
             if (fr.caller.parentRuntime != null && isSame(fr.feature, fr.caller.parentRuntime.scenario.getFeature())) {
+                System.out.println("fr.feature " + fr.feature.getNameForReport());
                 return true;
             }
             Event event = new Event();
@@ -438,16 +416,22 @@ public class VSCodeHook implements RuntimeHook {
 
     }
 
+    private ThreadLocal<String> dynamicThreadRuntime = new ThreadLocal<>();
+
     @Override
     public boolean beforeScenario(ScenarioRuntime sr) {
         try {
+            if (sr.scenario.isDynamic() && sr.caller.parentRuntime == null) {
+                dynamicThreadRuntime.set(sr.scenario.getUriToLineNumber().toString());
+                return true;
+            }
             Event event = new Event();
             event.eventType = EventType.SCENARIO_START;
             event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
             event.timestamp = System.currentTimeMillis();
             event.feature = sr.featureRuntime.feature.getNameForReport();
             event.rootFeature = sr.featureRuntime.rootFeature.feature.getNameForReport();
-            event.scenario = sr.scenario.getName() + "|" + sr.scenario.getDebugInfo();
+            event.scenario = sr.scenario.getName() + " | " + sr.scenario.getDebugInfo();
             event.resource = sr.featureRuntime.feature.getResource().getRelativePath();
             event.line = sr.scenario.getLine();
             if (sr.scenario.isOutlineExample()) {
@@ -475,13 +459,16 @@ public class VSCodeHook implements RuntimeHook {
     @Override
     public void afterScenario(ScenarioRuntime sr) {
         try {
+            if (sr.scenario.getUriToLineNumber().toString().contentEquals(dynamicThreadRuntime.get())) {
+                beforeScenario(sr);
+            }
             Event event = new Event();
             event.eventType = EventType.SCENARIO_END;
             event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
             event.timestamp = System.currentTimeMillis();
             event.feature = sr.featureRuntime.feature.getNameForReport();
             event.rootFeature = sr.featureRuntime.rootFeature.feature.getNameForReport();
-            event.scenario = sr.scenario.getName() + "|" + sr.scenario.getDebugInfo();
+            event.scenario = sr.scenario.getName() + " | " + sr.scenario.getDebugInfo();
             event.scenario = sr.scenario.toString();
             event.resource = sr.featureRuntime.feature.getResource().getRelativePath();
             event.line = sr.scenario.getLine();
@@ -506,7 +493,6 @@ public class VSCodeHook implements RuntimeHook {
             log.debug("VSCodeHook error", e);
         }
     }
-
 
     @Override
     public boolean beforeStep(Step step, ScenarioRuntime sr) {
