@@ -6,7 +6,7 @@ Background:
 
 Scenario Outline: Test <%= operation.operationId %> for <status> status code
 	* def req = read(<testDataFile>)
-	* def result = call read(karate.info.featureFileName + '@operation') req
+	* def result = call read('<%= operation.operationId %>@operation') req
 	* match result.responseStatus == <status>
 		Examples:
 		| status | testDataFile

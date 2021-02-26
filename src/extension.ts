@@ -24,7 +24,7 @@ import { smartPaste } from '@/commands/SmartPaste';
 
 import * as vscode from 'vscode';
 import KarateExecutionsTreeProvider from '@/views/executions/KarateExecutionsTreeProvider';
-import { generateKarateTestFromOpenAPI } from '@/generators/openapi/OpenAPITestGenerator';
+import { generateKarateTestFromOpenAPI, generateKarateMocksFromOpenAPI } from '@/generators/openapi/OpenAPIGenerator';
 import { LocalStorageService } from '@/commands/LocalStorageService';
 
 let karateTestsWatcher = null;
@@ -58,7 +58,8 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.tests.switchKarateEnv', () => karateTestsProvider.switchKarateEnv());
     registerCommand('karateIDE.tests.configureFocus', () => karateTestsProvider.configureTestsFocus());
     registerCommand('karateIDE.tests.open', openFileInEditor);
-    registerCommand('karateIDE.generators.openapi', generateKarateTestFromOpenAPI);
+    registerCommand('karateIDE.generators.openapi.test', generateKarateTestFromOpenAPI);
+    registerCommand('karateIDE.generators.openapi.mocks', generateKarateMocksFromOpenAPI);
 
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('karate-ide', debugAdapterProvider));
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('karate-ide', debugAdapterProvider));

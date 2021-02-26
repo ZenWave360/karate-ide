@@ -16,11 +16,14 @@ This VS Code extension is only compatible with Karate 1.0.0+ while [Karate Runne
     - [Structured HTTP Log Viewer](#structured-http-log-viewer)
     - [Structured (tree-like) json variables in debuger](#structured-tree-like-json-variables-in-debuger)
     - [Generating Code from OpenAPI definitions](#generating-code-from-openapi-definitions)
-    - [Reusing generated Scenarios in complex flow/squence tests](#reusing-generated-scenarios-in-complex-flowsquence-tests)
+      - [Generating Test Features from OpenAPI definitions](#generating-test-features-from-openapi-definitions)
+      - [Reusing generated Scenarios in complex flow/squence tests](#reusing-generated-scenarios-in-complex-flowsquence-tests)
+      - [Generating complete Mocks from OpenAPI definitions](#generating-complete-mocks-from-openapi-definitions)
     - [Generating Code from cURL (Smart Paste)](#generating-code-from-curl-smart-paste)
     - [Generating Mocks from cURL commands output (Smart Paste)](#generating-mocks-from-curl-commands-output-smart-paste)
   - [Other functionality](#other-functionality)
     - [Peek](#peek)
+    - [Start your a Mocks server](#start-your-a-mocks-server)
   - [Configuration](#configuration)
     - [.vscode/launch.json](#vscodelaunchjson)
     - [Karate classpath](#karate-classpath)
@@ -28,7 +31,6 @@ This VS Code extension is only compatible with Karate 1.0.0+ while [Karate Runne
       - [Using mvn dependency:copy-dependencies](#using-mvn-dependencycopy-dependencies)
       - [Using mvn dependency:build-classpath](#using-mvn-dependencybuild-classpath)
     - [Run/Debug command templates](#rundebug-command-templates)
-
 ## Debug Karate Scripts
 
 You can Debug [Karate](https://github.com/intuit/karate) scripts, using:
@@ -70,13 +72,15 @@ With Karate 1.0.0+ you can inspect debuger variables as an structured tree, not 
 
 ### Generating Code from OpenAPI definitions
 
+#### Generating Test Features from OpenAPI definitions
+
 To quickly test/explore your APIs you can generate reusable karate scenarios from your openapi definitions, with test-data yml files.
 
 ![alt](resources/screenshots/Generate-Karate-Test.png)
 
 ![alt](resources/screenshots/OpenAPI-Test.png)
 
-### Reusing generated Scenarios in complex flow/squence tests
+#### Reusing generated Scenarios in complex flow/squence tests
 
 This generated scenarios can be reused and invoked from inside other tests, implementing more complex sequences or flows.
 
@@ -84,6 +88,9 @@ You don't need to keep writting http based scenarios but directly reference your
 
 ![alt](resources/screenshots/SequenceTestWithGeneratedScenarios.png)
 
+#### Generating complete Mocks from OpenAPI definitions
+
+You can also generate Mock features for your complete api from openapi definitions. Right click in a openapi yml file and select `Generate Karate Mocks`.
 ### Generating Code from cURL (Smart Paste)
 
 If a `curl` command is detected while pasting into feature files it will be transformed into Karate syntax and pasted into the VSCode Editor.
@@ -99,6 +106,10 @@ If a `curl` command... TODO
 You can navigate between files, features and scenario @tags using `Control-Click`
 
 You can also navigate to scenarios by _@tag_ in the same or in different feature file (TODO)
+
+### Start your a Mocks server
+
+Right click on a *.feature file and click `Start Karate Mock Server`
 
 ## Configuration
 

@@ -1,4 +1,4 @@
-export { buildKarateTestDataObject, buildExampleFromSchema };
+export { buildKarateTestDataObject, buildExampleFromSchema, buildKarateMockDataObject };
 
 /**
  *
@@ -32,6 +32,18 @@ function buildKarateTestDataObject(operation: any, statusCode: string | number) 
         matchResponse: false,
         response,
         each,
+    };
+}
+
+function buildKarateMockDataObject(operation, statusCode) {
+    const hasResponseContent = operation.responses[statusCode].content;
+    const responseSchema = () => (Object.values(operation.responses[statusCode].content)[0] as any).schema;
+    const response = hasResponseContent ? buildExampleFromSchema(responseSchema(), { optional: true }) : null;
+    return {
+        responseStatus: +statusCode,
+        request: {},
+        requestMatch: {},
+        response,
     };
 }
 

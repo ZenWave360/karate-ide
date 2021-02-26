@@ -53,6 +53,7 @@
         "@types/lodash": "^4.14.168",
         "ejs": "^3.1.5",
         "fs-extra": "^9.1.0",
+        "js-yaml": "^4.0.0",
         "json-schema": "^0.3.0",
         "lodash": "^4.17.20",
         "minimatch": "^3.0.4",
@@ -72,7 +73,6 @@
         "eslint": "^7.19.0",
         "file-loader": "^6.2.0",
         "glob": "^7.1.6",
-        "js-yaml": "^4.0.0",
         "mocha": "^8.2.1",
         "prettier": "^2.2.1",
         "ts-loader": "^8.0.14",
@@ -247,8 +247,16 @@
                 }
             },
             {
-                "command": "karateIDE.generators.openapi",
+                "command": "karateIDE.generators.openapi.test",
                 "title": "Generate Karate Test",
+                "icon": {
+                    "light": "resources/vscode-icons/light/karate-test.svg",
+                    "dark": "resources/vscode-icons/dark/karate-test.svg"
+                }
+            },
+            {
+                "command": "karateIDE.generators.openapi.mocks",
+                "title": "Generate Karate Mock",
                 "icon": {
                     "light": "resources/vscode-icons/light/karate-test.svg",
                     "dark": "resources/vscode-icons/dark/karate-test.svg"
@@ -343,23 +351,45 @@
             "explorer/context": [
                 {
                     "when": "resourceLangId == yaml",
-                    "command": "karateIDE.generators.openapi",
-                    "group": "Generate Karate Test for Operation"
+                    "command": "karateIDE.generators.openapi.test",
+                    "group": "karate@1"
                 },
                 {
                     "when": "resourceLangId == yml",
-                    "command": "karateIDE.generators.openapi",
-                    "group": "Generate Karate Test for Operation"
+                    "command": "karateIDE.generators.openapi.test",
+                    "group": "karate@1"
+                },
+                {
+                    "when": "resourceLangId == yaml",
+                    "command": "karateIDE.generators.openapi.mocks",
+                    "group": "karate@2"
+                },
+                {
+                    "when": "resourceLangId == yml",
+                    "command": "karateIDE.generators.openapi.mocks",
+                    "group": "karate@2"
                 }
             ],
             "editor/title": [
                 {
                     "when": "resourceLangId == yaml",
-                    "command": "karateIDE.generators.openapi"
+                    "command": "karateIDE.generators.openapi.test",
+                    "group": "karate@1"
                 },
                 {
                     "when": "resourceLangId == yml",
-                    "command": "karateIDE.generators.openapi"
+                    "command": "karateIDE.generators.openapi.test",
+                    "group": "karate@1"
+                },
+                {
+                    "when": "resourceLangId == yaml",
+                    "command": "karateIDE.generators.openapi.mocks",
+                    "group": "karate@2"
+                },
+                {
+                    "when": "resourceLangId == yml",
+                    "command": "karateIDE.generators.openapi.mocks",
+                    "group": "karate@2"
                 }
             ]
         },
