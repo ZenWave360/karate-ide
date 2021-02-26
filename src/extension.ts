@@ -18,6 +18,7 @@ import {
     relaunchRunAll,
     relaunchDebug,
     relaunchRun,
+    startMockServer,
 } from '@/commands/RunDebug';
 import { openFileInEditor } from '@/commands/DisplayCommands';
 import { smartPaste } from '@/commands/SmartPaste';
@@ -60,6 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.tests.open', openFileInEditor);
     registerCommand('karateIDE.generators.openapi.test', generateKarateTestFromOpenAPI);
     registerCommand('karateIDE.generators.openapi.mocks', generateKarateMocksFromOpenAPI);
+    registerCommand('karateIDE.mocks.start', startMockServer);
 
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('karate-ide', debugAdapterProvider));
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('karate-ide', debugAdapterProvider));

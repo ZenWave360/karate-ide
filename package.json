@@ -261,6 +261,14 @@
                     "light": "resources/vscode-icons/light/karate-test.svg",
                     "dark": "resources/vscode-icons/dark/karate-test.svg"
                 }
+            },
+            {
+                "command": "karateIDE.mocks.start",
+                "title": "Start Karate Mock Server",
+                "icon": {
+                    "light": "resources/vscode-icons/light/karate-test.svg",
+                    "dark": "resources/vscode-icons/dark/karate-test.svg"
+                }
             }
         ],
         "menus": {
@@ -368,6 +376,11 @@
                     "when": "resourceLangId == yml",
                     "command": "karateIDE.generators.openapi.mocks",
                     "group": "karate@2"
+                },
+                {
+                    "when": "resourceLangId == karate",
+                    "command": "karateIDE.mocks.start",
+                    "group": "karate@3"
                 }
             ],
             "editor/title": [
@@ -390,6 +403,11 @@
                     "when": "resourceLangId == yml",
                     "command": "karateIDE.generators.openapi.mocks",
                     "group": "karate@2"
+                },
+                {
+                    "when": "resourceLangId == karate",
+                    "command": "karateIDE.mocks.start",
+                    "group": "karate@3"
                 }
             ]
         },
@@ -437,6 +455,12 @@
                     "type": "string",
                     "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.Main -d",
                     "description": "Command line template for debug action. See documentation for available template variables and different recipies.",
+                    "scope": "resource"
+                },
+                "karateIDE.karateCli.mockServerCommandTemplate": {
+                    "type": "string",
+                    "default": "java -cp '${classpath}' com.intuit.karate.Main -m '${feature}' -p ${port}",
+                    "description": "Command line template for starting a mock server. See documentation for available template variables and different recipies.",
                     "scope": "resource"
                 },
                 "karateIDE.karateTestRunner.karateJunitRunner": {
