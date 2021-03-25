@@ -1,5 +1,8 @@
 out
 dist
 node_modules
+target/
+.idea/
+*.iml
 .vscode-test/
 *.vsix

@@ -1,20 +1,16 @@
 package vscode;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.filter.ThresholdFilter;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.AppenderBase;
-import ch.qos.logback.core.spi.FilterReply;
 import com.intuit.karate.JsonUtils;
 import com.intuit.karate.RuntimeHook;
+import com.intuit.karate.StringUtils;
 import com.intuit.karate.Suite;
 import com.intuit.karate.core.Feature;
 import com.intuit.karate.core.FeatureRuntime;
 import com.intuit.karate.core.ScenarioRuntime;
 import com.intuit.karate.core.Step;
 import com.intuit.karate.core.StepResult;
+import com.intuit.karate.http.HttpRequest;
+import com.intuit.karate.http.Response;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -22,7 +18,9 @@ import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -32,7 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -45,10 +43,7 @@ public class VSCodeHook implements RuntimeHook {
 
     private final String host;
     private final Integer port;
-    ExecutorService executor = Executors.newSingleThreadExecutor();
-    Queue<Event> queue = new ConcurrentLinkedDeque();
-    AsynchronousSocketChannel client;
-    Future out;
+    SocketChannel client;
 
     enum EventType {
         REQUEST, RESPONSE, FEATURE_START, FEATURE_END, SCENARIO_START, SCENARIO_END
@@ -266,7 +261,6 @@ public class VSCodeHook implements RuntimeHook {
         port = portString.matches("\\d+") ? Integer.parseInt(portString) : null;
         log.trace("VSCodeHook {}:{}", host, port);
         if (port != null) {
-            interceptKarateLogs();
             try {
                 connect();
             } catch (Exception e) {
@@ -276,67 +270,19 @@ public class VSCodeHook implements RuntimeHook {
     }
 
     private void connect() throws IOException, ExecutionException, InterruptedException, TimeoutException {
-        client = AsynchronousSocketChannel.open();
+        client = SocketChannel.open();
         client.setOption(StandardSocketOptions.SO_KEEPALIVE, true);
-        Future<Void> future = client.connect(new InetSocketAddress(host != null ? host : "localhost", port));
-        future.get(1000, TimeUnit.MILLISECONDS);
-    }
-
-    private void interceptKarateLogs() {
-        Logger logger = (Logger) LoggerFactory.getLogger("com.intuit.karate");
-        Appender appender = new AppenderBase<ILoggingEvent>() {
-            @Override
-            protected void append(ILoggingEvent eventLog) {
-                String message = eventLog.getFormattedMessage();
-                if (message.startsWith("request:") || message.startsWith("response time in milliseconds:")) {
-                    try {
-                        send(createEventFromHttpLogs(message));
-                    } catch (Exception e) {
-                        log.debug("VSCodeHook error", e);
-                    }
-                }
-            }
-        };
-        appender.start();
-        if (!logger.isDebugEnabled()) {
-            // we need to intercept karate debug logs
-            // but we filter root appenders by its original level
-            ThresholdFilter filter = new ThresholdFilter() {
-                @Override
-                public FilterReply decide(ILoggingEvent event) {
-                    if (event.getLoggerName().startsWith("com.intuit.karate.")) {
-                        return super.decide(event);
-                    } else {
-                        return FilterReply.NEUTRAL;
-                    }
-                }
-            };
-            filter.setLevel(logger.getEffectiveLevel().levelStr);
-            logger.setLevel(Level.DEBUG);
-            logger.iteratorForAppenders().forEachRemaining(a -> {
-                a.addFilter(filter);
-            });
-            Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-            rootLogger.iteratorForAppenders().forEachRemaining(a -> {
-                a.addFilter(filter);
-            });
-        }
-        logger.addAppender(appender);
+        boolean connected = client.connect(new InetSocketAddress(host != null ? host : "localhost", port));
+        log.debug("SocketChannel connection: {}", connected);
     }
 
     private void send(Event event) throws IOException, ExecutionException, InterruptedException, TimeoutException {
-        if (port == null) {
+        if (port == null || client == null) {
             return;
         }
-        if (client == null || client.getRemoteAddress() == null) {
-            connect();
-        }
-        while (out != null && !out.isDone()) { // review if necessary
-            log.trace("waiting...");
-        }
-        log.trace(event.eventType + " " + event.feature + " " + event.status);
-        out = client.write(ByteBuffer.wrap(JsonUtils.toJson(event).getBytes(UTF_8)));
-        out.get();
+        log.trace(event.eventType + " " + event.feature + " " + event.status + " " + event.callDepth);
+        int out = client.write(ByteBuffer.wrap(JsonUtils.toJson(event).getBytes(UTF_8)));
+        log.trace("out.get() {}", out);
     }
 
     @Override
@@ -421,10 +367,11 @@ public class VSCodeHook implements RuntimeHook {
     @Override
     public boolean beforeScenario(ScenarioRuntime sr) {
         try {
-            if (sr.scenario.isDynamic() && sr.caller.parentRuntime == null) {
-                dynamicThreadRuntime.set(sr.scenario.getUriToLineNumber().toString());
-                return true;
-            }
+//            if (sr.scenario.isDynamic() && sr.caller.parentRuntime == null) {
+//                dynamicThreadRuntime.set(sr.scenario.getUriToLineNumber().toString());
+//                return true;
+//            }
+            sr.evaluateScenarioName();
             Event event = new Event();
             event.eventType = EventType.SCENARIO_START;
             event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
@@ -443,7 +390,7 @@ public class VSCodeHook implements RuntimeHook {
                 event.caller = sr.caller.feature.getNameForReport();
                 event.callDepth = sr.caller.depth;
                 try {
-                    event.payload = sr.caller.arg.getAsString();
+                    // event.payload = sr.caller.arg.getAsString();
                 } catch (Exception e) {
                     event.payload = e.getMessage();
                 }
@@ -459,9 +406,9 @@ public class VSCodeHook implements RuntimeHook {
     @Override
     public void afterScenario(ScenarioRuntime sr) {
         try {
-            if (sr.scenario.getUriToLineNumber().toString().contentEquals(dynamicThreadRuntime.get())) {
-                beforeScenario(sr);
-            }
+//            if (sr.scenario.getUriToLineNumber().toString().contentEquals(dynamicThreadRuntime.get())) {
+//                beforeScenario(sr);
+//            }
             Event event = new Event();
             event.eventType = EventType.SCENARIO_END;
             event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
@@ -483,7 +430,7 @@ public class VSCodeHook implements RuntimeHook {
             event.status = sr.result.isFailed() ? "KO" : "OK";
             event.failureMessage = sr.result.getFailureMessageForDisplay();
             try {
-                event.payload = JsonUtils.toJson(sr.result.toKarateJson());
+                // event.payload = JsonUtils.toJson(sr.result.toKarateJson());
             } catch (Exception e) {
                 event.payload = e.getMessage();
             }
@@ -504,34 +451,39 @@ public class VSCodeHook implements RuntimeHook {
 
     }
 
-    private Event createEventFromHttpLogs(String request) {
-        String[] lines = request.split("\n");
-        Event event = new Event();
-        event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
-
-        if (lines[0].startsWith("request:")) {
+    public void beforeHttpCall(HttpRequest request, ScenarioRuntime sr) {
+        try {
+            Event event = new Event();
+            event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
             event.eventType = EventType.REQUEST;
-            String[] line1 = lines[1].split(" ");
-            event.method = line1[2];
-            event.url = line1[3];
-        } else {
-            event.eventType = EventType.RESPONSE;
-            event.status = lines[1].split(" ")[2];
+            event.method = request.getMethod();
+            event.url = request.getUrl();
+            event.headers = new HashMap<>(fromHeaders(request.getHeaders()));
+            event.payload = request.getBodyAsString();
+            send(event);
+        } catch (Exception e) {
+            log.debug("VSCodeHook error", e);
         }
-
-        event.headers = new HashMap<>();
-        for (int i = 2; i < lines.length; i++) {
-            String line = lines[i];
-            if (i == lines.length - 1 && !headersPattern.matcher(line).find()) {
-                event.payload = line;
-            } else {
-                String[] header = line.replaceFirst(headersPattern.pattern(), "").split(": ");
-                event.headers.put(header[0], header[1]);
-            }
-        }
-
-        return event;
     }
 
-    private Pattern headersPattern = Pattern.compile("^\\d [<>] ");
+    public void afterHttpCall(HttpRequest request, Response response, ScenarioRuntime sr) {
+        try {
+            Event event = new Event();
+            event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
+            event.eventType = EventType.RESPONSE;
+            event.method = request.getMethod();
+            event.url = request.getUrl();
+            event.status = String.valueOf(response.getStatus());
+            event.headers = new HashMap<>(fromHeaders(response.getHeaders()));
+            event.payload = response.getBodyAsString();
+            send(event);
+        } catch (Exception e) {
+            log.debug("VSCodeHook error", e);
+        }
+    }
+
+    private Map<String, String> fromHeaders(Map<String, List<String>> headers) {
+        return headers.entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey(), e -> StringUtils.join(e.getValue(), ',')));
+    }
 }

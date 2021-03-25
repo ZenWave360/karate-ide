@@ -5,6 +5,7 @@ out/**
 src/**
 test/**
 resources/screenshots/*
+resources/vscode-hook/*
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
