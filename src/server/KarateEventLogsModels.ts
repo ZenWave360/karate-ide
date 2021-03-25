@@ -74,7 +74,7 @@ export class TreeEntry implements ITreeEntry {
                 label = 'Scenario Outline';
                 state = vscode.TreeItemCollapsibleState.Collapsed;
             }
-            label = label + ' :' + this.eventStart.scenario;
+            label = label + ': ' + this.eventStart.scenario;
         }
         return {
             label,
