@@ -63,6 +63,11 @@ function buildParametersSample(parameters) {
  * @param {*} options
  */
 function buildExampleFromSchema(schema, options) {
+    options.visited = options.visited || [];
+    if (options.visited.includes(schema)) {
+        return null;
+    }
+    options.visited.push(schema);
     if (schema.type === 'array') {
         return [buildExampleFromSchema(schema.items, options)];
     }
