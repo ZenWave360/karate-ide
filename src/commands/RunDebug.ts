@@ -4,8 +4,8 @@ import ProviderStatusBar from '@/views/status-bar/providerStatusBar';
 import ProviderExecutions from '@/views/status-bar/providerExecutions';
 
 import * as vscode from 'vscode';
-import { ITreeEntryCommand, TreeEntry } from '@/server/KarateEventLogsModels';
-import { KarateTestTreeEntry } from '@/views/tests/KarateTestsProvider';
+import { TreeEntry } from '@/server/KarateEventLogsModels';
+import { KarateTestTreeEntry } from '@/fs/FilesManager';
 import EventLogsServer from '@/server/EventLogsServer';
 
 let debugFeature: string = null;

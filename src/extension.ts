@@ -3,8 +3,8 @@ import ProviderDebugAdapter from '@/debug/ProviderDebugAdapter';
 import ProviderResults from '@/views/status-bar/providerResults';
 import ProviderExecutions from '@/views/status-bar/providerExecutions';
 import ProviderStatusBar from '@/views/status-bar/providerStatusBar';
-import ProviderCodeLens from '@/codelens/providerCodeLens';
-import ProviderDefinition from '@/codelens/providerDefinition';
+import CodeLensProvider from '@/codelens/CodeLensProvider';
+import DefinitionProvider from '@/codelens/DefinitionProvider';
 import KarateNetworkLogsTreeProvider from '@/views/logs/KarateNetworkLogsTreeProvider';
 import EventLogsServer from '@/server/EventLogsServer';
 import HoverRunDebugProvider from '@/codelens/HoverRunDebugProvider';
@@ -27,6 +27,7 @@ import * as vscode from 'vscode';
 import KarateExecutionsTreeProvider from '@/views/executions/KarateExecutionsTreeProvider';
 import { generateKarateTestFromOpenAPI, generateKarateMocksFromOpenAPI } from '@/generators/openapi/OpenAPIGenerator';
 import { LocalStorageService } from '@/commands/LocalStorageService';
+import { CompletionItemProvider } from './codelens/CompletionProvider';
 
 let karateTestsWatcher = null;
 
@@ -36,13 +37,10 @@ export function activate(context: vscode.ExtensionContext) {
     let resultsProvider = new ProviderResults();
     let executionsProvider = new ProviderExecutions();
     let statusBarProvider = new ProviderStatusBar(context);
-    let codeLensProvider = new ProviderCodeLens();
-    let definitionProvider = new ProviderDefinition();
+    let codeLensProvider = new CodeLensProvider();
     //let foldingRangeProvider = new ProviderFoldingRange();
 
-    let codeLensTarget = { language: 'karate', scheme: 'file' };
-    let definitionTarget = { language: 'karate', scheme: 'file' };
-    //let foldingRangeTarget = { language: "karate", scheme: "file" };
+    let karateFile = { language: "karate", scheme: "file" };
 
     function registerCommand(command: string, callback: (...args: any[]) => any, thisArg?: any) {
         context.subscriptions.push(vscode.commands.registerCommand(command, callback));
@@ -65,13 +63,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('karate-ide', debugAdapterProvider));
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('karate-ide', debugAdapterProvider));
-    context.subscriptions.push(vscode.languages.registerCodeLensProvider(codeLensTarget, codeLensProvider));
-    context.subscriptions.push(vscode.languages.registerDefinitionProvider(definitionTarget, definitionProvider));
+    context.subscriptions.push(vscode.languages.registerCodeLensProvider(karateFile, codeLensProvider));
+    context.subscriptions.push(vscode.languages.registerHoverProvider(karateFile, new HoverRunDebugProvider(context)));
+    context.subscriptions.push(vscode.languages.registerDefinitionProvider(karateFile, new DefinitionProvider()));
+    context.subscriptions.push(vscode.languages.registerCompletionItemProvider(karateFile, new CompletionItemProvider(), ...['\'', '\"']));
     //let registerFoldingRangeProvider = vscode.languages.registerFoldingRangeProvider(foldingRangeTarget, foldingRangeProvider);
 
     context.subscriptions.push(vscode.window.createTreeView('karate-tests', { showCollapseAll: true, treeDataProvider: karateTestsProvider }));
 
-    context.subscriptions.push(vscode.languages.registerHoverProvider(codeLensTarget, new HoverRunDebugProvider(context)));
     // NetworkLogs View
     const networkLogsProvider = new KarateNetworkLogsTreeProvider();
     registerCommand('karateIDE.karateNetworkLogs.clearTree', () => networkLogsProvider.clear());
