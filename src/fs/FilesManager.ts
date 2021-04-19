@@ -41,7 +41,7 @@ class FilesManager {
         this.loadFiles();
     }
 
-    private async loadFiles() {
+    public async loadFiles() {
         this.testsGlobFilter = String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter'));
         this.classpathFolders = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('classpath'))
             .split(path.delimiter)
@@ -52,7 +52,7 @@ class FilesManager {
 
         this.cachedKarateTestFiles = (await vscode.workspace.findFiles(this.testsGlobFilter))
             // .filter(f => !focus || (focus.length > 0 && minimatch(f.path, focus, { matchBase: true })))
-            .map(f => path.relative(this.workspaceFolder.uri.fsPath, f.fsPath))
+            .map(f => path.relative(this.workspaceFolder.uri.path, f.path))
             .map(f => f.replace(/\\/g, '/'));
 
         this.cachedClasspathFiles = [];
@@ -200,7 +200,7 @@ class FilesManager {
                     return new KarateTestTreeEntry({
                         uri,
                         type: isDirectory ? vscode.FileType.Directory : vscode.FileType.File,
-                        title: path.relative(this.workspaceFolder.uri.path, key),
+                        title: key,
                         feature: { path: uri.fsPath, line: null },
                         children: isDirectory ? this.convertToEntryTree(value) : null,
                     });

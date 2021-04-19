@@ -13,7 +13,8 @@ export class KarateTestsProvider implements vscode.TreeDataProvider<KarateTestTr
     private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 
-    public refresh(): any {
+    public async refresh(): Promise<any> {
+        await filesManager.loadFiles();
         this._onDidChangeTreeData.fire(null);
     }
 
@@ -34,17 +35,8 @@ export class KarateTestsProvider implements vscode.TreeDataProvider<KarateTestTr
         focus = await vscode.window.showInputBox({ prompt: 'Focus', value: focus, placeHolder: '**/** -t ~@ignore' });
         if (focus !== undefined) {
             LocalStorageService.instance.setValue('karateIDE.testView.focus', focus);
-            this.refresh();
+            await this.refresh();
         }
-    }
-
-    private getDirShowName(file: string) {
-        let name = path.relative(this.workspaceFolder.uri.path, file);
-        // const tokens = name.split(path.sep);
-        // if (tokens.length > 5) {
-        //     name = [tokens[0], '...', tokens[tokens.length - 3], tokens[tokens.length - 2], tokens[tokens.length - 1]].join(path.sep);
-        // }
-        return file; // name;
     }
 
     private getConfiguredFocusAndTags() {

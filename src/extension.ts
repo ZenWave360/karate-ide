@@ -53,7 +53,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.tests.run', runKarateTest);
     registerCommand('karateIDE.tests.runAll', runAllKarateTests);
     registerCommand('karateIDE.tests.debugAll', debugAllKarateTests);
-    registerCommand('karateIDE.tests.refreshTree', () => karateTestsProvider.refresh());
+    registerCommand('karateIDE.tests.refreshTree', async () => await karateTestsProvider.refresh());
     registerCommand('karateIDE.tests.switchKarateEnv', () => karateTestsProvider.switchKarateEnv());
     registerCommand('karateIDE.tests.configureFocus', () => karateTestsProvider.configureTestsFocus());
     registerCommand('karateIDE.tests.open', openFileInEditor);
