@@ -6,31 +6,41 @@ This is not the official vscode extension. Here you can find the original [Karat
 
 This project started from original [Karate Runner](https://github.com/kirksl/karate-runner/). Lot of functionality has been added, configuration was refactored and big portions of code rewritten from scratch.
 
+It works out of the box with different ways to execute karate: using [jbang](https://www.jbang.dev/), karate.jar standalone, maven or any custom classpath.
+
+It features **code generation** from openapi definitions for both **tests** and **mocks** (server side features), running your tests and starting your mocks from a menu, **tree-like http log viewer** like you would expect in Postman or chrome-dev-tools, copy http request logs as cURL, smart paste of cURL commands as test Scenarios, code navigation between local and classpath files (it honors your [classpath setting](#karate-classpath)) with _control-click_, _karate.env_ switcher, focus on tests by name and @tag, **autocompletion** of classpath features and feature tags...
+
 This VS Code extension is only compatible with Karate 1.0.0+ while [Karate Runner](https://github.com/kirksl/karate-runner/) remains compatible with all versions of Karate.
 
-> :warning: **Beta**: This is an unfinished and beta extension.
+<!-- TOC -->
 
 - [Karate IDE](#karate-ide)
-  - [Debug Karate Scripts](#debug-karate-scripts)
-  - [Explore your APIs](#explore-your-apis)
-    - [Structured HTTP Log Viewer](#structured-http-log-viewer)
-    - [Structured (tree-like) json variables in debuger](#structured-tree-like-json-variables-in-debuger)
-    - [Generating Code from OpenAPI definitions](#generating-code-from-openapi-definitions)
-      - [Generating Test Features from OpenAPI definitions](#generating-test-features-from-openapi-definitions)
-      - [Reusing generated Scenarios in complex flow/squence tests](#reusing-generated-scenarios-in-complex-flowsquence-tests)
-      - [Generating complete Mocks from OpenAPI definitions](#generating-complete-mocks-from-openapi-definitions)
-    - [Generating Code from cURL (Smart Paste)](#generating-code-from-curl-smart-paste)
-    - [Generating Mocks from cURL commands output (Smart Paste)](#generating-mocks-from-curl-commands-output-smart-paste)
-  - [Other functionality](#other-functionality)
-    - [Peek](#peek)
-    - [Start your a Mocks server](#start-your-a-mocks-server)
-  - [Configuration](#configuration)
-    - [.vscode/launch.json](#vscodelaunchjson)
-    - [Karate classpath](#karate-classpath)
-      - [Using karate.jar (Karate fat jar)](#using-karatejar-karate-fat-jar)
-      - [Using mvn dependency:copy-dependencies](#using-mvn-dependencycopy-dependencies)
-      - [Using mvn dependency:build-classpath](#using-mvn-dependencybuild-classpath)
-    - [Run/Debug command templates](#rundebug-command-templates)
+    - [Debug Karate Scripts](#debug-karate-scripts)
+    - [Explore your APIs](#explore-your-apis)
+        - [Structured HTTP Log Viewer](#structured-http-log-viewer)
+        - [Structured tree-like json variables in debuger](#structured-tree-like-json-variables-in-debuger)
+        - [Generating Code from OpenAPI definitions](#generating-code-from-openapi-definitions)
+            - [Generating Test Features from OpenAPI definitions](#generating-test-features-from-openapi-definitions)
+            - [Reusing generated Scenarios in complex flow/squence tests](#reusing-generated-scenarios-in-complex-flowsquence-tests)
+            - [Generating complete Mocks from OpenAPI definitions](#generating-complete-mocks-from-openapi-definitions)
+        - [Generating Code from cURL Smart Paste](#generating-code-from-curl-smart-paste)
+        - [Generating Mocks from cURL commands output Smart Paste](#generating-mocks-from-curl-commands-output-smart-paste)
+    - [Other functionality](#other-functionality)
+        - [Karate.env switcher](#karateenv-switcher)
+        - [Tests Filtering / Focus](#tests-filtering--focus)
+        - [Code Navigation and Definition Peek](#code-navigation-and-definition-peek)
+        - [Auto-Completion](#auto-completion)
+        - [Start your Mocks server from a menu](#start-your-mocks-server-from-a-menu)
+    - [Configuration](#configuration)
+        - [vscode/launch.json](#vscodelaunchjson)
+        - [Karate classpath](#karate-classpath)
+            - [Using karate.jar Karate fat jar](#using-karatejar-karate-fat-jar)
+            - [With jBang](#with-jbang)
+            - [Using mvn dependency:copy-dependencies](#using-mvn-dependencycopy-dependencies)
+            - [Using mvn dependency:build-classpath](#using-mvn-dependencybuild-classpath)
+        - [Run/Debug command templates](#rundebug-command-templates)
+
+<!-- /TOC -->
 ## Debug Karate Scripts
 
 You can Debug [Karate](https://github.com/intuit/karate) scripts, using:
@@ -101,13 +111,30 @@ If a `curl` command... TODO
 
 ## Other functionality
 
-### Peek
+### Karate.env switcher
 
-You can navigate between files, features and scenario @tags using `Control-Click`
+You can switch karate.env from the grear icon on tests tree view. When using Karate-IDE for manual testing or exploring APIs you will find very handy this environment switcher.
 
-You can also navigate to scenarios by _@tag_ in the same or in different feature file (TODO)
+### Tests Filtering / Focus
 
-### Start your a Mocks server
+You have two different ways to filter files that appears on Tests Tree View: using `karateIDE.tests.globFilter` in settings for global filtering and `Focus` icon for temporal filtering of tests and tags.
+
+In `Focus` you can filter by name pattern and by scenario _@tags_ supporting "or & and" constructions: separate tags by comma for AND, quote them for OR and prefix the with ~@ for NOT.
+### Code Navigation and Definition Peek
+
+You can navigate between files, features and scenario @tags using `Control-Click` or _peek_ definitions with `Alt+F12`
+
+You can also navigate to scenarios by _@tag_ in the same or in different feature file.
+
+It honors your [classpath](#karate-classpath) setting when navigating to files with `classpath:` prefix.
+
+### Auto-Completion
+
+When reading yml/json files are calling other features you can autocomplete their names with teh list of local and classpath files.
+
+It honors your [classpath](#karate-classpath) setting when navigating to files with `classpath:` prefix.
+
+### Start your Mocks server from a menu
 
 Right click on a *.feature file and click `Start Karate Mock Server`
 
@@ -119,9 +146,6 @@ When you click `Karate Debug` for the first time if `.vscode/launch.js` does not
 
 ```json
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
@@ -135,15 +159,23 @@ When you click `Karate Debug` for the first time if `.vscode/launch.js` does not
 
 ### Karate classpath
 
-Karate-IDE classpath is the one configuration that won't work out of the box and you will need to make a decision about.
+You need to tell Karate-IDE where to find karate.jar.
 
-You need to provide a way for Karate-IDE to find karate java classes (namely karate.jar)
+If you don't need anything else but karate.jar in your classpath go for karate fat jar option or jbang.
+
+If you are running karate inside a java or maven project you can configure karate classpath to match your project settings.
+
+Also Karate-IDE will honor your classpath settings when autocompleting and navigating/peeking code.
+
+Karate-IDE classpath is the one configuration that won't work out of the box and you will need to make a decision about.
 
 #### Using karate.jar (Karate fat jar)
 
-Easiest way. Download the latest executable form https://dl.bintray.com/ptrthomas/karate/ and rename it to your project's root folder as `karate.jar`. You don't need to configure anything else but your classpath will be very limited.
+This is the simplest way if all you need is karate.jar in your classpath. 
 
-Alternatively you can download it to a different path configure in `.vscode/settings.json` where your karate.jar is located.
+Download the latest executable form https://dl.bintray.com/ptrthomas/karate/ and rename it to your project's root folder as `karate.jar`. You don't need to configure anything else but your classpath will be very limited.
+
+Alternatively you can download it to a different path configure where your karate.jar is located in `File > Preferences > Settings` globally or in `.vscode/settings.json` for current project.
 
 ```json
 {
@@ -153,6 +185,30 @@ Alternatively you can download it to a different path configure in `.vscode/sett
 
 (This is a very limited setup as no other project folders or dependencies will be added to karate runtime classpath, and that includes `karate-config.js`)
 
+#### With jBang
+
+Easy to upgrade but limited classpath. 
+
+First you need to install karate with jbang: 
+
+```sh
+jbang alias add --name karate com.intuit.karate:karate-core:<karate version>
+``` 
+
+or if jbang is not installed 
+
+```sh
+curl -Ls https://sh.jbang.dev | bash -s - alias add --name karate com.intuit.karate:karate-core:<karate version>
+```
+
+Now you have to update your [Run/Debug command templates](#rundebug-command-templates) to use karate with jbang.
+
+```json
+"karateIDE.karateCli.debugCommandTemplate": "jbang karate '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -d"
+"karateIDE.karateCli.runCommandTemplate": "jbang karate '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' ${karateOptions} '${feature}'"
+"karateIDE.karateCli.mockServerCommandTemplate": "jbang karate -m '${feature}' -p ${port}"
+```
+
 #### Using mvn dependency:copy-dependencies
 
 If you are using maven, this is our **recommended** way to get a full project classpath while debuging with vscode. First you need to run the following command in order to download all project dependencies to `target/dependency`:
@@ -161,11 +217,11 @@ If you are using maven, this is our **recommended** way to get a full project cl
 mvn dependency:copy-dependencies
 ```
 
-Configure this in `.vscode/settings.json` (Replace `;` (for windows) with `:` (for other OS))
+Configure this in `File > Preferences > Settings` globally or in `.vscode/settings.json` (Replace `;` (for windows) with `:` (for other OS))
 
 ```json
 {
-    "karateIDE.karateCli.classpath": "target/classes;target/test-classes;src/test/resources;src/test/java;target/dependency/*"
+    "karateIDE.karateCli.classpath": "src/test/resources;src/test/java;target/classes;target/test-classes;target/dependency/*"
 }
 ```
 
@@ -173,7 +229,7 @@ Configure this in `.vscode/settings.json` (Replace `;` (for windows) with `:` (f
 
 #### Using mvn dependency:build-classpath
 
-If you are lucky you may be able to configure "karateIDE.karateCli.classpath" with the output from this mvn command
+If you don't want to redownload dependencies every time you clean your project, you are can replace `target/dependency/*` with the output from this mvn command. Remember to replace or scape folder separation slashes.
 
 ```
 mvn dependency:build-classpath

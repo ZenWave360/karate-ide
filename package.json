@@ -477,7 +477,7 @@
                 },
                 "karateIDE.tests.globFilter": {
                     "type": "string",
-                    "default": "**/src/test/**/*[.feature|.yml|.json]",
+                    "default": "**/src/test/**/*[.feature|.yml]",
                     "description": "Glob pattern to filter files in Karate Tests view.",
                     "scope": "resource"
                 }
