@@ -68,6 +68,9 @@ function buildExampleFromSchema(schema, options) {
         return null;
     }
     options.visited.push(schema);
+    if (schema.allOf) {
+        return schema.allOf.reduce((allOfSchema, e) => Object.assign(allOfSchema, buildExampleFromSchema(e, options)), {});
+    }
     if (schema.type === 'array') {
         return [buildExampleFromSchema(schema.items, options)];
     }
