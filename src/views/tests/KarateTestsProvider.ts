@@ -98,6 +98,11 @@ export class KarateTestsProvider implements vscode.TreeDataProvider<KarateTestTr
             treeItem.contextValue = 'testFile';
         } else if (element.type === vscode.FileType.File) {
             treeItem.contextValue = 'file';
+            treeItem.command = {
+                command: 'karateIDE.tests.open',
+                title: 'ted.codelensRunTitle',
+                arguments: [element.uri, 1],
+            };
         } else if (element.type === vscode.FileType.Directory) {
             treeItem.contextValue = 'testDirectory';
         }
