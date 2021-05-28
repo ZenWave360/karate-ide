@@ -19,6 +19,7 @@ import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -483,6 +484,9 @@ public class VSCodeHook implements RuntimeHook {
     }
 
     private Map<String, String> fromHeaders(Map<String, List<String>> headers) {
+        if (headers == null) {
+            return Collections.emptyMap();
+        }
         return headers.entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> StringUtils.join(e.getValue(), ',')));
     }
