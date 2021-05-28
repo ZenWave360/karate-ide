@@ -427,6 +427,11 @@
                     "description": "Karate comunicates with this vscode extension throught a karate RuntimeHook. If you preffer you can add this manually, see documentation. Would you like to add this atomatically to command line classpath?",
                     "scope": "resource"
                 },
+                "karateIDE.karateCli.m2Repo": {
+                    "type": "string",
+                    "description": "This value will replace `${m2.repo}` placeholder in `karateIDE.karateCli.classpath` config value. Default as `${MAVEN_HOME}/.m2/repository` if env variable is available.",
+                    "scope": "resource"
+                },
                 "karateIDE.karateCli.karateOptions": {
                     "type": "string",
                     "default": "",

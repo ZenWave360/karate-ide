@@ -36,6 +36,14 @@ export function getDebugFile() {
 }
 
 function addHookToClasspath(classpath: string) {
+    if (classpath.includes('${m2.repo}')) {
+        const m2Repo: string =
+            vscode.workspace.getConfiguration('karateIDE.karateCli').get('m2Repo') ||
+            (process.env.MAVEN_HOME && `${process.env.MAVEN_HOME}/.m2/repository`);
+        if (m2Repo) {
+            classpath = classpath.replace(/\${m2\.repo}/g, m2Repo);
+        }
+    }
     if (Boolean(vscode.workspace.getConfiguration('karateIDE.karateCli').get('addHookToClasspath'))) {
         return path.join(__dirname, '../resources/vscode.jar') + path.delimiter + classpath;
     }
@@ -120,8 +128,9 @@ function getActiveDocumentExecution() {
     return activeEditor.document.uri.fsPath;
 }
 
-export async function startMockServer(featureFile) {
-    const command = await getStartMockCommandLine(featureFile.fsPath);
+export async function startMockServer(featureFile: vscode.Uri, featureFiles: vscode.Uri[]) {
+    console.log('startMockServer', arguments);
+    const command = await getStartMockCommandLine(featureFiles.map(f => f.fsPath).join(','));
     let exec = new vscode.ShellExecution(command, {});
     let task = new vscode.Task({ type: 'karate' }, vscode.TaskScope.Workspace, 'Karate Mock Server', 'karate', exec, []);
     vscode.tasks.executeTask(task);
