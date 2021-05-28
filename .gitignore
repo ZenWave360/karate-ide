@@ -6,3 +6,6 @@ target/
 *.iml
 .vscode-test/
 *.vsix
+.settings
+.classpath
+.project
