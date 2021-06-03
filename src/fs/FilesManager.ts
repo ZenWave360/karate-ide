@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as minimatch from 'minimatch';
-import { totalmem } from 'os';
+import { getFileAndRootPath } from '@/helper';
 
 export class KarateTestTreeEntry {
     uri: vscode.Uri;
@@ -43,21 +43,24 @@ class FilesManager {
 
     public async loadFiles() {
         this.testsGlobFilter = String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter'));
-        this.classpathFolders = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('classpath'))
-            .split(path.delimiter)
-            .map(f => path.join(this.workspaceFolder.uri.fsPath, f))
-            .filter(f => fs.existsSync(f) && fs.statSync(f).isDirectory())
-            .map(f => path.relative(this.workspaceFolder.uri.fsPath, f))
-            .map(f => f.replace(/\\/g, '/'));
 
         this.cachedKarateTestFiles = (await vscode.workspace.findFiles(this.testsGlobFilter))
             // .filter(f => !focus || (focus.length > 0 && minimatch(f.path, focus, { matchBase: true })))
-            .map(f => path.relative(this.workspaceFolder.uri.path, f.path))
+            .map(f => path.relative(this.workspaceFolder.uri.fsPath, f.path))
             .map(f => f.replace(/\\/g, '/'));
 
         this.cachedClasspathFiles = [];
+        this.classpathFolders = [];
+        const classpathFolders = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('classpath')).split(path.delimiter);
+        const rootModuleMarkerFile = String(vscode.workspace.getConfiguration('karateIDE.multimodule').get('rootModuleMarkerFile'));
+        this.classpathFolders = (await vscode.workspace.findFiles('**/' + rootModuleMarkerFile)).flatMap(root => {
+            return classpathFolders
+                .map(f => path.relative(this.workspaceFolder.uri.fsPath, path.join(path.dirname(root.fsPath), f)))
+                .map(f => f.replace(/\\/g, '/'));
+        });
+
         this.classpathFolders.forEach(async classpathFolder => {
-            const entries = (await vscode.workspace.findFiles(classpathFolder + '/**/*[.feature|.yml]'))
+            const entries = (await vscode.workspace.findFiles('**/' + classpathFolder + '/**/*[.feature|.yml]'))
                 .map(f => path.relative(path.join(this.workspaceFolder.uri.fsPath, classpathFolder), f.fsPath))
                 .map(f => f.replace(/\\/g, '/'));
             this.cachedClasspathFiles.push(...entries);
@@ -123,8 +126,10 @@ class FilesManager {
 
     public getAutoCompleteEntries(documentUri: vscode.Uri, completionToken: string): vscode.CompletionItem[] {
         let completionItems: vscode.CompletionItem[] = [];
+        const relativeTo = path.relative(this.workspaceFolder.uri.fsPath, path.dirname(documentUri.fsPath)).replace(/\\/g, '/');
+        completionItems.push(...this.cachedKarateTestFiles.filter(f => f).map(f => new vscode.CompletionItem(f, vscode.CompletionItemKind.File)));
         completionItems.push(...this.cachedClasspathFiles.map(f => new vscode.CompletionItem(`classpath:${f}`, vscode.CompletionItemKind.File)));
-        return completionItems;
+        return completionItems.filter(item => item.label.startsWith(completionToken));
     }
 
     public getKarateFiles(focus: string): KarateTestTreeEntry[] {
