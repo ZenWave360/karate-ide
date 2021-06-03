@@ -39,7 +39,9 @@ function addHookToClasspath(classpath: string) {
     if (classpath.includes('${m2.repo}')) {
         const m2Repo: string =
             vscode.workspace.getConfiguration('karateIDE.karateCli').get('m2Repo') ||
-            (process.env.MAVEN_HOME && `${process.env.MAVEN_HOME}/.m2/repository`);
+            (process.env.M2_REPO && process.env.M2_REPO) ||
+            (process.env.HOME && path.join(process.env.HOME, '.m2/repository')) ||
+            (process.env.UserProfile && path.join(process.env.UserProfile, '.m2/repository'));
         if (m2Repo) {
             classpath = classpath.replace(/\${m2\.repo}/g, m2Repo);
         }
