@@ -167,6 +167,22 @@
                 }
             },
             {
+                "command": "karateIDE.karateNetworkLogs.copyAsPayload",
+                "title": "Copy value"
+            },
+            {
+                "command": "karateIDE.karateNetworkLogs.copyAsPath",
+                "title": "Copy as expression"
+            },
+            {
+                "command": "karateIDE.karateNetworkLogs.copyAsCURL",
+                "title": "Copy as cURL"
+            },
+            {
+                "command": "karateIDE.karateNetworkLogs.copyAsKarateMock",
+                "title": "Copy as Karate Mock"
+            },
+            {
                 "command": "karateIDE.tests.refreshTree",
                 "title": "Refresh",
                 "icon": {
@@ -354,6 +370,26 @@
                     "command": "karateIDE.tests.open",
                     "when": "view == karate-executions",
                     "group": "inline@3"
+                },
+                {
+                    "command": "karateIDE.karateNetworkLogs.copyAsPayload",
+                    "when": "view == karate-network-logs && viewItem =~ /^NetworkLogPayload.*/",
+                    "group": "copyas@2"
+                },
+                {
+                    "command": "karateIDE.karateNetworkLogs.copyAsPath",
+                    "when": "view == karate-network-logs && viewItem =~ /^NetworkLogPayload.+/",
+                    "group": "copyas@2"
+                },
+                {
+                    "command": "karateIDE.karateNetworkLogs.copyAsCURL",
+                    "when": "view == karate-network-logs && viewItem =~ /^NetworkLogRequest$|^NetworkRequestResponseLog$/",
+                    "group": "copyas@1"
+                },
+                {
+                    "command": "karateIDE.karateNetworkLogs.copyAsKarateMock",
+                    "when": "view == karate-network-logs && viewItem =~ /^NetworkLogResponse$|^NetworkRequestResponseLog$/",
+                    "group": "copyas@1"
                 }
             ],
             "explorer/context": [

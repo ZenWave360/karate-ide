@@ -46,7 +46,7 @@ class FilesManager {
 
         this.cachedKarateTestFiles = (await vscode.workspace.findFiles(this.testsGlobFilter))
             // .filter(f => !focus || (focus.length > 0 && minimatch(f.path, focus, { matchBase: true })))
-            .map(f => path.relative(this.workspaceFolder.uri.fsPath, f.path))
+            .map(f => path.relative(this.workspaceFolder.uri.path, f.path))
             .map(f => f.replace(/\\/g, '/'));
 
         this.cachedClasspathFiles = [];

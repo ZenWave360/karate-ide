@@ -128,7 +128,7 @@ export class NetworkLog implements ITreeEntry {
 
     asTreeItem() {
         const treeItem = new vscode.TreeItem(`${this.label}:`, vscode.TreeItemCollapsibleState.Collapsed);
-        treeItem.contextValue = 'NetworkLog';
+        treeItem.contextValue = 'NetworkLog' + this.label;
         return treeItem;
     }
 }
@@ -141,7 +141,7 @@ export class Headers implements ITreeEntry {
     }
     asTreeItem() {
         const treeItem = new vscode.TreeItem(`Headers:`, vscode.TreeItemCollapsibleState.Collapsed);
-        treeItem.contextValue = 'Headers';
+        treeItem.contextValue = 'NetworkLogHeaders';
         return treeItem;
     }
 }
@@ -151,7 +151,7 @@ export class Header implements ITreeEntry {
     constructor(public key: string, public value: string) {}
     asTreeItem() {
         const treeItem = new vscode.TreeItem(`${this.key}: ${this.value}`);
-        treeItem.contextValue = 'Header';
+        treeItem.contextValue = 'NetworkLogHeader';
         return treeItem;
     }
 }
@@ -172,7 +172,7 @@ export class Payload implements ITreeEntry {
         const treeItem = new vscode.TreeItem(`${this.label}:`, vscode.TreeItemCollapsibleState.Collapsed);
         treeItem.tooltip = this.payload;
         treeItem.description = this.payload;
-        treeItem.contextValue = 'Payload';
+        treeItem.contextValue = 'NetworkLogPayload';
         return treeItem;
     }
 }
@@ -194,7 +194,7 @@ export class PayloadProperty implements ITreeEntry {
             this.properties && this.properties.length
                 ? new vscode.TreeItem(`${this.key}:`, vscode.TreeItemCollapsibleState.Collapsed)
                 : new vscode.TreeItem(`${this.key}: ${this.value}`, vscode.TreeItemCollapsibleState.None);
-        treeItem.contextValue = 'PayloadProperty';
+        treeItem.contextValue = 'NetworkLogPayloadProperty';
         return treeItem;
     }
 }

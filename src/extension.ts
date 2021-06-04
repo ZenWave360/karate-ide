@@ -60,6 +60,18 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.generators.openapi.test', generateKarateTestFromOpenAPI);
     registerCommand('karateIDE.generators.openapi.mocks', generateKarateMocksFromOpenAPI);
     registerCommand('karateIDE.mocks.start', startMockServer);
+    registerCommand('karateIDE.karateNetworkLogs.copyAsPayload', item => {
+        const args = arguments;
+        console.log('args', args, item);
+    });
+    registerCommand('karateIDE.karateNetworkLogs.copyAsCURL', item => {
+        const args = arguments;
+        console.log('args', args, item);
+    });
+    registerCommand('karateIDE.karateNetworkLogs.copyAsKarateMock', item => {
+        const args = arguments;
+        console.log('args', args, item);
+    });
 
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('karate-ide', debugAdapterProvider));
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('karate-ide', debugAdapterProvider));
