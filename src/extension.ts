@@ -28,6 +28,7 @@ import KarateExecutionsTreeProvider from '@/views/executions/KarateExecutionsTre
 import { generateKarateTestFromOpenAPI, generateKarateMocksFromOpenAPI } from '@/generators/openapi/OpenAPIGenerator';
 import { LocalStorageService } from '@/commands/LocalStorageService';
 import { CompletionItemProvider } from './codelens/CompletionProvider';
+import { NetworkLog, NetworkRequestResponseLog } from './server/KarateEventLogsModels';
 
 let karateTestsWatcher = null;
 
@@ -60,17 +61,22 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.generators.openapi.test', generateKarateTestFromOpenAPI);
     registerCommand('karateIDE.generators.openapi.mocks', generateKarateMocksFromOpenAPI);
     registerCommand('karateIDE.mocks.start', startMockServer);
-    registerCommand('karateIDE.karateNetworkLogs.copyAsPayload', item => {
-        const args = arguments;
-        console.log('args', args, item);
+    registerCommand('karateIDE.karateNetworkLogs.copyAsPayload', (item: vscode.TreeItem) => {
+        if (item.label) {
+            vscode.env.clipboard.writeText(item.label.toString());
+        }
     });
-    registerCommand('karateIDE.karateNetworkLogs.copyAsCURL', item => {
-        const args = arguments;
-        console.log('args', args, item);
+    registerCommand('karateIDE.karateNetworkLogs.copyAsCURL', (item: NetworkLog | NetworkRequestResponseLog) => {
+        const httplog: NetworkRequestResponseLog = item instanceof NetworkLog ? item.parent : item;
+        const request = httplog.request;
+        const headers = request.headers.headers.map(h => `-H "${h.key}: ${h.value}"`);
+        const payload = request.payload.payload ? '-d ' + request.payload.payload : '';
+        const template = `curl --request ${httplog.method} ${headers.join(' ')} ${httplog.url} ${payload}`;
+        vscode.env.clipboard.writeText(template);
+        vscode.window.showInformationMessage('Copied to clipboard');
     });
     registerCommand('karateIDE.karateNetworkLogs.copyAsKarateMock', item => {
-        const args = arguments;
-        console.log('args', args, item);
+        vscode.window.showWarningMessage('This feature is coming soon.');
     });
 
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('karate-ide', debugAdapterProvider));

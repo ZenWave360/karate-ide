@@ -124,6 +124,7 @@ export class NetworkRequestResponseLog extends TreeEntry {
 }
 
 export class NetworkLog implements ITreeEntry {
+    public parent: NetworkRequestResponseLog;
     constructor(private label: 'Request' | 'Response', public headers: Headers, public payload: Payload | null) {}
 
     asTreeItem() {

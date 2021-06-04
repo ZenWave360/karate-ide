@@ -52,11 +52,13 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
             const parent = threadTree.stack[threadTree.stack.length - 1] || threadTree;
             const request = new NetworkLog('Request', new Headers(event.headers), new Payload(event.payload));
             const httpLog = new NetworkRequestResponseLog(parent as TreeEntry, event, request);
+            request.parent = httpLog;
             threadTree.stack.push(httpLog);
             threadTree.httpLogs.push(httpLog);
         } else if (event.eventType === 'RESPONSE') {
             const parent = threadTree.stack.pop() as NetworkRequestResponseLog;
             const response = new NetworkLog('Response', new Headers(event.headers), new Payload(event.payload));
+            response.parent = parent;
             parent.status = event.status;
             parent.response = response;
             parent.eventEnd = event;
