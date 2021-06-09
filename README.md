@@ -35,9 +35,10 @@ This VS Code extension is only compatible with Karate 1.0.0+ while [Karate Runne
         - [vscode/launch.json](#vscodelaunchjson)
         - [Karate classpath](#karate-classpath)
             - [Using karate.jar Karate fat jar](#using-karatejar-karate-fat-jar)
+            - [Using maven repository dependencies](#using-maven-repository-dependencies)
+                - [Using mvn dependency:build-classpath](#using-mvn-dependencybuild-classpath)
+                - [Using mvn dependency:copy-dependencies](#using-mvn-dependencycopy-dependencies)
             - [With jBang](#with-jbang)
-            - [Using mvn dependency:copy-dependencies](#using-mvn-dependencycopy-dependencies)
-            - [Using mvn dependency:build-classpath](#using-mvn-dependencybuild-classpath)
         - [Run/Debug command templates](#rundebug-command-templates)
 
 <!-- /TOC -->
@@ -159,15 +160,11 @@ When you click `Karate Debug` for the first time if `.vscode/launch.js` does not
 
 ### Karate classpath
 
-You need to tell Karate-IDE where to find karate.jar.
+Karate runtime is java based so you need to tell Karate-IDE where to find karate.jar dependencies.
 
-If you don't need anything else but karate.jar in your classpath go for karate fat jar option or jbang.
+If you are not sure or you have no special classpath requirements just use karate.jar configuration option.
 
-If you are running karate inside a java or maven project you can configure karate classpath to match your project settings.
-
-Also Karate-IDE will honor your classpath settings when autocompleting and navigating/peeking code.
-
-Karate-IDE classpath is the one configuration that won't work out of the box and you will need to make a decision about.
+If you are using maven you can configurea fully fledged maven classpath and Karate-IDE will honor your classpath settings when autocompleting and navigating/peeking code.
 
 #### Using karate.jar (Karate fat jar)
 
@@ -179,15 +176,52 @@ Alternatively you can download it to a different path configure where your karat
 
 ```json
 {
-    "karateIDE.karateCli.classpath": "<path to your file>/karate.jar"
+    "karateIDE.karateCli.classpath": "src/test/resources;<path to your file>/karate.jar"
 }
 ```
 
 (This is a very limited setup as no other project folders or dependencies will be added to karate runtime classpath, and that includes `karate-config.js`)
 
+#### Using maven repository dependencies
+
+If you are using maven you can configure `classpath` setting pointing to your maven repo dependencies and build a fully functional classpath.
+
+This is our **recommended** way to get a full project classpath while debuging with vscode.
+
+##### Using mvn dependency:build-classpath
+
+Configure this in `File > Preferences > Settings` globally or in `.vscode/settings.json`.
+
+**IMPORTANT:** Replace `;` (for windows) with `:` (for other OS))
+
+
+```json
+{
+    "karateIDE.karateCli.karateEnv": "local",
+    // full classpath for karate 1.0.1 version
+    "karateIDE.karateCli.classpath": "src/main/resources;src/test/resources;target/classes;target/test-classes;${m2.repo}/com/intuit/karate/karate-core/1.0.1/karate-core-1.0.1.jar;${m2.repo}/org/graalvm/js/js-scriptengine/21.0.0/js-scriptengine-21.0.0.jar;${m2.repo}/org/graalvm/sdk/graal-sdk/21.0.0/graal-sdk-21.0.0.jar;${m2.repo}/org/graalvm/js/js/21.0.0/js-21.0.0.jar;${m2.repo}/org/graalvm/regex/regex/21.0.0/regex-21.0.0.jar;${m2.repo}/org/graalvm/truffle/truffle-api/21.0.0/truffle-api-21.0.0.jar;${m2.repo}/com/ibm/icu/icu4j/67.1/icu4j-67.1.jar;${m2.repo}/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar;${m2.repo}/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar;${m2.repo}/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar;${m2.repo}/org/slf4j/jcl-over-slf4j/1.7.25/jcl-over-slf4j-1.7.25.jar;${m2.repo}/com/jayway/jsonpath/json-path/2.5.0/json-path-2.5.0.jar;${m2.repo}/net/minidev/json-smart/2.3/json-smart-2.3.jar;${m2.repo}/net/minidev/accessors-smart/1.2/accessors-smart-1.2.jar;${m2.repo}/org/ow2/asm/asm/5.0.4/asm-5.0.4.jar;${m2.repo}/info/cukes/cucumber-java/1.2.5/cucumber-java-1.2.5.jar;${m2.repo}/info/cukes/cucumber-core/1.2.5/cucumber-core-1.2.5.jar;${m2.repo}/org/yaml/snakeyaml/1.27/snakeyaml-1.27.jar;${m2.repo}/de/siegmar/fastcsv/1.0.4/fastcsv-1.0.4.jar;${m2.repo}/info/picocli/picocli/4.5.2/picocli-4.5.2.jar"
+}
+
+```
+
+For building this classpath for other karate version or a different set of dependencies you can use the output of this command
+`mvn dependency:build-classpath` (you can replace the value of `${home}/.m2/repository` with the string `${m2.repo}`). Remember to replace any backslash with forward slashes and prepend `src/main/resources;src/test/resources;target/classes;target/test-classes;` for a full maven classpath.
+
+##### Using mvn dependency:copy-dependencies
+
+Alternatively you can use `mvn dependency:copy-dependencies` to download all project dependencies to `target/dependency` and configure `classpath` in this way:
+
+```json
+{
+    "karateIDE.karateCli.classpath": "src/test/resources;src/test/java;target/classes;target/test-classes;target/dependency/*"
+}
+```
+
+**NOTE:** always remember to re-download dependencies again after mvn clean os any dependency version upgrade.
+
 #### With jBang
 
-Easy to upgrade but limited classpath. 
+You can also use jBang for an easy upgrade but limited classpath. 
 
 First you need to install karate with jbang: 
 
@@ -208,33 +242,6 @@ Now you have to update your [Run/Debug command templates](#rundebug-command-temp
 "karateIDE.karateCli.runCommandTemplate": "jbang karate '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' ${karateOptions} '${feature}'"
 "karateIDE.karateCli.mockServerCommandTemplate": "jbang karate -m '${feature}' -p ${port}"
 ```
-
-#### Using mvn dependency:copy-dependencies
-
-If you are using maven, this is our **recommended** way to get a full project classpath while debuging with vscode. First you need to run the following command in order to download all project dependencies to `target/dependency`:
-
-```
-mvn dependency:copy-dependencies
-```
-
-Configure this in `File > Preferences > Settings` globally or in `.vscode/settings.json` (Replace `;` (for windows) with `:` (for other OS))
-
-```json
-{
-    "karateIDE.karateCli.classpath": "src/test/resources;src/test/java;target/classes;target/test-classes;target/dependency/*"
-}
-```
-
-**NOTE:** always remember to re-download dependencies again after mvn clean os any dependency version upgrade.
-
-#### Using mvn dependency:build-classpath
-
-If you don't want to redownload dependencies every time you clean your project, you are can replace `target/dependency/*` with the output from this mvn command. Remember to replace or scape folder separation slashes.
-
-```
-mvn dependency:build-classpath
-```
-
 ### Run/Debug command templates
 
 Karate-IDE uses a _template_ for configuring Run and Debug commands.
