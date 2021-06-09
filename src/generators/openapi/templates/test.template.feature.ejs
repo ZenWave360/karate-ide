@@ -9,7 +9,7 @@ Scenario Outline: Test <%= operation.operationId %> for <status> status code
 	* def result = call read('<%= operation.operationId %>.feature@operation') req
 	* match result.responseStatus == <status>
 		Examples:
-		| status | testDataFile
+		| status | testDataFile |
 <%_
 		for(const statusCode in operation.responses) {
 			if(statusCode == 500) {
@@ -17,7 +17,7 @@ Scenario Outline: Test <%= operation.operationId %> for <status> status code
 			}
 			const response = operation.responses[statusCode];
 		_%>
-		| <%= statusCode %> | 'test-data/<%= operation.operationId %>_<%= statusCode %>.yml'
+		| <%= statusCode %> | 'test-data/<%= operation.operationId %>_<%= statusCode %>.yml' |
 		<%_
 		}
 _%>
@@ -53,7 +53,7 @@ When method <%= operation.method.toUpperCase() %>
 <% if (operation.responseBody) { _%>
 
 # match response schema in 'test-data' or any object
-* def responseContains = req.matchResponse === true? req.response : responseType == 'json'? {} : ''
+* def responseContains = req.matchResponse === true? req.responseMatch : responseType == 'json'? {} : ''
 * match <% if(isArraySchema(responseSchema)) { %> each <% } %> response contains responseContains
 
 <%_
@@ -62,8 +62,8 @@ When method <%= operation.method.toUpperCase() %>
 		if(isArraySchema(schema)) {
 _%>
 # validate nested array: <%= property %>
-* def <%= property %>_EachContains = req.matchResponse === true? req.each.<%= property %> : responseType == 'json'? {} : ''
-* def <%= property %>_Response = response.<%= property %> || (responseType == 'json'? {} : '')
+* def <%= property %>_EachContains = req.matchResponse === true && req.responseMatchesEach && req.responseMatchesEach.<%= property %>? req.responseMatchesEach.<%= property %> : {}
+* def <%= property %>_Response = response.<%= property %> || []
 * match each <%= property %>_Response contains <%= property %>_EachContains
 <%_
 		}

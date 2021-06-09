@@ -13,10 +13,10 @@ function buildKarateTestDataObject(operation: any, statusCode: string | number) 
     const responseSchema = () => (Object.values(operation.responses[statusCode].content)[0] as any).schema;
 
     const body = operation.requestBody ? buildExampleFromSchema(requestSchema(), { optional: true }) : null;
-    const response = hasResponseContent ? buildKarateSchema(responseSchema(), {}) : null;
+    const responseMatch = hasResponseContent ? buildKarateSchema(responseSchema(), {}) : null;
 
     // schemas for nested arrays
-    const each = Object.entries(hasResponseContent ? responseSchema().properties || {} : {}).reduce((each, [property, schema]) => {
+    const responseMatchesEach = Object.entries(hasResponseContent ? responseSchema().properties || {} : {}).reduce((each, [property, schema]) => {
         // console.log('property', property, schema);
         if (isArraySchema(schema)) {
             each[property] = buildKarateSchema((schema as any).items, {});
@@ -30,8 +30,8 @@ function buildKarateTestDataObject(operation: any, statusCode: string | number) 
         params,
         body,
         matchResponse: false,
-        response,
-        each,
+        responseMatch,
+        responseMatchesEach: responseMatchesEach,
     };
 }
 

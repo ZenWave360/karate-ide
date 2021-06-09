@@ -6,6 +6,7 @@ import * as yml from 'js-yaml';
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 import * as path from 'path';
+import * as merge from 'deepmerge';
 const testTemplateFile = require('./templates/test.template.feature.ejs');
 const mockTemplateFile = require('./templates/mock.template.feature.ejs');
 
@@ -27,10 +28,57 @@ export async function generateKarateMocksFromOpenAPI(file: vscode.Uri) {
 
 async function parseOpenAPI(file) {
     try {
-        return await $RefParser.dereference(file);
+        const schema = await $RefParser.dereference(file);
+        mergeAllOf(schema);
+        mergePathParamsIntoOperations(schema);
+        return schema;
     } catch (err) {
         console.error(err);
     }
+}
+
+function mergeAllOf(schema) {
+    const seenObjects = [];
+
+    function _mergeAllOf(obj) {
+        if (seenObjects.includes(obj)) {
+            return;
+        }
+        seenObjects.push(obj);
+        if (obj && typeof obj === 'object') {
+            for (let key of Object.keys(obj)) {
+                if (key === 'allOf') {
+                    // console.log('merging allOff', obj);
+                    const allOf = merge.all(obj[key]);
+                    delete allOf['original$ref'];
+                    for (let key of Object.keys(allOf)) {
+                        obj[key] = allOf[key];
+                    }
+                    delete obj['allOf'];
+                    // console.log('merged', obj);
+                    _mergeAllOf(obj);
+                } else {
+                    _mergeAllOf(obj[key]);
+                }
+            }
+        }
+    }
+    _mergeAllOf(schema);
+}
+
+function mergePathParamsIntoOperations(schema) {
+    Object.entries(schema.paths).forEach(([name, _path]) => {
+        const path: any = _path;
+        if (path.parameters) {
+            Object.entries(path).forEach(([method, _operation]) => {
+                if (method !== 'parameters' && method !== 'original$ref') {
+                    // console.log(name, path.parameters, method, "\n---")
+                    const operation: any = _operation;
+                    operation.parameters = [...path.parameters, ...(operation.parameters || [])];
+                }
+            });
+        }
+    });
 }
 
 async function askForOperations(operations: { label: string; description: string; value: any }[]) {
