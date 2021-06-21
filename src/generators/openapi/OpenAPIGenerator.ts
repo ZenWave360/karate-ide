@@ -9,6 +9,7 @@ import * as path from 'path';
 import * as merge from 'deepmerge';
 const testTemplateFile = require('./templates/test.template.feature.ejs');
 const mockTemplateFile = require('./templates/mock.template.feature.ejs');
+const karateAuthTemplateFile = require('./templates/karate-auth.js.ejs');
 
 export async function generateKarateTestFromOpenAPI(file: vscode.Uri) {
     const api = await parseOpenAPI(file.fsPath);
@@ -106,6 +107,11 @@ function generateKarateTest(api, apiname, operations: any[]) {
             }
         });
     });
+
+    const karateAuthFile = path.join(root.uri.fsPath, 'src/test/resources/karate-auth.js');
+    if (!fs.existsSync(karateAuthFile)) {
+        fs.copyFileSync(path.join(__dirname, karateAuthTemplateFile), karateAuthFile);
+    }
 
     vscode.window.showInformationMessage(`Karate Test features generated in: ${apisFolder}`);
 }

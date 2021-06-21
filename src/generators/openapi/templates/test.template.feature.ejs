@@ -34,8 +34,8 @@ _%>
 @ignore @operation
 Scenario: <%= operation.operationId %>
 * def req = __arg
-# * def authHeader = call read('classpath:karate-auth.js') req.auth
-# * def headers = karate.merge(req.headers || {}, authHeader || {})
+* def authHeader = call read('classpath:karate-auth.js') req.auth
+* def headers = karate.merge(req.headers || {}, authHeader || {})
 Given path <%- ["'", operation.path, "'"].join('').replace(/{/g, "', req.params.").replace(/}/g, ", '").replace(/, ''/, '') %>
 <%_ if(Object.keys(operation.queryParams).length) { _%>
 	<%_ for(param of Object.values(operation.queryParams)) { _%>
