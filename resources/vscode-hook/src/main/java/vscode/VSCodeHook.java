@@ -281,9 +281,9 @@ public class VSCodeHook implements RuntimeHook {
         if (port == null || client == null) {
             return;
         }
-        log.trace(event.eventType + " " + event.feature + " " + event.status + " " + event.callDepth);
+        log.trace(event.thread + " " + event.eventType + " " + event.feature + " " + event.status + " " + event.callDepth);
         int out = client.write(ByteBuffer.wrap(JsonUtils.toJson(event).getBytes(UTF_8)));
-        log.trace("out.get() {}", out);
+        log.trace("out = " + out);
     }
 
     @Override
