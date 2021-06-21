@@ -27,12 +27,15 @@ export default class EventLogsServer {
             socket.setTimeout(10000);
 
             // When receive client data.
+            let buffer = '';
             socket.on('data', data => {
-                // console.log(data.toString());
-                if (this.callback) {
-                    data.toString()
-                        .split('\n')
-                        .forEach(log => this.callback(JSON.parse(log)));
+                if (!this.callback) {
+                    return;
+                }
+                buffer = buffer + data.toString();
+                if (buffer.startsWith('{') && buffer.endsWith('}')) {
+                    this.callback(JSON.parse(buffer));
+                    buffer = '';
                 }
             });
 

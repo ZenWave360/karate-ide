@@ -35,7 +35,7 @@ export function getDebugFile() {
     return lastExecution;
 }
 
-function addHookToClasspath(classpath: string) {
+function processClasspath(classpath: string) {
     if (classpath.includes('${m2.repo}')) {
         const m2Repo: string =
             vscode.workspace.getConfiguration('karateIDE.karateCli').get('m2Repo') ||
@@ -71,7 +71,7 @@ export function getDebugCommandLine() {
     return debugCommandTemplate
         .replace('${vscodePort}', vscodePort)
         .replace('${karateEnv}', karateEnv)
-        .replace('${classpath}', addHookToClasspath(classpath))
+        .replace('${classpath}', processClasspath(classpath))
         .replace('${karateOptions}', karateOptions);
 }
 
@@ -89,7 +89,7 @@ async function getRunCommandLine(feature: string) {
     return debugCommandTemplate
         .replace('${vscodePort}', vscodePort)
         .replace('${karateEnv}', karateEnv)
-        .replace('${classpath}', addHookToClasspath(classpath))
+        .replace('${classpath}', processClasspath(classpath))
         .replace('${karateOptions}', karateOptions)
         .replace('${feature}', feature);
 }
@@ -103,7 +103,10 @@ async function getStartMockCommandLine(feature: string) {
         debugCommandTemplate = debugCommandTemplate.replace('${port}', await vscode.window.showInputBox({ prompt: 'Mock Server Port', value: '0' }));
     }
 
-    return debugCommandTemplate.replace('${classpath}', classpath).replace('${karateOptions}', karateOptions).replace('${feature}', feature);
+    return debugCommandTemplate
+        .replace('${classpath}', processClasspath(classpath))
+        .replace('${karateOptions}', karateOptions)
+        .replace('${feature}', feature);
 }
 
 async function getKarateTestRunnerName() {
@@ -179,6 +182,7 @@ export async function runKarateTest(feature, line) {
         });
     };
 
+    lastExecution = path;
     let isTaskExecuting = true;
     vscode.commands.executeCommand('karateIDE.karateExecutionsTree.clearTree');
     vscode.tasks.executeTask(task).then(task => showProgress(task));
