@@ -170,7 +170,7 @@ If you are using maven you can configurea fully fledged maven classpath and Kara
 
 This is the simplest way if all you need is karate.jar in your classpath. 
 
-Download the latest executable form https://dl.bintray.com/ptrthomas/karate/ and rename it to your project's root folder as `karate.jar`. You don't need to configure anything else but your classpath will be very limited.
+Download the latest executable form https://github.com/intuit/karate/releases and rename it to your project's root folder as `karate.jar`. You don't need to configure anything else but your classpath will be very limited.
 
 Alternatively you can download it to a different path configure where your karate.jar is located in `File > Preferences > Settings` globally or in `.vscode/settings.json` for current project.
 

@@ -97,8 +97,7 @@
             "karate-ide": [
                 {
                     "id": "karate-tests",
-                    "name": "Karate Tests",
-                    "contextualTitle": "Package Explorer"
+                    "name": "Karate Tests"
                 },
                 {
                     "id": "karate-executions",
