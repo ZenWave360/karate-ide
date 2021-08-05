@@ -61,8 +61,10 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.generators.openapi.test', generateKarateTestFromOpenAPI);
     registerCommand('karateIDE.generators.openapi.mocks', generateKarateMocksFromOpenAPI);
     registerCommand('karateIDE.mocks.start', startMockServer);
-    registerCommand('karateIDE.karateNetworkLogs.copyAsPayload', (item: vscode.TreeItem) => {
-        if (item.label) {
+    registerCommand('karateIDE.karateNetworkLogs.copyAsPayload', (item: vscode.TreeItem | any) => {
+        if (item.value) {
+            vscode.env.clipboard.writeText(JSON.stringify(item.value, null, 2));
+        } else if (item.label) {
             vscode.env.clipboard.writeText(item.label.toString());
         }
     });
@@ -71,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
         const request = httplog.request;
         const headers = request.headers.headers.map(h => `-H "${h.key}: ${h.value}"`);
         const payload = request.payload.payload ? '-d ' + request.payload.payload : '';
-        const template = `curl --request ${httplog.method} ${headers.join(' ')} ${httplog.url} ${payload}`;
+        const template = `curl --request ${httplog.method} ${headers.join(' ')} ${httplog.url} '${payload}'`;
         vscode.env.clipboard.writeText(template);
         vscode.window.showInformationMessage('Copied to clipboard');
     });
@@ -106,8 +108,16 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.createTreeView('karate-executions', { showCollapseAll: false, treeDataProvider: executionsTreeProvider })
     );
     const eventLogsServer = new EventLogsServer(data => {
-        networkLogsProvider.processLoggingEvent(data);
-        executionsTreeProvider.processLoggingEvent(data);
+        try {
+            networkLogsProvider.processLoggingEvent(data);
+        } catch (e) {
+            console.error('ERROR networkLogsProvider.processLoggingEvent', data, e);
+        }
+        try {
+            executionsTreeProvider.processLoggingEvent(data);
+        } catch (e) {
+            console.error('ERROR executionsTreeProvider.processLoggingEvent', data, e);
+        }
     });
     eventLogsServer.start();
 

@@ -51,11 +51,15 @@ export default class KarateExecutionsTreeProvider implements vscode.TreeDataProv
             return entry.asTreeItem();
         }
         const asTreeItem = entry.asTreeItem() as ITreeEntryCommand;
-        const state = entry.eventStart.eventType === 'FEATURE_START' ? vscode.TreeItemCollapsibleState.Expanded : asTreeItem.state;
+        const state =
+            entry.eventStart.eventType === 'FEATURE_START' ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None;
         const treeItem = new vscode.TreeItem(asTreeItem.label, state);
 
         // console.log('getTreeItem', entry.eventStart.eventType, entry.eventEnd)
         treeItem.iconPath = entry.eventEnd ? (entry.eventEnd.status === 'OK' ? Icons.pass : Icons.error) : Icons.loading;
+        if (entry.eventEnd && entry.eventEnd.status === 'KO') {
+            treeItem.tooltip = entry.eventEnd.failureMessage;
+        }
         treeItem.contextValue = entry.eventStart.eventType;
         return treeItem;
     }

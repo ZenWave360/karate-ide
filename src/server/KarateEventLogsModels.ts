@@ -23,6 +23,7 @@ export class LoggingEventVO {
     method: string;
     url: string;
     status: string;
+    failureMessage: string;
     headers: { [key: string]: string };
     payload: string;
 }
@@ -61,20 +62,18 @@ export class TreeEntry implements ITreeEntry {
     asTreeItem(): vscode.TreeItem | ITreeEntryCommand {
         const eventType = this.eventStart.eventType;
         let label = '';
-        let state =
-            this.parent && this.parent.eventStart && this.parent.eventStart.eventType === 'FEATURE_START'
-                ? vscode.TreeItemCollapsibleState.Expanded
-                : vscode.TreeItemCollapsibleState.Collapsed;
+        let state = vscode.TreeItemCollapsibleState.Collapsed;
         if (eventType === 'FEATURE_START') {
             label = 'Feature: ' + this.eventStart.resource;
+            state = vscode.TreeItemCollapsibleState.Expanded;
         }
         if (eventType === 'SCENARIO_START') {
             label = 'Scenario';
             if (this.eventStart.outline) {
                 label = 'Scenario Outline';
-                state = vscode.TreeItemCollapsibleState.Collapsed;
             }
             label = label + ': ' + this.eventStart.scenario;
+            state = vscode.TreeItemCollapsibleState.Collapsed;
         }
         return {
             label,
@@ -166,12 +165,12 @@ export class Payload implements ITreeEntry {
                 this.properties = Object.entries(json).map(([key, value]) => new PayloadProperty(key, value));
             }
         } catch (e) {
-            console.log(e);
+            console.error('error parsing payload "' + payload + '"', e);
         }
     }
     asTreeItem() {
         const treeItem = new vscode.TreeItem(`${this.label}:`, vscode.TreeItemCollapsibleState.Collapsed);
-        treeItem.tooltip = this.payload;
+        treeItem.tooltip = JSON.stringify(this.payload, null, 2);
         treeItem.description = this.payload;
         treeItem.contextValue = 'NetworkLogPayload';
         return treeItem;
@@ -184,7 +183,7 @@ export class PayloadProperty implements ITreeEntry {
     constructor(public key: string, public value: any) {
         try {
             if (typeof value === 'object') {
-                this.properties = Object.entries(value).map(([nestedKey, nestedValue]) => new PayloadProperty(nestedKey, nestedValue));
+                this.properties = Object.entries(value || {}).map(([nestedKey, nestedValue]) => new PayloadProperty(nestedKey, nestedValue));
             }
         } catch (e) {
             console.log(e);
@@ -196,6 +195,8 @@ export class PayloadProperty implements ITreeEntry {
                 ? new vscode.TreeItem(`${this.key}:`, vscode.TreeItemCollapsibleState.Collapsed)
                 : new vscode.TreeItem(`${this.key}: ${this.value}`, vscode.TreeItemCollapsibleState.None);
         treeItem.contextValue = 'NetworkLogPayloadProperty';
+        // treeItem.description = this.value;
+        treeItem.tooltip = JSON.stringify(this.value, null, 2);
         return treeItem;
     }
 }

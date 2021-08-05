@@ -34,7 +34,24 @@ export default class EventLogsServer {
                 }
                 buffer = buffer + data.toString();
                 if (buffer.startsWith('{') && buffer.endsWith('}')) {
-                    this.callback(JSON.parse(buffer));
+                    if (buffer.includes('}{')) {
+                        buffer
+                            .substr(1, buffer.length - 2)
+                            .split('}{')
+                            .forEach(item => {
+                                try {
+                                    this.callback(JSON.parse('{' + item + '}'));
+                                } catch (e) {
+                                    console.error('ERROR socket.on(data) JSON.parse each', e.message, '{' + item + '}');
+                                }
+                            });
+                    } else {
+                        try {
+                            this.callback(JSON.parse(buffer));
+                        } catch (e) {
+                            console.error('ERROR socket.on(data) JSON.parse', e.message, buffer);
+                        }
+                    }
                     buffer = '';
                 }
             });
