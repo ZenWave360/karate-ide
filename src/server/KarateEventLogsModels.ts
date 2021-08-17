@@ -184,7 +184,7 @@ export class PayloadProperty implements ITreeEntry {
     constructor(public key: string, public value: any) {
         try {
             if (typeof value === 'object') {
-                this.properties = Object.entries(value).map(([nestedKey, nestedValue]) => new PayloadProperty(nestedKey, nestedValue));
+                this.properties = Object.entries(value || {}).map(([nestedKey, nestedValue]) => new PayloadProperty(nestedKey, nestedValue));
             }
         } catch (e) {
             console.log(e);
