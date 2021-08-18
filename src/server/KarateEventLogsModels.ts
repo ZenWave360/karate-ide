@@ -171,7 +171,7 @@ export class Payload implements ITreeEntry {
     }
     asTreeItem() {
         const treeItem = new vscode.TreeItem(`${this.label}:`, vscode.TreeItemCollapsibleState.Collapsed);
-        treeItem.tooltip = this.payload;
+        treeItem.tooltip = JSON.stringify(this.payload, null, 2);
         treeItem.description = this.payload;
         treeItem.contextValue = 'NetworkLogPayload';
         return treeItem;
@@ -196,6 +196,8 @@ export class PayloadProperty implements ITreeEntry {
                 ? new vscode.TreeItem(`${this.key}:`, vscode.TreeItemCollapsibleState.Collapsed)
                 : new vscode.TreeItem(`${this.key}: ${this.value}`, vscode.TreeItemCollapsibleState.None);
         treeItem.contextValue = 'NetworkLogPayloadProperty';
+        // treeItem.description = this.value;
+        treeItem.tooltip = JSON.stringify(this.value, null, 2);
         return treeItem;
     }
 }
