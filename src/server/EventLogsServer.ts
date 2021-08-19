@@ -40,9 +40,9 @@ export default class EventLogsServer {
                             .split('}{')
                             .forEach(item => {
                                 try {
-                                    this.callback(JSON.parse(buffer));
+                                    this.callback(JSON.parse('{' + item + '}'));
                                 } catch (e) {
-                                    console.error('ERROR socket.on(data) JSON.parse each', e.message, buffer);
+                                    console.error('ERROR socket.on(data) JSON.parse each', e.message, '{' + item + '}');
                                 }
                             });
                     } else {
