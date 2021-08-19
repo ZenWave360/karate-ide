@@ -23,6 +23,7 @@ export class LoggingEventVO {
     method: string;
     url: string;
     status: string;
+    failureMessage: string;
     headers: { [key: string]: string };
     payload: string;
 }
@@ -61,20 +62,18 @@ export class TreeEntry implements ITreeEntry {
     asTreeItem(): vscode.TreeItem | ITreeEntryCommand {
         const eventType = this.eventStart.eventType;
         let label = '';
-        let state =
-            this.parent && this.parent.eventStart && this.parent.eventStart.eventType === 'FEATURE_START'
-                ? vscode.TreeItemCollapsibleState.Expanded
-                : vscode.TreeItemCollapsibleState.Collapsed;
+        let state = vscode.TreeItemCollapsibleState.Collapsed;
         if (eventType === 'FEATURE_START') {
             label = 'Feature: ' + this.eventStart.resource;
+            state = vscode.TreeItemCollapsibleState.Expanded;
         }
         if (eventType === 'SCENARIO_START') {
             label = 'Scenario';
             if (this.eventStart.outline) {
                 label = 'Scenario Outline';
-                state = vscode.TreeItemCollapsibleState.Collapsed;
             }
             label = label + ': ' + this.eventStart.scenario;
+            state = vscode.TreeItemCollapsibleState.Collapsed;
         }
         return {
             label,
