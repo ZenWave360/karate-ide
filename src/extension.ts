@@ -108,8 +108,16 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.createTreeView('karate-executions', { showCollapseAll: false, treeDataProvider: executionsTreeProvider })
     );
     const eventLogsServer = new EventLogsServer(data => {
-        networkLogsProvider.processLoggingEvent(data);
-        executionsTreeProvider.processLoggingEvent(data);
+        try {
+            networkLogsProvider.processLoggingEvent(data);
+        } catch (e) {
+            console.error('ERROR networkLogsProvider.processLoggingEvent', data, e);
+        }
+        try {
+            executionsTreeProvider.processLoggingEvent(data);
+        } catch (e) {
+            console.error('ERROR executionsTreeProvider.processLoggingEvent', data, e);
+        }
     });
     eventLogsServer.start();
 

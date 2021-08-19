@@ -166,7 +166,7 @@ export class Payload implements ITreeEntry {
                 this.properties = Object.entries(json).map(([key, value]) => new PayloadProperty(key, value));
             }
         } catch (e) {
-            console.log(e);
+            console.error('error parsing payload "' + payload + '"', e);
         }
     }
     asTreeItem() {
