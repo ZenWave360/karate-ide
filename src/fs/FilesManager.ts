@@ -91,7 +91,7 @@ class FilesManager {
                         .flatMap(f => this.findInClassPathFolders(f))
                 );
             }
-        } else if(file){
+        } else if (file) {
             const f = path.join(path.dirname(document.uri.fsPath), file);
             if (fs.existsSync(f) && fs.statSync(f).isFile()) {
                 definitions.push(f);
@@ -106,7 +106,7 @@ class FilesManager {
             console.log('searching for @tag', tag);
             const lines = fs.readFileSync(definitions[0]).toString().split('\n');
             for (let line = 0; line < lines.length; line++) {
-                if(new RegExp(`^\\s*(@\\w+)*\\s*(@${tag})\\s*(@\\w+)*\\s*$`, 'g').exec(lines[line])) {
+                if (new RegExp(`^\\s*(@\\w+)*\\s*(@${tag})\\s*(@\\w+)*\\s*$`, 'g').exec(lines[line])) {
                     console.log('peeking with @tag', definitions[0], line);
                     return new vscode.Location(vscode.Uri.file(definitions[0]), new vscode.Position(line, 0));
                 }
@@ -117,11 +117,12 @@ class FilesManager {
     }
 
     private findInClassPathFolders(file) {
-        const result = this.classpathFolders.map(folder => path.join(this.workspaceFsPath, folder, file))
+        const result = this.classpathFolders
+            .map(folder => path.join(this.workspaceFsPath, folder, file))
             .filter(f => fs.existsSync(f))
             .filter((value, index) => index === 0);
-            console.log(result);
-            return result;
+        console.log(result);
+        return result;
     }
 
     public getAutoCompleteEntries(documentUri: vscode.Uri, completionToken: string): vscode.CompletionItem[] {
@@ -195,19 +196,19 @@ class FilesManager {
         return this.convertToEntryTree(foldersTree);
     }
 
-    private convertToEntryTree(foldersEntry): KarateTestTreeEntry[] {
+    private convertToEntryTree(foldersEntry, parentFolder = ''): KarateTestTreeEntry[] {
         if (typeof foldersEntry === 'object') {
             return Object.entries(foldersEntry)
                 .map(([key, value]) => {
                     const isDirectory = typeof value === 'object';
-                    const file = isDirectory ? key : (value as string);
+                    const file = isDirectory ? path.join(parentFolder, key) : (value as string);
                     const uri = vscode.Uri.file(path.join(this.workspaceFolder.uri.fsPath, file));
                     return new KarateTestTreeEntry({
                         uri,
                         type: isDirectory ? vscode.FileType.Directory : vscode.FileType.File,
                         title: key,
                         feature: { path: uri.fsPath, line: null },
-                        children: isDirectory ? this.convertToEntryTree(value) : null,
+                        children: isDirectory ? this.convertToEntryTree(value, vscode.workspace.asRelativePath(uri.fsPath, false)) : null,
                     });
                 })
                 .sort((a, b) => b.type.toString().localeCompare(a.type.toString()) * 10 + a.title.localeCompare(b.title));
