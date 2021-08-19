@@ -337,7 +337,9 @@ public class VSCodeHook implements RuntimeHook {
 
     @Override
     public void afterFeature(FeatureRuntime fr) {
+        log.debug("afterFeature");
         if (fr.caller.parentRuntime != null && isSame(fr.feature, fr.caller.parentRuntime.scenario.getFeature())) {
+            log.debug("afterFeature", fr.feature, fr.caller.parentRuntime.scenario.getFeature(), fr.caller.parentRuntime != null, isSame(fr.feature, fr.caller.parentRuntime.scenario.getFeature()));
             return;
         }
         try {
@@ -355,6 +357,7 @@ public class VSCodeHook implements RuntimeHook {
                 event.callDepth = fr.caller.depth;
             }
             event.status = fr.result.isFailed() ? "KO" : "OK";
+            event.failureMessage = fr.result.getErrorMessages();
 
             send(event);
         } catch (Exception e) {
@@ -429,7 +432,7 @@ public class VSCodeHook implements RuntimeHook {
                 event.callDepth = sr.caller.depth;
             }
             event.status = sr.result.isFailed() ? "KO" : "OK";
-            event.failureMessage = sr.result.getFailureMessageForDisplay();
+            event.failureMessage = sr.result.getErrorMessage();
             try {
                 // event.payload = JsonUtils.toJson(sr.result.toKarateJson());
             } catch (Exception e) {
