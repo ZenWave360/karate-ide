@@ -3,6 +3,15 @@ Feature: <%= operation.summary %>
 
 Background:
 * url baseUrl
+* def inlineRequest =
+"""
+<%- inlineRequest %>
+"""
+
+@ignore @inline
+Scenario: explore <%= operation.operationId %> inline
+	You may use this test for quick API exploratorial purposes.
+	* call read('<%= operation.operationId %>.feature@operation') inlineRequest
 
 Scenario Outline: Test <%= operation.operationId %> for <status> status code
 	* def req = read(<testDataFile>)
@@ -33,7 +42,7 @@ _%>
 
 @ignore @operation
 Scenario: <%= operation.operationId %>
-* def req = __arg
+* def req = karate.get('__arg', inlineRequest)
 * def authHeader = call read('classpath:karate-auth.js') req.auth
 * def headers = karate.merge(req.headers || {}, authHeader || {})
 Given path <%- ["'", operation.path, "'"].join('').replace(/{/g, "', req.params.").replace(/}/g, ", '").replace(/, ''/, '') %>
@@ -47,6 +56,11 @@ And headers headers
 And request req.body
 <%_ } _%>
 When method <%= operation.method.toUpperCase() %>
+
+* if (req.matchResponse === true) karate.call('<%= operation.operationId %>.feature@validate')
+
+@ignore @validate
+Scenario: validate <%= operation.operationId %>
 
 * def expectedStatusCode = req.statusCode || responseStatus
 * match responseStatus == expectedStatusCode
