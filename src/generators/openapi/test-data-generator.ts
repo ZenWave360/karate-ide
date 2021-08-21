@@ -10,7 +10,10 @@ function buildKarateTestDataObject(operation: any, statusCode: string | number) 
     const params = buildParametersSample(operation.parameters);
     const requestSchema = () => (Object.values(operation.requestBody.content)[0] as any).schema;
     const hasResponseContent = operation.responses[statusCode].content;
-    const responseSchema = () => (Object.values(operation.responses[statusCode].content)[0] as any).schema;
+    const responseSchema = () => {
+        const schema = (Object.values(operation.responses[statusCode].content)[0] as any).schema;
+        return isArraySchema(schema) ? schema.items : schema;
+    };
 
     const body = operation.requestBody ? buildExampleFromSchema(requestSchema(), { optional: true }) : null;
     const responseMatch = hasResponseContent ? buildKarateSchema(responseSchema(), {}) : null;
@@ -29,7 +32,7 @@ function buildKarateTestDataObject(operation: any, statusCode: string | number) 
         headers: {},
         params,
         body,
-        matchResponse: false,
+        matchResponse: true,
         responseMatch,
         responseMatchesEach: responseMatchesEach,
     };
@@ -47,7 +50,7 @@ function buildKarateMockDataObject(operation, statusCode) {
     };
 }
 
-function buildParametersSample(parameters) {
+export function buildParametersSample(parameters) {
     if (parameters) {
         return parameters.reduce((params, param) => {
             params[param.name] = buildExampleForProperty(param.schema, param.name);

@@ -1,9 +1,9 @@
 {
     "name": "karate-ide",
     "displayName": "Karate IDE",
-    "description": "[Not Official] Explore your APIs and debug Karate test scripts within VS Code",
+    "description": "Explore your APIs and debug Karate test scripts within VS Code",
     "icon": "resources/karate.png",
-    "version": "0.5.0",
+    "version": "8.0.5",
     "license": "MIT",
     "publisher": "KarateIDE",
     "bugs": {
@@ -56,7 +56,7 @@
         "fs-extra": "^9.1.0",
         "js-yaml": "^4.0.0",
         "json-schema": "^0.3.0",
-        "lodash": "^4.17.20",
+        "lodash": ">=4.17.21",
         "minimatch": "^3.0.4",
         "mkdirp": "^1.0.4",
         "parse-curl": "0.2.6",
@@ -96,7 +96,7 @@
         "views": {
             "karate-ide": [
                 {
-                    "id": "karate-tests",
+                    "id": "karate-ide-tests",
                     "name": "Karate Tests"
                 },
                 {
@@ -263,6 +263,14 @@
                 }
             },
             {
+                "command": "karateIDE.karateExecutionsTree.relaunchLastExecution",
+                "title": "Run/Debug Last Execution",
+                "icon": {
+                    "light": "resources/vscode-icons/light/run-all.svg",
+                    "dark": "resources/vscode-icons/dark/run-all.svg"
+                }
+            },
+            {
                 "command": "karateIDE.generators.openapi.test",
                 "title": "Generate Karate Test",
                 "icon": {
@@ -285,23 +293,31 @@
                     "light": "resources/vscode-icons/light/karate-test.svg",
                     "dark": "resources/vscode-icons/dark/karate-test.svg"
                 }
+            },
+            {
+                "command": "karateIDE.configureClasspath",
+                "title": "Configure Karate-IDE karate classpath",
+                "icon": {
+                    "light": "resources/vscode-icons/light/karate-test.svg",
+                    "dark": "resources/vscode-icons/dark/karate-test.svg"
+                }
             }
         ],
         "menus": {
             "view/title": [
                 {
                     "command": "karateIDE.tests.refreshTree",
-                    "when": "view == karate-tests",
+                    "when": "view == karate-ide-tests",
                     "group": "navigation@1"
                 },
                 {
                     "command": "karateIDE.tests.switchKarateEnv",
-                    "when": "view == karate-tests",
+                    "when": "view == karate-ide-tests",
                     "group": "navigation@3"
                 },
                 {
                     "command": "karateIDE.tests.configureFocus",
-                    "when": "view == karate-tests",
+                    "when": "view == karate-ide-tests",
                     "group": "navigation@4"
                 },
                 {
@@ -318,42 +334,32 @@
                     "command": "karateIDE.karateNetworkLogs.clearTree",
                     "when": "view == karate-network-logs",
                     "group": "navigation@3"
-                },
-                {
-                    "command": "karateIDE.karateExecutionsTree.relaunchDebugAll",
-                    "when": "view == karate-executions",
-                    "group": "navigation"
-                },
-                {
-                    "command": "karateIDE.karateExecutionsTree.relaunchRunAll",
-                    "when": "view == karate-executions",
-                    "group": "navigation"
                 }
             ],
             "view/item/context": [
                 {
                     "command": "karateIDE.tests.debugAll",
-                    "when": "view == karate-tests && viewItem =~ /^testFile$|^testDirectory$/",
+                    "when": "view == karate-ide-tests && viewItem =~ /^testFile$|^testDirectory$/",
                     "group": "inline@1"
                 },
                 {
                     "command": "karateIDE.tests.runAll",
-                    "when": "view == karate-tests && viewItem =~ /^testFile$|^testDirectory$/",
+                    "when": "view == karate-ide-tests && viewItem =~ /^testFile$|^testDirectory$/",
                     "group": "inline@2"
                 },
                 {
                     "command": "karateIDE.tests.debug",
-                    "when": "view == karate-tests && viewItem == test",
+                    "when": "view == karate-ide-tests && viewItem == test",
                     "group": "inline@1"
                 },
                 {
                     "command": "karateIDE.tests.run",
-                    "when": "view == karate-tests && viewItem == test",
+                    "when": "view == karate-ide-tests && viewItem == test",
                     "group": "inline@2"
                 },
                 {
                     "command": "karateIDE.tests.open",
-                    "when": "view == karate-tests && viewItem =~ /^testFile$|^file$/",
+                    "when": "view == karate-ide-tests && viewItem =~ /^testFile$|^file$/",
                     "group": "inline@3"
                 },
                 {
@@ -368,7 +374,7 @@
                 },
                 {
                     "command": "karateIDE.tests.open",
-                    "when": "view == karate-executions",
+                    "when": "view == karate-executions && viewItem =~ /^FeatureExecution$|^ScenarioExecution$|^ScenarioOutlineExecution$/",
                     "group": "inline@3"
                 },
                 {

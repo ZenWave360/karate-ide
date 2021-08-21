@@ -1,15 +1,15 @@
-import { TreeEntry } from '@/server/KarateEventLogsModels';
+import { FeatureExecution, ScenarioExecution, ScenarioOutlineExecution } from '@/views/executions/KarateExecutionsTreeProvider';
 import { KarateTestTreeEntry } from '@/fs/FilesManager';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
 export function openFileInEditor(uri, line = 1) {
-    if (uri instanceof TreeEntry) {
-        let workspaceFolder = vscode.workspace.workspaceFolders.filter(folder => folder.uri.scheme === 'file')[0];
-        line = uri.eventStart.line - 1;
-        uri = vscode.Uri.file(path.join(workspaceFolder.uri.fsPath, uri.eventStart.resource));
+    if (uri instanceof FeatureExecution || uri instanceof ScenarioExecution || uri instanceof ScenarioOutlineExecution) {
+        const [feature, _line] = uri.eventStart.locationHint.split(':');
+        line = +_line - 1;
+        uri = vscode.Uri.file(path.join(uri.eventStart.cwd, feature));
     } else if (uri instanceof KarateTestTreeEntry) {
-        line = uri.feature.line - 1;
+        line = uri.feature.line ? uri.feature.line - 1 : 0;
         uri = uri.uri;
     }
     var position = new vscode.Position(line, 0);

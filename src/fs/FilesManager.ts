@@ -41,7 +41,7 @@ class FilesManager {
         this.loadFiles();
     }
 
-    public async loadFiles() {
+    public loadFiles = async () => {
         this.testsGlobFilter = String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter'));
 
         this.cachedKarateTestFiles = (await vscode.workspace.findFiles(this.testsGlobFilter))
@@ -67,7 +67,7 @@ class FilesManager {
         });
 
         this.watch();
-    }
+    };
 
     private watch() {
         this.watcher && this.watcher.dispose();

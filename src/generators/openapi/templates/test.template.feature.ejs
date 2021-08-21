@@ -3,34 +3,55 @@ Feature: <%= operation.summary %>
 
 Background:
 * url baseUrl
-* def inlineRequest =
-"""
-<%- inlineRequest %>
-"""
+
+Scenario Outline: Test <%= operation.operationId %> for <status> status code
+<% if (operation.method === 'get' || operation.method === 'delete') { %>
+	* def params = __row
+	* def result = call read('<%= operation.operationId %>.feature@operation') { statusCode: #(+params.status), params: #(params), matchResponse: #(params.matchResponse) }
+	* match result.responseStatus == <status>
+		Examples:
+		| status | <%= operation.paramNames.length? operation.paramNames.join(' | ') + ' |' : '' %> matchResponse |
+	<%_
+		for(const statusCode in operation.responses) {
+			if(statusCode == 500) {	continue;}
+			const response = operation.responses[statusCode];
+		_%>
+		| <%= statusCode %>    | <%= response.paramExamples.length? response.paramExamples.join(' | ') + ' |' : '' %> true          |
+		<%_
+		}
+	_%>
+<% } else { %>
+	* def args = read(<testDataFile>)
+	* def result = call read('<%= operation.operationId %>.feature@operation') args
+	* match result.responseStatus == <status>
+		Examples:
+		| status | testDataFile |
+	<%_
+		for(const statusCode in operation.responses) {
+			if(statusCode == 500) {	continue;}
+			const response = operation.responses[statusCode];
+		_%>
+		| <%= statusCode %>    | 'test-data/<%= operation.operationId %>_<%= statusCode %>.yml' |
+		<%_
+		}
+	_%>
+<% } %>
 
 @ignore @inline
 Scenario: explore <%= operation.operationId %> inline
 	You may use this test for quick API exploratorial purposes.
-	* call read('<%= operation.operationId %>.feature@operation') inlineRequest
-
-Scenario Outline: Test <%= operation.operationId %> for <status> status code
-	* def req = read(<testDataFile>)
-	* def result = call read('<%= operation.operationId %>.feature@operation') req
-	* match result.responseStatus == <status>
-		Examples:
-		| status | testDataFile |
-<%_
-		for(const statusCode in operation.responses) {
-			if(statusCode == 500) {
-				continue;
-			}
-			const response = operation.responses[statusCode];
-		_%>
-		| <%= statusCode %> | 'test-data/<%= operation.operationId %>_<%= statusCode %>.yml' |
-		<%_
-		}
-_%>
-
+<%_ if (operation.method === 'get' || operation.method === 'delete') { _%>
+* def statusCode = <%= payload.statusCode %>
+* def params = <%- JSON.stringify(payload.params) %>
+* def matchResponse = true
+* call read('<%= operation.operationId %>.feature@operation') 
+<%_ } else { _%>
+* def payload =
+"""
+<%- JSON.stringify(payload, null, 2) %>
+"""
+* call read('<%= operation.operationId %>.feature@operation') payload
+<%_ } _%>
 
 <%_
 	function isArraySchema(schema) {
@@ -41,46 +62,55 @@ _%>
 _%>
 
 @ignore @operation
-Scenario: <%= operation.operationId %>
-* def req = karate.get('__arg', inlineRequest)
-* def authHeader = call read('classpath:karate-auth.js') req.auth
-* def headers = karate.merge(req.headers || {}, authHeader || {})
-Given path <%- ["'", operation.path, "'"].join('').replace(/{/g, "', req.params.").replace(/}/g, ", '").replace(/, ''/, '') %>
+Scenario: operation <%= serviceName %>/<%= operation.operationId %>
+* def args = 
+"""
+{
+    auth: #(karate.get('auth')), 
+    headers: #(karate.get('headers')), 
+    params: #(karate.get('params')), 
+    body: #(karate.get('body')), 
+    statusCode: #(karate.get('statusCode')), 
+    matchResponse: #(karate.get('matchResponse'))
+}
+"""
+* def authHeader = call read('classpath:karate-auth.js') args.auth
+* def headers = karate.merge(args.headers || {}, authHeader || {})
+Given path <%- ["'", operation.path, "'"].join('').replace(/{/g, "', args.params.").replace(/}/g, ", '").replace(/, ''/, '') %>
 <%_ if(Object.keys(operation.queryParams).length) { _%>
 	<%_ for(param of Object.values(operation.queryParams)) { _%>
-And param <%= param.name %> = req.params.<%= param.name %>
+And param <%= param.name %> = args.params.<%= param.name %>
 	<%_	} _%>
 <%_	} _%>
 And headers headers
 <%_	if(operation.requestBody) { _%>
-And request req.body
+And request args.body
 <%_ } _%>
 When method <%= operation.method.toUpperCase() %>
 
-* if (req.matchResponse === true) karate.call('<%= operation.operationId %>.feature@validate')
+* def expectedStatusCode = args.statusCode || responseStatus
+* match responseStatus == expectedStatusCode
+
+<% if (operation.responseBody) { _%>
+* if (args.matchResponse === true) karate.call('<%= operation.operationId %>.feature@validate')
 
 @ignore @validate
-Scenario: validate <%= operation.operationId %>
+Scenario: validates <%= operation.operationId %> response
 
-* def expectedStatusCode = req.statusCode || responseStatus
-* match responseStatus == expectedStatusCode
-<% if (operation.responseBody) { _%>
-
-# match response schema in 'test-data' or any object
-* def responseContains = req.matchResponse === true? req.responseMatch : responseType == 'json'? {} : ''
-* match <% if(isArraySchema(responseSchema)) { %> each <% } %> response contains responseContains
+* def responseMatch =
+"""
+<%- JSON.stringify(responseMatch, null, 2) %>
+"""
+* match <% if(isArraySchema(responseSchema)) { %>each<% } %> response contains responseMatch
 
 <%_
-	// console.log('operation.responseBody', responseSchema)
-    Object.entries(responseSchema.properties || {}).forEach(([property, schema]) => {
-		if(isArraySchema(schema)) {
+    Object.keys(responseMatchesEach || {}).forEach(property => {
 _%>
 # validate nested array: <%= property %>
-* def <%= property %>_EachContains = req.matchResponse === true && req.responseMatchesEach && req.responseMatchesEach.<%= property %>? req.responseMatchesEach.<%= property %> : {}
+* def <%= property %>_MatchesEach = <%- JSON.stringify(responseMatchesEach[property]) %>
 * def <%= property %>_Response = response.<%= property %> || []
-* match each <%= property %>_Response contains <%= property %>_EachContains
+* match each <%= property %>_Response contains <%= property %>_MatchesEach
 <%_
-		}
     });
 _%>
 <%_ } _%>
