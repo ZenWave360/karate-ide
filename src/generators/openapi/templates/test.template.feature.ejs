@@ -3,6 +3,7 @@ Feature: <%= operation.summary %>
 
 Background:
 * url baseUrl
+# You may read this inlineRequest as request/response documentation o use it for quick exploratory testing
 * def inlineRequest =
 """
 <%- inlineRequest %>
@@ -42,7 +43,7 @@ _%>
 
 @ignore @operation
 Scenario: <%= operation.operationId %>
-* def req = karate.get('__arg', inlineRequest)
+* def req = __arg
 * def authHeader = call read('classpath:karate-auth.js') req.auth
 * def headers = karate.merge(req.headers || {}, authHeader || {})
 Given path <%- ["'", operation.path, "'"].join('').replace(/{/g, "', req.params.").replace(/}/g, ", '").replace(/, ''/, '') %>

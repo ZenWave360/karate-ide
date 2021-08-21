@@ -1,11 +1,11 @@
 import * as $RefParser from '@apidevtools/json-schema-ref-parser';
 import * as ejs from 'ejs';
-import * as fs from 'fs';
 import { buildKarateTestDataObject, buildKarateMockDataObject } from './test-data-generator';
 import * as yml from 'js-yaml';
 import * as vscode from 'vscode';
 import * as _ from 'lodash';
 import * as path from 'path';
+import * as fs from 'fs';
 import * as merge from 'deepmerge';
 const testTemplateFile = require('./templates/test.template.feature.ejs');
 const mockTemplateFile = require('./templates/mock.template.feature.ejs');
@@ -15,10 +15,10 @@ export async function generateKarateTestFromOpenAPI(file: vscode.Uri) {
     const api = await parseOpenAPI(file.fsPath);
     const operations = getOperationsFor(api);
     const selected = await askForOperations(operations);
-    const apiname = path.basename(file.fsPath).replace(path.extname(file.fsPath), '');
-    const targetFolder = await promptTargetFolder();
+    const resourcesFolder = await findResourcesFolder(file);
+    const targetFolder = await promptTargetFolder(resourcesFolder);
     if (targetFolder && targetFolder[0]) {
-        generateKarateTest(api, apiname, targetFolder[0], selected);
+        generateKarateTest(file, api, targetFolder[0], selected);
     }
 }
 
@@ -26,8 +26,11 @@ export async function generateKarateMocksFromOpenAPI(file: vscode.Uri) {
     const api = await parseOpenAPI(file.fsPath);
     const operations = getOperationsFor(api);
     const selected = await askForOperations(operations);
-    const apiname = path.basename(file.fsPath).replace(path.extname(file.fsPath), '');
-    generateKarateMocks(api, file, selected, file);
+    const resourcesFolder = await findResourcesFolder(file);
+    const targetFolder = await promptTargetFolder(resourcesFolder);
+    if (targetFolder && targetFolder[0]) {
+        generateKarateMocks(file, api, targetFolder[0], selected);
+    }
 }
 
 async function parseOpenAPI(file) {
@@ -90,36 +93,24 @@ async function askForOperations(operations: { label: string; description: string
     return selected.map(s => s.value);
 }
 
-async function promptTargetFolder(defaultFolder?: string) {
-    let root = vscode.workspace.workspaceFolders.filter(folder => folder.uri.scheme === 'file')[0];
+async function promptTargetFolder(defaultFolder?: vscode.Uri) {
     return await vscode.window.showOpenDialog({
         canSelectMany: false,
         canSelectFolders: true,
         canSelectFiles: false,
-        defaultUri: defaultFolder ? vscode.Uri.joinPath(root.uri, defaultFolder) : null,
+        defaultUri: defaultFolder,
         openLabel: 'Select target folder',
     });
 }
 
-function generateKarateTest(api, apiname, apisFolder: vscode.Uri, operations: any[]) {
-    vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(apisFolder, 'test-data'));
+async function generateKarateTest(file, api, apisFolder: vscode.Uri, operations: any[]) {
+    vscode.workspace.fs.createDirectory(apisFolder);
     operations.forEach(operation => {
-        const model: any = { api, apiname, operationId: operation.operationId };
+        const model: any = { api, operationId: operation.operationId };
         model.operation = prepareData(operation);
         model.serviceName = serviceName(operation);
-        const inlineRequest = buildKarateTestDataObject(model.operation, Object.keys(model?.operation?.responses || {})[0]);
-        model.inlineRequest = JSON.stringify(
-            {
-                auth: null,
-                statusCode: inlineRequest.statusCode,
-                headers: inlineRequest.headers,
-                params: inlineRequest.params,
-                body: inlineRequest.body,
-                matchResponse: true,
-            },
-            null,
-            2
-        );
+        const inlineRequest = buildKarateTestDataObject(model.operation, Object.keys(model?.operation?.responses)[0]);
+        model.inlineRequest = JSON.stringify({ auth: null, ...inlineRequest }, null, 2);
 
         vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(apisFolder, model.serviceName));
         render(testTemplateFile, vscode.Uri.joinPath(apisFolder, model.serviceName, `${model.operationId}.feature`), model);
@@ -143,50 +134,44 @@ function generateKarateTest(api, apiname, apisFolder: vscode.Uri, operations: an
     });
 
     // TODO choose wise where to put the auth file
-    let root = vscode.workspace.workspaceFolders.filter(folder => folder.uri.scheme === 'file')[0];
-    const karateAuthFile = path.join(root.uri.fsPath, 'src/test/resources/karate-auth.js');
-    if (!fs.existsSync(karateAuthFile)) {
-        fs.copyFileSync(path.join(__dirname, karateAuthTemplateFile), karateAuthFile);
+    const resourcesRoot = await findResourcesFolder(file);
+    const karateAuthFile = vscode.Uri.joinPath(resourcesRoot, 'karate-auth.js');
+    if (!fs.existsSync(karateAuthFile.fsPath)) {
+        fs.copyFileSync(path.join(__dirname, karateAuthTemplateFile), karateAuthFile.fsPath);
     }
 
     vscode.window.showInformationMessage(`Karate Test features generated in: ${vscode.workspace.asRelativePath(apisFolder, false)}`);
 }
 
-function generateKarateMocks(api, apiname, operations: any[], file: vscode.Uri) {
-    let mocksFolder = path.join(path.dirname(file.fsPath), 'mocks');
-    const apiPortalFile = path.join(path.dirname(file.fsPath), '..', 'api-portal.yml');
-    if (fs.existsSync(apiPortalFile)) {
-        const info = yml.load(fs.readFileSync(apiPortalFile).toString());
-        if (info.vertical && info.api && info.api.name) {
-            mocksFolder = path.join(mocksFolder, normalize(info.vertical).toLowerCase(), normalize(info.api.name).toLowerCase());
-        }
-    }
+function generateKarateMocks(file: vscode.Uri, api, mocksFolder: vscode.Uri, operations: any[]) {
+    vscode.workspace.fs.createDirectory(mocksFolder);
 
     Object.entries(operationsByTag(operations, api)).forEach(([tagName, operations]) => {
         const model: any = { api };
         model.operations = (operations as object[]).map(operation => prepareData(operation));
-        model.tagName = normalize(tagName);
-        model.apiName = `${_.upperFirst(model.tagName)}Mock`;
-        model.mockFolder = path.join(mocksFolder, model.apiName);
-        fs.mkdirSync(path.join(mocksFolder, model.apiName), { recursive: true });
-        render(mockTemplateFile, path.join(mocksFolder, model.apiName, `${model.apiName}.feature`), model);
+        model.apiName = normalize(tagName) + 'Mock';
+
+        render(mockTemplateFile, vscode.Uri.joinPath(mocksFolder, model.apiName, `${model.apiName}.feature`), model);
 
         (operations as any[]).forEach(operation => {
             const operationName = operation.operationId;
-            Object.keys(operation.responses).forEach(statusCode => {
-                if (statusCode !== '500') {
-                    try {
-                        const testDataObject = buildKarateMockDataObject(operation, statusCode);
-                        fs.writeFileSync(path.join(mocksFolder, model.apiName, `${operationName}_${statusCode}.yml`), `${yml.dump(testDataObject)}`);
-                    } catch (error) {
-                        fs.writeFileSync(path.join(mocksFolder, model.apiName, `${operationName}_${statusCode}.yml`), error);
-                    }
-                }
-            });
+            const statusCode = Object.keys(operation?.responses)[0];
+            try {
+                const testDataObject = buildKarateMockDataObject(operation, statusCode);
+                vscode.workspace.fs.writeFile(
+                    vscode.Uri.joinPath(mocksFolder, model.apiName, `${operationName}_${statusCode}.yml`),
+                    Buffer.from(`${yml.dump(testDataObject)}`)
+                );
+            } catch (error) {
+                vscode.workspace.fs.writeFile(
+                    vscode.Uri.joinPath(mocksFolder, model.apiName, `${operationName}_${statusCode}.yml`),
+                    Buffer.from(error)
+                );
+            }
         });
     });
 
-    vscode.window.showInformationMessage(`Karate Mock features generated in: ${mocksFolder}`);
+    vscode.window.showInformationMessage(`Karate Mock features generated in: ${vscode.workspace.asRelativePath(mocksFolder, false)}`);
 }
 
 function serviceName(operation) {
@@ -248,7 +233,7 @@ function prepareData(operation) {
     return operation;
 }
 
-function render(template, target, model) {
+function render(template, target: vscode.Uri, model) {
     const options = {};
     try {
         ejs.renderFile(path.join(__dirname, template), model, options, function (err, output) {
@@ -257,4 +242,13 @@ function render(template, target, model) {
     } catch (error) {
         console.log(error);
     }
+}
+
+async function findResourcesFolder(openapi: vscode.Uri) {
+    const folder = await vscode.workspace.getWorkspaceFolder(openapi);
+    const resourcesFolder = vscode.Uri.joinPath(folder.uri, 'src/test/resources');
+    if (fs.existsSync(resourcesFolder.fsPath)) {
+        return resourcesFolder;
+    }
+    return folder.uri;
 }
