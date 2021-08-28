@@ -6,6 +6,7 @@ import com.intuit.karate.StringUtils;
 import com.intuit.karate.Suite;
 import com.intuit.karate.core.Feature;
 import com.intuit.karate.core.FeatureRuntime;
+import com.intuit.karate.core.Scenario;
 import com.intuit.karate.core.ScenarioRuntime;
 import com.intuit.karate.core.Step;
 import com.intuit.karate.core.StepResult;
@@ -17,19 +18,14 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
@@ -286,14 +282,18 @@ public class VSCodeHook implements RuntimeHook {
         log.trace("out = " + out);
     }
 
+    private ThreadLocal<String> threadName = new ThreadLocal<>();
+
     @Override
     public void beforeSuite(Suite suite) {
-        log.trace("beforeSuite");
+        threadName.set(getCurrentTime());
+        String features = suite.features.stream().map(f -> f.getResource().getRelativePath()).collect(Collectors.joining(";"));
+        println(String.format(SUITE_STARTED, getCurrentTime(), features, suite.featuresFound));
     }
 
     @Override
     public void afterSuite(Suite suite) {
-        log.trace("afterSuite");
+        println(String.format(SUITE_FINISHED, getCurrentTime(), suite.buildResults().getEndTime() - suite.startTime));
     }
 
     private boolean isSame(Feature f1, Feature f2) {
@@ -308,6 +308,15 @@ public class VSCodeHook implements RuntimeHook {
 
     @Override
     public boolean beforeFeature(FeatureRuntime fr) {
+        if (fr.caller.depth == 0) {
+            try {
+                Feature feature = fr.feature;
+                String path = feature.getResource().getRelativePath();
+                println(String.format(FEATURE_STARTED, getCurrentTime(), path + ":" + feature.getLine(), escape(feature.getNameForReport())));
+            } catch (Exception e) {
+                log.debug("VSCodeHook error", e);
+            }
+        }
         try {
             if (fr.caller.parentRuntime != null && isSame(fr.feature, fr.caller.parentRuntime.scenario.getFeature())) {
                 System.out.println("fr.feature " + fr.feature.getNameForReport());
@@ -315,7 +324,7 @@ public class VSCodeHook implements RuntimeHook {
             }
             Event event = new Event();
             event.eventType = EventType.FEATURE_START;
-            event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
+            event.thread = threadName.get();
             event.timestamp = System.currentTimeMillis();
             event.feature = fr.feature.getNameForReport();
             event.rootFeature = fr.rootFeature.feature.getNameForReport();
@@ -337,7 +346,13 @@ public class VSCodeHook implements RuntimeHook {
 
     @Override
     public void afterFeature(FeatureRuntime fr) {
-        log.debug("afterFeature");
+        if (fr.caller.depth == 0) {
+            try {
+                println(String.format(FEATURE_FINISHED, getCurrentTime(), (int) fr.result.getDurationMillis(),  escape(fr.feature.getNameForReport())));
+            } catch (Exception e) {
+                log.debug("VSCodeHook error", e);
+            }
+        }
         if (fr.caller.parentRuntime != null && isSame(fr.feature, fr.caller.parentRuntime.scenario.getFeature())) {
             log.debug("afterFeature", fr.feature, fr.caller.parentRuntime.scenario.getFeature(), fr.caller.parentRuntime != null, isSame(fr.feature, fr.caller.parentRuntime.scenario.getFeature()));
             return;
@@ -345,7 +360,7 @@ public class VSCodeHook implements RuntimeHook {
         try {
             Event event = new Event();
             event.eventType = EventType.FEATURE_END;
-            event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
+            event.thread = threadName.get();
             event.timestamp = System.currentTimeMillis();
             event.feature = fr.feature.getNameForReport();
             event.rootFeature = fr.rootFeature.feature.getNameForReport();
@@ -370,6 +385,14 @@ public class VSCodeHook implements RuntimeHook {
 
     @Override
     public boolean beforeScenario(ScenarioRuntime sr) {
+        if (sr.caller.depth == 0) {
+            try {
+                String path = sr.scenario.getFeature().getResource().getRelativePath();
+                println(String.format(SCENARIO_STARTED, getCurrentTime(), path + ":" + sr.scenario.getLine(), escape(sr.scenario.getRefIdAndName()), sr.scenario.isOutlineExample(), sr.scenario.isDynamic(), sr.scenario.getName()));
+            } catch (Exception e) {
+                log.debug("VSCodeHook error", e);
+            }
+        }
         try {
 //            if (sr.scenario.isDynamic() && sr.caller.parentRuntime == null) {
 //                dynamicThreadRuntime.set(sr.scenario.getUriToLineNumber().toString());
@@ -378,7 +401,7 @@ public class VSCodeHook implements RuntimeHook {
             sr.evaluateScenarioName();
             Event event = new Event();
             event.eventType = EventType.SCENARIO_START;
-            event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
+            event.thread = threadName.get();
             event.timestamp = System.currentTimeMillis();
             event.feature = sr.featureRuntime.feature.getNameForReport();
             event.rootFeature = sr.featureRuntime.rootFeature.feature.getNameForReport();
@@ -410,12 +433,25 @@ public class VSCodeHook implements RuntimeHook {
     @Override
     public void afterScenario(ScenarioRuntime sr) {
         try {
+            if (sr.caller.depth == 0) {
+                Scenario scenario = sr.scenario;
+                if (sr.result.isFailed()) {
+                    StringUtils.Pair error = details(sr.result.getErrorMessage());
+                    println(String.format(SCENARIO_FAILED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(error.right), escape(error.left), escape(scenario.getRefIdAndName()), ""));
+                } else {
+                    println(String.format(SCENARIO_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(scenario.getRefIdAndName())));
+                }
+            }
+        } catch (Exception e) {
+            log.debug("VSCodeHook error", e);
+        }
+        try {
 //            if (sr.scenario.getUriToLineNumber().toString().contentEquals(dynamicThreadRuntime.get())) {
 //                beforeScenario(sr);
 //            }
             Event event = new Event();
             event.eventType = EventType.SCENARIO_END;
-            event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
+            event.thread = threadName.get();
             event.timestamp = System.currentTimeMillis();
             event.feature = sr.featureRuntime.feature.getNameForReport();
             event.rootFeature = sr.featureRuntime.rootFeature.feature.getNameForReport();
@@ -458,7 +494,7 @@ public class VSCodeHook implements RuntimeHook {
     public void beforeHttpCall(HttpRequest request, ScenarioRuntime sr) {
         try {
             Event event = new Event();
-            event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
+            event.thread = threadName.get();
             event.eventType = EventType.REQUEST;
             event.method = request.getMethod();
             event.url = request.getUrl();
@@ -473,7 +509,7 @@ public class VSCodeHook implements RuntimeHook {
     public void afterHttpCall(HttpRequest request, Response response, ScenarioRuntime sr) {
         try {
             Event event = new Event();
-            event.thread = Thread.currentThread().getName() + "@" + Thread.currentThread().hashCode();
+            event.thread = threadName.get();
             event.eventType = EventType.RESPONSE;
             event.method = request.getMethod();
             event.url = request.getUrl();
@@ -493,4 +529,39 @@ public class VSCodeHook implements RuntimeHook {
         return headers.entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> StringUtils.join(e.getValue().toArray(), ',')));
     }
+
+    private static void println(String s) {
+        System.out.println(s);
+    }
+
+    private static String getCurrentTime() {
+        return DATE_FORMAT.format(new Date());
+    }
+
+    private static String escape(String source) {
+        if (source == null) {
+            return "";
+        }
+        return source.replace("\n", "\\n").replace("\r", "\\r").replace("'", "\'").replace("\"", "\\\"");
+    }
+
+    private static StringUtils.Pair details(String errorMessage) {
+        String fullMessage = errorMessage.replace("\r", "").replace("\t", "  ");
+        String[] messageInfo = fullMessage.split("\n", 2);
+        if (messageInfo.length == 2) {
+            return StringUtils.pair(messageInfo[0].trim(), messageInfo[1].trim());
+        } else {
+            return StringUtils.pair(fullMessage, "");
+        }
+    }
+
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSZ");
+
+    private static final String SUITE_STARTED = "##vscode {\"event\": \"testSuiteStarted\", \"timestamp\": \"%s\", \"features\": \"%s\", \"featuresFound\": \"%s\"}";
+    private static final String FEATURE_STARTED = "##vscode {\"event\": \"featureStarted\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"name\": \"%s\"}";
+    private static final String SCENARIO_STARTED = "##vscode {\"event\": \"testStarted\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"captureStandardOutput\": \"true\", \"name\": \"%s\", \"outline\":%s, \"dynamic\":%s, \"outlineName\": \"%s\"}";
+    private static final String SCENARIO_FAILED = "##vscode {\"event\": \"testFailed\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"details\": \"%s\", \"message\": \"%s\", \"name\": \"%s\" %s}";
+    private static final String SCENARIO_FINISHED = "##vscode {\"event\": \"testFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
+    private static final String FEATURE_FINISHED = "##vscode {\"event\": \"featureFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
+    private static final String SUITE_FINISHED = "##vscode {\"event\": \"testSuiteFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\"}";
 }

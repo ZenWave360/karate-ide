@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import KarateTestsProvider from '@/views/tests/KarateTestsProvider';
 import ProviderDebugAdapter from '@/debug/ProviderDebugAdapter';
 import ProviderResults from '@/views/status-bar/providerResults';
@@ -23,12 +24,12 @@ import {
 import { openFileInEditor } from '@/commands/DisplayCommands';
 import { smartPaste } from '@/commands/SmartPaste';
 
-import * as vscode from 'vscode';
-import KarateExecutionsTreeProvider from '@/views/executions/KarateExecutionsTreeProvider';
+import { karateExecutionsTreeProvider as executionsTreeProvider } from '@/views/executions/KarateExecutionsTreeProvider';
 import { generateKarateTestFromOpenAPI, generateKarateMocksFromOpenAPI } from '@/generators/openapi/OpenAPIGenerator';
 import { LocalStorageService } from '@/commands/LocalStorageService';
 import { CompletionItemProvider } from './codelens/CompletionProvider';
 import { NetworkLog, NetworkRequestResponseLog } from './server/KarateEventLogsModels';
+import { KarateExecutionProcess } from './debug/KarateExecutionProcess';
 
 let karateTestsWatcher = null;
 
@@ -41,7 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
     let codeLensProvider = new CodeLensProvider();
     //let foldingRangeProvider = new ProviderFoldingRange();
 
-    let karateFile = { language: "karate", scheme: "file" };
+    let karateFile = { language: 'karate', scheme: 'file' };
 
     function registerCommand(command: string, callback: (...args: any[]) => any, thisArg?: any) {
         context.subscriptions.push(vscode.commands.registerCommand(command, callback));
@@ -86,7 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.languages.registerCodeLensProvider(karateFile, codeLensProvider));
     context.subscriptions.push(vscode.languages.registerHoverProvider(karateFile, new HoverRunDebugProvider(context)));
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(karateFile, new DefinitionProvider()));
-    context.subscriptions.push(vscode.languages.registerCompletionItemProvider(karateFile, new CompletionItemProvider(), ...['\'', '\"']));
+    context.subscriptions.push(vscode.languages.registerCompletionItemProvider(karateFile, new CompletionItemProvider(), ...["'", '"']));
     //let registerFoldingRangeProvider = vscode.languages.registerFoldingRangeProvider(foldingRangeTarget, foldingRangeProvider);
 
     context.subscriptions.push(vscode.window.createTreeView('karate-tests', { showCollapseAll: true, treeDataProvider: karateTestsProvider }));
@@ -98,12 +99,11 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.karateNetworkLogs.showScenarios.false', () => networkLogsProvider.setShowScenarios(false));
     context.subscriptions.push(vscode.window.createTreeView('karate-network-logs', { showCollapseAll: true, treeDataProvider: networkLogsProvider }));
     // Executions View
-    const executionsTreeProvider = new KarateExecutionsTreeProvider();
-    registerCommand('karateIDE.karateExecutionsTree.clearTree', () => executionsTreeProvider.clear());
     registerCommand('karateIDE.karateExecutionsTree.relaunchDebugAll', relaunchDebugAll);
     registerCommand('karateIDE.karateExecutionsTree.relaunchDebug', relaunchDebug);
     registerCommand('karateIDE.karateExecutionsTree.relaunchRunAll', relaunchRunAll);
     registerCommand('karateIDE.karateExecutionsTree.relaunchRun', relaunchRun);
+    registerCommand('karateIDE.karateExecutionsTree.showOutputLogs', KarateExecutionProcess.showOutputLogs);
     context.subscriptions.push(
         vscode.window.createTreeView('karate-executions', { showCollapseAll: false, treeDataProvider: executionsTreeProvider })
     );
@@ -112,11 +112,6 @@ export function activate(context: vscode.ExtensionContext) {
             networkLogsProvider.processLoggingEvent(data);
         } catch (e) {
             console.error('ERROR networkLogsProvider.processLoggingEvent', data, e);
-        }
-        try {
-            executionsTreeProvider.processLoggingEvent(data);
-        } catch (e) {
-            console.error('ERROR executionsTreeProvider.processLoggingEvent', data, e);
         }
     });
     eventLogsServer.start();

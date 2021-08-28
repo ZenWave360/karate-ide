@@ -94,7 +94,7 @@ export class ThreadTreeEntry extends TreeEntry {
     }
 
     asTreeItem() {
-        const treeItem = new vscode.TreeItem(`Thread: ${this.threadName}`, vscode.TreeItemCollapsibleState.Expanded);
+        const treeItem = new vscode.TreeItem(`Karate Suite: ${this.threadName}`, vscode.TreeItemCollapsibleState.Expanded);
         treeItem.contextValue = 'ThreadTreeEntry';
         return treeItem;
     }
@@ -128,6 +128,9 @@ export class NetworkLog implements ITreeEntry {
 
     asTreeItem() {
         const treeItem = new vscode.TreeItem(`${this.label}:`, vscode.TreeItemCollapsibleState.Collapsed);
+        if (this.label === 'Response') {
+            treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+        }
         treeItem.contextValue = 'NetworkLog' + this.label;
         return treeItem;
     }
@@ -165,7 +168,7 @@ export class Payload implements ITreeEntry {
                 this.properties = Object.entries(json).map(([key, value]) => new PayloadProperty(key, value));
             }
         } catch (e) {
-            console.error('error parsing payload "' + payload + '"', e);
+            console.error('error parsing payload "' + payload + '"', e.message);
         }
     }
     asTreeItem() {

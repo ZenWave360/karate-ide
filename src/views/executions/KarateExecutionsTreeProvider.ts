@@ -1,75 +1,92 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { ITreeEntry, ITreeEntryCommand, LoggingEventVO, ThreadTreeEntry, TreeEntry } from '@/server/KarateEventLogsModels';
 import Icons from '@/Icons';
+import { Event } from '@/debug/KarateExecutionProcess';
 
-export default class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<ITreeEntry> {
-    private eventLogsTree: { [key: string]: ThreadTreeEntry } = {};
+export class SuiteExecution {
+    constructor(public readonly name) {}
+}
+export class FeatureExecution {
+    public eventEnd: Event | undefined;
+    public scenarioExecutions: ScenarioExecution[] = [];
+    public errors: string[] = [];
+    constructor(public eventStart: Event) {}
+
+    get name() {
+        return this.eventStart.name;
+    }
+}
+
+export class ScenarioExecution {
+    public eventEnd: Event | undefined;
+    constructor(public eventStart: Event) {}
+
+    get name() {
+        return this.eventStart.name;
+    }
+}
+
+export type Execution = SuiteExecution | FeatureExecution | ScenarioExecution;
+
+class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<Execution> {
+    private executions: FeatureExecution[] = [];
 
     private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 
     public clear(): any {
-        this.eventLogsTree = {};
+        this.executions = [];
         this._onDidChangeTreeData.fire(null);
     }
 
-    public setShowScenarios(showScenarios) {
-        this._onDidChangeTreeData.fire(null);
-    }
-
-    public processLoggingEvent(event: LoggingEventVO) {
-        this.addITreeEntry(event);
-    }
-
-    addITreeEntry(event: LoggingEventVO): any {
-        // console.log('event', event.eventType, event.callDepth, event.feature, event.scenario, event.url)
-        if (event.callDepth >= 1) {
-            return;
-        }
-        const threadName = event.thread;
-        const threadTree = this.eventLogsTree[threadName] || new ThreadTreeEntry(threadName);
-        this.eventLogsTree[threadName] = threadTree;
-        if (event.eventType === 'FEATURE_START') {
-            threadTree.rootFeatures.push(new TreeEntry(threadTree as TreeEntry, event));
-        } else if (event.eventType === 'FEATURE_END') {
-            const feature = threadTree.rootFeatures[threadTree.rootFeatures.length - 1];
-            feature.eventEnd = event;
-        } else if (event.eventType === 'SCENARIO_START') {
-            const feature = threadTree.rootFeatures[threadTree.rootFeatures.length - 1];
-            new TreeEntry(feature as TreeEntry, event); // this already does feature.children.push
-        } else if (event.eventType === 'SCENARIO_END') {
-            const feature = threadTree.rootFeatures[threadTree.rootFeatures.length - 1];
-            const scenario = feature.children[feature.children.length - 1] as TreeEntry;
-            scenario.eventEnd = event;
+    processEvent(event: Event): any {
+        console.log('event', event);
+        if (event.event === 'featureStarted') {
+            this.executions.push(new FeatureExecution(event));
+        } else if (event.event === 'featureFinished') {
+            this.executions[this.executions.length - 1].eventEnd = event;
+        } else if (event.event === 'testStarted') {
+            this.executions[this.executions.length - 1].scenarioExecutions.push(new ScenarioExecution(event));
+        } else if (event.event === 'testFinished' || event.event === 'testFailed') {
+            const featureExecution = this.executions[this.executions.length - 1];
+            const scenarioExecution = featureExecution.scenarioExecutions[featureExecution.scenarioExecutions.length - 1];
+            scenarioExecution.eventEnd = event;
+            if (event.event === 'testFailed') {
+                featureExecution.errors.push(`${event.message}: ${event.details}`);
+            }
         }
         this._onDidChangeTreeData.fire(null);
     }
 
-    getTreeItem(entry: TreeEntry): vscode.TreeItem | Thenable<vscode.TreeItem> {
-        if (!entry.eventStart) {
-            return entry.asTreeItem();
+    getTreeItem(execution: Execution): vscode.TreeItem | Thenable<vscode.TreeItem> {
+        const treeItem = new vscode.TreeItem(execution.name, vscode.TreeItemCollapsibleState.Expanded);
+        if (execution instanceof SuiteExecution) {
+            treeItem.contextValue = 'SuiteExecution';
+        } else if (execution instanceof FeatureExecution) {
+            treeItem.contextValue = 'FeatureExecution';
+            treeItem.iconPath = execution.eventEnd ? (execution.errors.length ? Icons.error : Icons.pass) : Icons.loading;
+        } else if (execution instanceof ScenarioExecution) {
+            treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
+            treeItem.contextValue = 'ScenarioExecution';
+            treeItem.iconPath = execution.eventEnd ? (execution.eventEnd.message ? Icons.error : Icons.pass) : Icons.loading;
         }
-        const asTreeItem = entry.asTreeItem() as ITreeEntryCommand;
-        const state =
-            entry.eventStart.eventType === 'FEATURE_START' ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None;
-        const treeItem = new vscode.TreeItem(asTreeItem.label, state);
-
-        // console.log('getTreeItem', entry.eventStart.eventType, entry.eventEnd)
-        treeItem.iconPath = entry.eventEnd ? (entry.eventEnd.status === 'OK' ? Icons.pass : Icons.error) : Icons.loading;
-        if (entry.eventEnd && entry.eventEnd.status === 'KO') {
-            treeItem.tooltip = entry.eventEnd.failureMessage;
-        }
-        treeItem.contextValue = entry.eventStart.eventType;
+        treeItem.command = {
+            command: 'karateIDE.karateExecutionsTree.showOutputLogs',
+            title: '',
+            arguments: [execution],
+        };
         return treeItem;
     }
-    getChildren(element?: ITreeEntry): vscode.ProviderResult<ITreeEntry[]> {
+    getChildren(element?: Execution): vscode.ProviderResult<Execution[]> {
         if (!element) {
-            const threads = Object.values(this.eventLogsTree);
-            return threads.length === 1 ? threads[0].children : threads;
-        } else if (element instanceof TreeEntry) {
-            return element.children;
+            return this.executions?.length ? [new SuiteExecution('Karate Tests')] : null;
+        } else if (element instanceof SuiteExecution) {
+            return this.executions;
+        } else if (element instanceof FeatureExecution) {
+            return element.scenarioExecutions;
         }
         return null;
     }
 }
+
+export const karateExecutionsTreeProvider = new KarateExecutionsTreeProvider();

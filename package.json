@@ -318,16 +318,6 @@
                     "command": "karateIDE.karateNetworkLogs.clearTree",
                     "when": "view == karate-network-logs",
                     "group": "navigation@3"
-                },
-                {
-                    "command": "karateIDE.karateExecutionsTree.relaunchDebugAll",
-                    "when": "view == karate-executions",
-                    "group": "navigation"
-                },
-                {
-                    "command": "karateIDE.karateExecutionsTree.relaunchRunAll",
-                    "when": "view == karate-executions",
-                    "group": "navigation"
                 }
             ],
             "view/item/context": [
@@ -368,7 +358,7 @@
                 },
                 {
                     "command": "karateIDE.tests.open",
-                    "when": "view == karate-executions",
+                    "when": "view == karate-executions && viewItem =~ /^FeatureExecution$|^ScenarioExecution$/",
                     "group": "inline@3"
                 },
                 {
