@@ -381,24 +381,21 @@ public class VSCodeHook implements RuntimeHook {
 
     }
 
-    private ThreadLocal<String> dynamicThreadRuntime = new ThreadLocal<>();
-
     @Override
     public boolean beforeScenario(ScenarioRuntime sr) {
+        sr.evaluateScenarioName();
         if (sr.caller.depth == 0) {
             try {
                 String path = sr.scenario.getFeature().getResource().getRelativePath();
-                println(String.format(SCENARIO_STARTED, getCurrentTime(), path + ":" + sr.scenario.getLine(), escape(sr.scenario.getRefIdAndName()), sr.scenario.isOutlineExample(), sr.scenario.isDynamic(), sr.scenario.getName()));
+                if(sr.scenario.isOutlineExample() && sr.scenario.getExampleIndex() == 0) {
+                    println(String.format(SCENARIO_OUTLINE_STARTED, getCurrentTime(), path + ":" + sr.scenario.getSection().getScenarioOutline().getLine(), escape(sr.scenario.getName()), sr.scenario.isOutlineExample(), sr.scenario.isDynamic()));
+                }
+                println(String.format(SCENARIO_STARTED, getCurrentTime(), path + ":" + sr.scenario.getLine(), escape(sr.scenario.getRefIdAndName()), sr.scenario.isOutlineExample(), sr.scenario.isDynamic()));
             } catch (Exception e) {
                 log.debug("VSCodeHook error", e);
             }
         }
         try {
-//            if (sr.scenario.isDynamic() && sr.caller.parentRuntime == null) {
-//                dynamicThreadRuntime.set(sr.scenario.getUriToLineNumber().toString());
-//                return true;
-//            }
-            sr.evaluateScenarioName();
             Event event = new Event();
             event.eventType = EventType.SCENARIO_START;
             event.thread = threadName.get();
@@ -441,14 +438,15 @@ public class VSCodeHook implements RuntimeHook {
                 } else {
                     println(String.format(SCENARIO_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(scenario.getRefIdAndName())));
                 }
+//                System.out.println(String.format("sr.scenario.getExampleIndex() sr.scenario.getExampleData().size() %s %s", sr.scenario.getExampleIndex(), sr.scenario.getExampleData().size()));
+                if(sr.scenario.isOutlineExample() && sr.scenario.getExampleIndex() >= sr.scenario.getExampleData().size() - 1) {
+                    println(String.format(SCENARIO_OUTLINE_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(scenario.getName())));
+                }
             }
         } catch (Exception e) {
             log.debug("VSCodeHook error", e);
         }
         try {
-//            if (sr.scenario.getUriToLineNumber().toString().contentEquals(dynamicThreadRuntime.get())) {
-//                beforeScenario(sr);
-//            }
             Event event = new Event();
             event.eventType = EventType.SCENARIO_END;
             event.thread = threadName.get();
@@ -559,9 +557,11 @@ public class VSCodeHook implements RuntimeHook {
 
     private static final String SUITE_STARTED = "##vscode {\"event\": \"testSuiteStarted\", \"timestamp\": \"%s\", \"features\": \"%s\", \"featuresFound\": \"%s\"}";
     private static final String FEATURE_STARTED = "##vscode {\"event\": \"featureStarted\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"name\": \"%s\"}";
-    private static final String SCENARIO_STARTED = "##vscode {\"event\": \"testStarted\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"captureStandardOutput\": \"true\", \"name\": \"%s\", \"outline\":%s, \"dynamic\":%s, \"outlineName\": \"%s\"}";
+    private static final String SCENARIO_OUTLINE_STARTED = "##vscode {\"event\": \"testOutlineStarted\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"name\": \"%s\", \"outline\":%s, \"dynamic\":%s }";
+    private static final String SCENARIO_STARTED = "##vscode {\"event\": \"testStarted\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"name\": \"%s\", \"outline\":%s, \"dynamic\":%s }";
     private static final String SCENARIO_FAILED = "##vscode {\"event\": \"testFailed\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"details\": \"%s\", \"message\": \"%s\", \"name\": \"%s\" %s}";
     private static final String SCENARIO_FINISHED = "##vscode {\"event\": \"testFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
+    private static final String SCENARIO_OUTLINE_FINISHED = "##vscode {\"event\": \"testOutlineFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
     private static final String FEATURE_FINISHED = "##vscode {\"event\": \"featureFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
     private static final String SUITE_FINISHED = "##vscode {\"event\": \"testSuiteFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\"}";
 }

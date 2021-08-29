@@ -358,7 +358,7 @@
                 },
                 {
                     "command": "karateIDE.tests.open",
-                    "when": "view == karate-executions && viewItem =~ /^FeatureExecution$|^ScenarioExecution$/",
+                    "when": "view == karate-executions && viewItem =~ /^FeatureExecution$|^ScenarioExecution$|^ScenarioOutlineExecution$/",
                     "group": "inline@3"
                 },
                 {

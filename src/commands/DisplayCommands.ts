@@ -1,10 +1,10 @@
-import { FeatureExecution, ScenarioExecution } from '@/views/executions/KarateExecutionsTreeProvider';
+import { FeatureExecution, ScenarioExecution, ScenarioOutlineExecution } from '@/views/executions/KarateExecutionsTreeProvider';
 import { KarateTestTreeEntry } from '@/fs/FilesManager';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
 export function openFileInEditor(uri, line = 1) {
-    if (uri instanceof FeatureExecution || uri instanceof ScenarioExecution) {
+    if (uri instanceof FeatureExecution || uri instanceof ScenarioExecution || uri instanceof ScenarioOutlineExecution) {
         let workspaceFolder = vscode.workspace.workspaceFolders.filter(folder => folder.uri.scheme === 'file')[0];
         const [feature, _line] = uri.eventStart.locationHint.split(':');
         line = +_line - 1;

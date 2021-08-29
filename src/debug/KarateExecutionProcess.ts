@@ -5,6 +5,7 @@ import {
     FeatureExecution,
     karateExecutionsTreeProvider as executionsTreeProvider,
     ScenarioExecution,
+    ScenarioOutlineExecution,
     SuiteExecution,
 } from '@/views/executions/KarateExecutionsTreeProvider';
 
@@ -19,7 +20,6 @@ export type Event = {
     featuresFound: string;
     outline: boolean;
     dynamic: boolean;
-    outlineName: string;
 };
 
 class StringBuffer {
@@ -41,8 +41,10 @@ export class KarateExecutionProcess {
     static suiteLogs = new StringBuffer();
     static featuresLogsMap = new Map<string, StringBuffer>();
     static scenariosLogsMap = new Map<string, StringBuffer>();
+    static scenarioOutlineLogsMap = new Map<string, StringBuffer>();
     static featureLog: StringBuffer;
     static scenarioLog: StringBuffer;
+    static scenarioOutlineLog: StringBuffer;
     static child: ChildProcessWithoutNullStreams = null;
     static isExecuting = false;
 
@@ -56,6 +58,8 @@ export class KarateExecutionProcess {
                 _this.karateChannel.append(_this.featuresLogsMap.get(execution.name).get());
             } else if (execution instanceof ScenarioExecution) {
                 _this.karateChannel.append(_this.scenariosLogsMap.get(execution.name).get());
+            } else if (execution instanceof ScenarioOutlineExecution) {
+                _this.karateChannel.append(_this.scenarioOutlineLogsMap.get(execution.name).get());
             }
             _this.karateChannel.show();
         } catch (e) {
@@ -79,8 +83,8 @@ export class KarateExecutionProcess {
         this.featuresLogsMap.clear();
         this.scenariosLogsMap.clear();
         this.karateChannel.clear();
-        this.karateChannel.appendLine(`Executing: ${command}`);
-        this.karateChannel.appendLine('');
+        this.karateChannel.appendLine(`Executing: ${command}\n`);
+        this.suiteLogs.append(`Executing: ${command}\n\n`);
         this.karateChannel.show(true);
         vscode.commands.executeCommand('karate-executions.focus');
         vscode.commands.executeCommand('karate-network-logs.focus');
@@ -122,6 +126,7 @@ export class KarateExecutionProcess {
                         try {
                             const event: Event = JSON.parse(line.substring(9, line.lastIndexOf('}') + 1));
                             executionsTreeProvider.processEvent({ ...event, cwd });
+
                             if (event.event === 'featureStarted') {
                                 this.featureLog = new StringBuffer();
                                 this.featuresLogsMap.set(event.name, this.featureLog);
@@ -130,8 +135,14 @@ export class KarateExecutionProcess {
                                 this.scenarioLog = new StringBuffer();
                                 this.scenariosLogsMap.set(event.name, this.scenarioLog);
                                 progress.report({ message: `${event.name}` });
+                            } else if (event.event === 'testOutlineStarted') {
+                                this.scenarioOutlineLog = new StringBuffer();
+                                this.scenarioOutlineLogsMap.set(event.name, this.scenarioOutlineLog);
+                                progress.report({ message: `${event.name}` });
                             } else if (event.event === 'testFinished' || event.event === 'testFailed') {
                                 this.scenarioLog = null;
+                            } else if (event.event === 'testOutlineFinished') {
+                                this.scenarioOutlineLog = null;
                             } else if (event.event === 'featureFinished') {
                                 this.featureLog = null;
                             }
@@ -142,6 +153,7 @@ export class KarateExecutionProcess {
                         this.suiteLogs.append(line + '\n');
                         this.featureLog && this.featureLog.append(line + '\n');
                         this.scenarioLog && this.scenarioLog.append(line + '\n');
+                        this.scenarioOutlineLog && this.scenarioOutlineLog.append(line + '\n');
                         this.karateChannel.append(line + '\n');
                     }
                 });
@@ -149,10 +161,10 @@ export class KarateExecutionProcess {
 
         child.stderr.setEncoding('utf8');
         child.stderr.on('data', data => {
-            // this.suiteLogs.append(data);
-            // this.featureLog && this.featureLog.append(data);
-            // this.scenarioLog && this.scenarioLog.append(data);
-            // this.karateChannel.append(data);
+            if (data.contains('java.lang.ClassNotFoundException')) {
+                
+            }
+            this.karateChannel.append(data);
         });
 
         child.on('close', code => {
