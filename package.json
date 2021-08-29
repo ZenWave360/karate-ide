@@ -285,6 +285,14 @@
                     "light": "resources/vscode-icons/light/karate-test.svg",
                     "dark": "resources/vscode-icons/dark/karate-test.svg"
                 }
+            },
+            {
+                "command": "karateIDE.configureClasspath",
+                "title": "Configure Karate-IDE karate classpath",
+                "icon": {
+                    "light": "resources/vscode-icons/light/karate-test.svg",
+                    "dark": "resources/vscode-icons/dark/karate-test.svg"
+                }
             }
         ],
         "menus": {

@@ -30,6 +30,7 @@ import { LocalStorageService } from '@/commands/LocalStorageService';
 import { CompletionItemProvider } from './codelens/CompletionProvider';
 import { NetworkLog, NetworkRequestResponseLog } from './server/KarateEventLogsModels';
 import { KarateExecutionProcess } from './debug/KarateExecutionProcess';
+import { configureClasspath } from './commands/ConfigureClasspath';
 
 let karateTestsWatcher = null;
 
@@ -62,6 +63,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.generators.openapi.test', generateKarateTestFromOpenAPI);
     registerCommand('karateIDE.generators.openapi.mocks', generateKarateMocksFromOpenAPI);
     registerCommand('karateIDE.mocks.start', startMockServer);
+    registerCommand('karateIDE.configureClasspath', configureClasspath);
     registerCommand('karateIDE.karateNetworkLogs.copyAsPayload', (item: vscode.TreeItem | any) => {
         if (item.value) {
             vscode.env.clipboard.writeText(JSON.stringify(item.value, null, 2));
