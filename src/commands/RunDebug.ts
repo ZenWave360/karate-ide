@@ -4,7 +4,7 @@ import { getFileAndRootPath } from '@/helper';
 import * as vscode from 'vscode';
 import { KarateTestTreeEntry } from '@/fs/FilesManager';
 import EventLogsServer from '@/server/EventLogsServer';
-import { KarateExecutionProcess } from '@/debug/KarateExecutionProcess';
+import { KarateExecutionProcess } from '@/execution/KarateExecutionProcess';
 import { Execution, SuiteExecution } from '@/views/executions/KarateExecutionsTreeProvider';
 
 let debugFeature: string = null;
@@ -37,6 +37,16 @@ function processClasspath(classpath: string) {
             (process.env.UserProfile && path.join(process.env.UserProfile, '.m2/repository'));
         if (m2Repo) {
             classpath = classpath.replace(/\${m2\.repo}/g, m2Repo);
+        }
+    }
+    if (classpath.includes('${ext:karate-ide.jar}')) {
+        const classpathJarExtension = vscode.extensions.getExtension('KarateIDE.karate-classpath-jar');
+        if (classpathJarExtension) {
+            const karateJar = vscode.Uri.joinPath(vscode.Uri.file(classpathJarExtension.extensionPath), 'resources', 'karate.jar').fsPath.replace(
+                /\\/g,
+                '/'
+            );
+            classpath = classpath.replace(/\${ext\:karate-ide\.jar}/g, karateJar);
         }
     }
     if (Boolean(vscode.workspace.getConfiguration('karateIDE.karateCli').get('addHookToClasspath'))) {
@@ -114,7 +124,7 @@ async function getKarateTestRunnerName() {
 }
 
 export async function startMockServer(featureFile: vscode.Uri, featureFiles: vscode.Uri[]) {
-    console.log('startMockServer', arguments);
+    // console.log('startMockServer', arguments);
     const command = await getStartMockCommandLine(featureFiles.map(f => f.fsPath).join(','));
     let exec = new vscode.ShellExecution(command, {});
     let task = new vscode.Task({ type: 'karate' }, vscode.TaskScope.Workspace, 'Karate Mock Server', 'karate', exec, []);
@@ -134,7 +144,7 @@ export async function runKarateTest(feature, line) {
     const fileAndRootPath = getFileAndRootPath(vscode.Uri.file(path));
     const runCommand = await getRunCommandLine(fileAndRootPath.file);
 
-    KarateExecutionProcess.execute(fileAndRootPath.root, runCommand);
+    KarateExecutionProcess.executeInTestServer(fileAndRootPath.root, runCommand);
     lastExecution = path;
     lastExecutionType = 'RUN';
 }

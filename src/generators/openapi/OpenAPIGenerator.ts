@@ -104,9 +104,11 @@ async function promptTargetFolder(defaultFolder?: vscode.Uri) {
 }
 
 async function generateKarateTest(file, api, apisFolder: vscode.Uri, operations: any[]) {
+    const openapiFile = vscode.workspace.asRelativePath(file).replace(/\\/g, '/');
     vscode.workspace.fs.createDirectory(apisFolder);
     operations.forEach(operation => {
         const model: any = { api, operationId: operation.operationId };
+        model.openapiFile = openapiFile;
         model.operation = prepareData(operation);
         model.serviceName = serviceName(operation);
         const payload = buildKarateTestDataObject(model.operation, Object.keys(model?.operation?.responses)[0]);
@@ -270,7 +272,6 @@ function padCellsForTabularData(headers: string[], examplesByStatus: { [index: s
             row[i] = (row[i] + '').padEnd(maxLengths[i], ' ');
         }
     }
-    console.log(data);
 }
 
 function render(template, target: vscode.Uri, model) {
@@ -280,7 +281,7 @@ function render(template, target: vscode.Uri, model) {
             vscode.workspace.fs.writeFile(target, Buffer.from((err && err.message) || output));
         });
     } catch (error) {
-        console.log(error);
+        console.error(error.message);
     }
 }
 

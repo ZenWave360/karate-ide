@@ -3,7 +3,7 @@
     "displayName": "Karate IDE",
     "description": "Explore your APIs and debug Karate test scripts within VS Code",
     "icon": "resources/karate.png",
-    "version": "8.0.5",
+    "version": "0.9.3",
     "license": "MIT",
     "publisher": "KarateIDE",
     "bugs": {
@@ -20,7 +20,7 @@
         "url": "https://github.com/ivangsa"
     },
     "engines": {
-        "vscode": "^1.52.0"
+        "vscode": "^1.61.0"
     },
     "categories": [
         "Other"
@@ -67,9 +67,10 @@
         "@types/glob": "^7.1.1",
         "@types/mocha": "^5.2.7",
         "@types/node": "^12.6.9",
-        "@types/vscode": "^1.44.0",
+        "@types/vscode": "^1.61.0",
         "@typescript-eslint/eslint-plugin": "^4.14.1",
         "@typescript-eslint/parser": "^4.14.1",
+        "ansi-regex": "^6.0.1",
         "chai": "^4.2.0",
         "eslint": "^7.19.0",
         "file-loader": "^6.2.0",
@@ -271,6 +272,10 @@
                 }
             },
             {
+                "command": "karateIDE.karateExecutionsProcess.stopTestProcesses",
+                "title": "Stop/Kill Karate Tests/Debug Process"
+            },
+            {
                 "command": "karateIDE.generators.openapi.test",
                 "title": "Generate Karate Test",
                 "icon": {
@@ -466,7 +471,7 @@
                 "karateIDE.karateCli.addHookToClasspath": {
                     "type": "boolean",
                     "default": "true",
-                    "description": "Karate comunicates with this vscode extension throught a karate RuntimeHook. If you preffer you can add this manually, see documentation. Would you like to add this atomatically to command line classpath?",
+                    "description": "Karate communicates with this vscode extension through a karate RuntimeHook. If you prefer you can add this manually, see documentation. Would you like to add this automatically to command line classpath?",
                     "scope": "resource"
                 },
                 "karateIDE.karateCli.m2Repo": {
@@ -489,25 +494,31 @@
                 "karateIDE.karateCli.classpath": {
                     "type": "string",
                     "default": "karate.jar",
-                    "description": "Classpath expression to be set in command line templates. See documentation for different classpath recipies.",
+                    "description": "Classpath expression to be set in command line templates. See documentation for different classpath recipes.",
                     "scope": "resource"
                 },
                 "karateIDE.karateCli.runCommandTemplate": {
                     "type": "string",
-                    "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.Main ${karateOptions} '${feature}'",
-                    "description": "Command line template for run action. See documentation for available template variables and different recipies.",
+                    "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.Main --backup-reportdir=false ${karateOptions} '${feature}'",
+                    "description": "Command line template for run action. See documentation for available template variables and different recipes.",
                     "scope": "resource"
                 },
                 "karateIDE.karateCli.debugCommandTemplate": {
                     "type": "string",
-                    "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.Main -d",
-                    "description": "Command line template for debug action. See documentation for available template variables and different recipies.",
+                    "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.Main --backup-reportdir=false --keep-debug-server -d",
+                    "description": "Command line template for debug action. See documentation for available template variables and different recipes.",
                     "scope": "resource"
                 },
                 "karateIDE.karateCli.mockServerCommandTemplate": {
                     "type": "string",
                     "default": "java -cp '${classpath}' com.intuit.karate.Main -m '${feature}' -p ${port}",
-                    "description": "Command line template for starting a mock server. See documentation for available template variables and different recipies.",
+                    "description": "Command line template for starting a mock server. See documentation for available template variables and different recipes.",
+                    "scope": "resource"
+                },
+                "karateIDE.karateCli.useKarateTestServer": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "For faster tests startup vscode.KarateTestsProcess keeps and reuses a java process that will run Karate tests. Disable to use standard Karate Main.class",
                     "scope": "resource"
                 },
                 "karateIDE.karateTestRunner.karateJunitRunner": {
@@ -598,11 +609,28 @@
                 "extensions": [
                     ".feature"
                 ],
-                "configuration": "./syntaxes/karate-language-configuration.json"
+                "configuration": "./syntaxes/language-configuration.json"
             },
             {
                 "id": "karate-json",
-                "configuration": "./syntaxes/karate-json-language-configuration.json"
+                "configuration": "./syntaxes/language-configuration.json"
+            },
+            {
+                "id": "Log",
+                "aliases": [
+                    "log"
+                ],
+                "extensions": [
+                    ".log"
+                ],
+                "configuration": "./syntaxes/language-configuration.json",
+                "mimetypes": [
+                    "log",
+                    "text/log",
+                    "text/x-log",
+                    "text/x-code-output",
+                    "x-code-output"
+                ]
             }
         ],
         "grammars": [
@@ -628,6 +656,11 @@
                     "source.js",
                     "source.karate"
                 ]
+            },
+            {
+                "language": "Log",
+                "scopeName": "code.log",
+                "path": "./syntaxes/log.tmLanguage"
             }
         ]
     }

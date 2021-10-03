@@ -42,77 +42,118 @@ public class VSCodeOutputRuntimeHook implements ExtendedRuntimeHook {
 
     @Override
     public void beforeSuite(Suite suite) {
-        String features = suite.features.stream().map(f -> f.getResource().getRelativePath()).collect(Collectors.joining(";"));
-        println(String.format(SUITE_STARTED, getCurrentTime(), features, suite.featuresFound));
+        try {
+            String features = suite.features.stream().map(f -> f.getResource().getRelativePath()).collect(Collectors.joining(";"));
+            println(String.format(SUITE_STARTED, getCurrentTime(), features, suite.featuresFound));
+            // log.trace(String.format(SUITE_STARTED, getCurrentTime(), features, suite.featuresFound));
+        } catch (Exception e) {
+            log.error("beforeSuite error: {}", e.getMessage());
+        }
     }
 
     @Override
     public void afterSuite(Suite suite) {
-        println(String.format(SUITE_FINISHED, getCurrentTime(), suite.buildResults().getEndTime() - suite.startTime));
+        try {
+            println(String.format(SUITE_FINISHED, getCurrentTime(), suite.buildResults().getEndTime() - suite.startTime));
+            // log.trace(String.format(SUITE_FINISHED, getCurrentTime(), suite.buildResults().getEndTime() - suite.startTime));
+        } catch (Exception e) {
+            log.error("afterSuite error: {}", e.getMessage());
+        }
     }
 
 
     @Override
     public boolean beforeFeature(FeatureRuntime fr) {
-        if (fr.caller.depth == 0) {
-            String path = fr.feature.getResource().getRelativePath();
-            println(String.format(FEATURE_STARTED, getCurrentTime(), path + ":" + fr.feature.getLine(), escape(fr.feature.getNameForReport())));
+        try {
+            if (fr.caller.depth == 0) {
+                String path = fr.feature.getResource().getRelativePath();
+                println(String.format(FEATURE_STARTED, getCurrentTime(), path + ":" + fr.feature.getLine(), escape(fr.feature.getNameForReport())));
+                // log.trace(String.format(FEATURE_STARTED, getCurrentTime(), path + ":" + fr.feature.getLine(), escape(fr.feature.getNameForReport())));
+            }
+        } catch (Exception e) {
+            log.error("beforeFeature error: {}", e.getMessage());
         }
         return true;
     }
 
     @Override
     public void afterFeature(FeatureRuntime fr) {
-        if (fr.caller.depth == 0) {
-            String path = fr.feature.getResource().getRelativePath();
-            println(String.format(FEATURE_FINISHED, getCurrentTime(), (int) fr.result.getDurationMillis(),  escape(fr.feature.getNameForReport())));
+        try {
+            if (fr.caller.depth == 0) {
+                String path = fr.feature.getResource().getRelativePath();
+                println(String.format(FEATURE_FINISHED, getCurrentTime(), (int) fr.result.getDurationMillis(), escape(fr.feature.getNameForReport())));
+                // log.trace(String.format(FEATURE_FINISHED, getCurrentTime(), (int) fr.result.getDurationMillis(), escape(fr.feature.getNameForReport())));
+            }
+        } catch (Exception e) {
+            log.error("afterFeature error: {}", e.getMessage());
         }
     }
 
     @Override
     public boolean beforeScenario(ScenarioRuntime sr) {
-        if (sr.caller.depth == 0) {
-            String path = sr.scenario.getFeature().getResource().getRelativePath();
-            println(String.format(SCENARIO_STARTED, getCurrentTime(), path + ":" + sr.scenario.getLine(), escape(sr.scenario.getRefIdAndName()), sr.scenario.isOutlineExample(), sr.scenario.isDynamic()));
+        try {
+            if (sr.caller.depth == 0) {
+                String path = sr.scenario.getFeature().getResource().getRelativePath();
+                println(String.format(SCENARIO_STARTED, getCurrentTime(), path + ":" + sr.scenario.getLine(), escape(sr.scenario.getRefIdAndName()), sr.scenario.isOutlineExample(), sr.scenario.isDynamic()));
+                // log.trace(String.format(SCENARIO_STARTED, getCurrentTime(), path + ":" + sr.scenario.getLine(), escape(sr.scenario.getRefIdAndName()), sr.scenario.isOutlineExample(), sr.scenario.isDynamic()));
+            }
+        } catch (Exception e) {
+            log.error("beforeScenario error: {}", e.getMessage());
         }
         return true;
     }
 
     @Override
     public void afterScenario(ScenarioRuntime sr) {
-        // System.out.println(String.format("#vscode afterScenario %s %s", sr.caller.depth, sr.scenario.getRefIdAndName()));
-        if (sr.caller.depth == 0) {
-            String path = sr.scenario.getFeature().getResource().getRelativePath();
-            if (sr.result.isFailed()) {
-                StringUtils.Pair error = details(sr.result.getErrorMessage());
-                println(String.format(SCENARIO_FAILED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(error.right), escape(error.left), escape(sr.scenario.getRefIdAndName()), ""));
-            } else {
-                println(String.format(SCENARIO_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(sr.scenario.getRefIdAndName())));
+        try {
+            // System.out.println(String.format("#vscode afterScenario %s %s", sr.caller.depth, sr.scenario.getRefIdAndName()));
+            if (sr.caller.depth == 0) {
+                String path = sr.scenario.getFeature().getResource().getRelativePath();
+                if (sr.result.isFailed()) {
+                    StringUtils.Pair error = details(sr.result.getErrorMessage());
+                    println(String.format(SCENARIO_FAILED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(error.right), escape(error.left), escape(sr.scenario.getRefIdAndName()), ""));
+                    // log.trace(String.format(SCENARIO_FAILED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(error.right), escape(error.left), escape(sr.scenario.getRefIdAndName()), ""));
+                } else {
+                    println(String.format(SCENARIO_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(sr.scenario.getRefIdAndName())));
+                    // log.trace(String.format(SCENARIO_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(sr.scenario.getRefIdAndName())));
+                }
             }
+        } catch (Exception e) {
+            log.error("afterScenario error: {}", e.getMessage());
         }
     }
 
     @Override
     public boolean beforeScenarioOutline(ScenarioOutline scenarioOutline, ScenarioRuntime sr) {
-        if (sr.caller.depth == 0) {
-            String path = sr.scenario.getFeature().getResource().getRelativePath();
-            String outlineName = getOutlineName(sr);
-            println(String.format(SCENARIO_OUTLINE_STARTED, getCurrentTime(), path + ":" + sr.scenario.getSection().getScenarioOutline().getLine(), escape(outlineName), sr.scenario.isOutlineExample(), sr.scenario.isDynamic()));
+        try {
+            if (sr.caller.depth == 0) {
+                String path = sr.scenario.getFeature().getResource().getRelativePath();
+                String outlineName = getOutlineName(sr);
+                println(String.format(SCENARIO_OUTLINE_STARTED, getCurrentTime(), path + ":" + sr.scenario.getSection().getScenarioOutline().getLine(), escape(outlineName), sr.scenario.isOutlineExample(), sr.scenario.isDynamic()));
+                // log.trace(String.format(SCENARIO_OUTLINE_STARTED, getCurrentTime(), path + ":" + sr.scenario.getSection().getScenarioOutline().getLine(), escape(outlineName), sr.scenario.isOutlineExample(), sr.scenario.isDynamic()));
+            }
+        } catch (Exception e) {
+            log.error("beforeScenarioOutline error: {}", e.getMessage());
         }
         return true;
     }
 
     @Override
     public void afterScenarioOutline(ScenarioOutline scenarioOutline, ScenarioRuntime sr) {
-        if (sr.caller.depth == 0) {
-            String path = sr.scenario.getFeature().getResource().getRelativePath();
-            String outlineName = getOutlineName(sr);
-            println(String.format(SCENARIO_OUTLINE_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(outlineName)));
+        try {
+            if (sr.caller.depth == 0) {
+                String path = sr.scenario.getFeature().getResource().getRelativePath();
+                String outlineName = getOutlineName(sr);
+                println(String.format(SCENARIO_OUTLINE_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(outlineName)));
+                // log.trace(String.format(SCENARIO_OUTLINE_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(outlineName)));
+            }
+        } catch (Exception e) {
+            log.error("afterScenarioOutline error: {}", e.getMessage());
         }
     }
 
 
-    private static void println(String s) {
+    static void println(String s) {
         System.out.println(s);
     }
 
@@ -151,5 +192,5 @@ public class VSCodeOutputRuntimeHook implements ExtendedRuntimeHook {
     private static final String SCENARIO_FINISHED = "##vscode {\"event\": \"testFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
     private static final String SCENARIO_OUTLINE_FINISHED = "##vscode {\"event\": \"testOutlineFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
     private static final String FEATURE_FINISHED = "##vscode {\"event\": \"featureFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
-    private static final String SUITE_FINISHED = "##vscode {\"event\": \"testSuiteFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\"}";
+    static final String SUITE_FINISHED = "##vscode {\"event\": \"testSuiteFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\"}";
 }

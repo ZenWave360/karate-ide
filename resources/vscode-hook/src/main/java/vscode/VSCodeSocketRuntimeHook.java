@@ -44,7 +44,7 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
     SocketChannel client;
 
     enum EventType {
-        REQUEST, RESPONSE, FEATURE_START, FEATURE_END, SCENARIO_START, SCENARIO_END
+        REQUEST, RESPONSE, SUITE_START, SUITE_END, FEATURE_START, FEATURE_END, SCENARIO_START, SCENARIO_END
     }
 
     class Event {
@@ -278,9 +278,8 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
         if (port == null || client == null) {
             return;
         }
-        log.trace(event.thread + " " + event.eventType + " " + event.feature + " " + event.status + " " + event.callDepth);
+        log.trace("VSCodeSocketRuntimeHook " + event.eventType + " " + event.feature + " " + event.status + " " + event.callDepth);
         int out = client.write(ByteBuffer.wrap(JsonUtils.toJson(event).getBytes(UTF_8)));
-        log.trace("out = " + out);
     }
 
     private ThreadLocal<String> threadName = new ThreadLocal<>();
@@ -288,6 +287,28 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
     @Override
     public void beforeSuite(Suite suite) {
         threadName.set(getCurrentTime());
+        try {
+            Event event = new Event();
+            event.eventType = EventType.SUITE_START;
+            event.thread = threadName.get();
+            event.timestamp = System.currentTimeMillis();
+            send(event);
+        } catch (Exception e) {
+            log.debug("VSCodeHook error", e);
+        }
+    }
+
+    @Override
+    public void afterSuite(Suite suite) {
+        try {
+            Event event = new Event();
+            event.eventType = EventType.SUITE_END;
+            event.thread = threadName.get();
+            event.timestamp = System.currentTimeMillis();
+            send(event);
+        } catch (Exception e) {
+            log.debug("VSCodeHook error", e);
+        }
     }
 
     private boolean isSame(Feature f1, Feature f2) {

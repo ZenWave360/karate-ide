@@ -13,6 +13,13 @@ export class KarateTestsProvider implements vscode.TreeDataProvider<KarateTestTr
     private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 
+    private treeView: vscode.TreeView<KarateTestTreeEntry>;
+
+    public setTreeView(treeView: vscode.TreeView<KarateTestTreeEntry>) {
+        this.treeView = treeView;
+        this.configureViewTitle();
+    }
+
     public async refresh(): Promise<any> {
         await filesManager.loadFiles();
         this._onDidChangeTreeData.fire(null);
@@ -27,6 +34,7 @@ export class KarateTestsProvider implements vscode.TreeDataProvider<KarateTestTr
         karateEnv = await vscode.window.showInputBox({ prompt: 'Karate Env', value: karateEnv });
         if (karateEnv !== undefined) {
             await vscode.workspace.getConfiguration().update('karateIDE.karateCli.karateEnv', karateEnv);
+            this.configureViewTitle();
         }
     }
 
@@ -35,6 +43,7 @@ export class KarateTestsProvider implements vscode.TreeDataProvider<KarateTestTr
         focus = await vscode.window.showInputBox({ prompt: 'Focus', value: focus, placeHolder: '**/** -t ~@ignore' });
         if (focus !== undefined) {
             LocalStorageService.instance.setValue('karateIDE.testView.focus', focus);
+            this.configureViewTitle();
             await this.refresh();
         }
     }
@@ -44,6 +53,12 @@ export class KarateTestsProvider implements vscode.TreeDataProvider<KarateTestTr
             .getValue<string>('karateIDE.testView.focus', '')
             .split(/-t/)
             .map(e => e && e.trim());
+    }
+
+    private configureViewTitle() {
+        const focus = LocalStorageService.instance.getValue<string>('karateIDE.testView.focus');
+        const karateEnv = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv'));
+        this.treeView.description = `( karate.env=${karateEnv} ${focus ? ', focus=' + focus : ''} )`;
     }
 
     async getChildren(element?: KarateTestTreeEntry): Promise<KarateTestTreeEntry[]> {

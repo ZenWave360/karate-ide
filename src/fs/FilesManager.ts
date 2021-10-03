@@ -103,16 +103,16 @@ class FilesManager {
         }
 
         if (definitions.length === 1 && tag) {
-            console.log('searching for @tag', tag);
+            // console.log('searching for @tag', tag);
             const lines = fs.readFileSync(definitions[0]).toString().split('\n');
             for (let line = 0; line < lines.length; line++) {
                 if (new RegExp(`^\\s*(@\\w+)*\\s*(@${tag})\\s*(@\\w+)*\\s*$`, 'g').exec(lines[line])) {
-                    console.log('peeking with @tag', definitions[0], line);
+                    // console.log('peeking with @tag', definitions[0], line);
                     return new vscode.Location(vscode.Uri.file(definitions[0]), new vscode.Position(line, 0));
                 }
             }
         }
-        console.log('peeking', definitions);
+        // console.log('peeking', definitions);
         return definitions.map(f => new vscode.Location(vscode.Uri.file(f), new vscode.Position(0, 0)));
     }
 
@@ -121,20 +121,25 @@ class FilesManager {
             .map(folder => path.join(this.workspaceFsPath, folder, file))
             .filter(f => fs.existsSync(f))
             .filter((value, index) => index === 0);
-        console.log(result);
+        // console.log(result);
         return result;
     }
 
     public getAutoCompleteEntries(documentUri: vscode.Uri, completionToken: string): vscode.CompletionItem[] {
-        let completionItems: vscode.CompletionItem[] = [];
         const relativeTo = path.relative(this.workspaceFolder.uri.fsPath, path.dirname(documentUri.fsPath)).replace(/\\/g, '/');
-        completionItems.push(...this.cachedKarateTestFiles.filter(f => f).map(f => new vscode.CompletionItem(f, vscode.CompletionItemKind.File)));
-        completionItems.push(...this.cachedClasspathFiles.map(f => new vscode.CompletionItem(`classpath:${f}`, vscode.CompletionItemKind.File)));
-        return completionItems.filter(item => item.label.startsWith(completionToken));
+        let completionStrings = [];
+        completionStrings.push(...this.cachedKarateTestFiles.filter(f => f));
+        completionStrings.push(...this.cachedClasspathFiles.map(f => `classpath:${f}`));
+        let completionItems = completionStrings.map(f => new vscode.CompletionItem(`classpath:${f}`, vscode.CompletionItemKind.File));
+        // completionItems.push(...this.cachedKarateTestFiles.filter(f => f).map(f => new vscode.CompletionItem(f, vscode.CompletionItemKind.File)));
+        // completionItems.push(...this.cachedClasspathFiles.map(f => new vscode.CompletionItem(`classpath:${f}`, vscode.CompletionItemKind.File)));
+        return completionItems.filter(item => item.label.toString().startsWith(completionToken));
     }
 
     public getKarateFiles(focus: string): KarateTestTreeEntry[] {
-        const filteredEntries = this.cachedKarateTestFiles.filter(f => !focus || (focus.length > 0 && minimatch(f, focus, { matchBase: true })));
+        const filteredEntries = (this.cachedKarateTestFiles || []).filter(
+            f => !focus || (focus.length > 0 && minimatch(f, focus, { matchBase: true }))
+        );
         return this.buildEntriesTree(filteredEntries);
     }
 

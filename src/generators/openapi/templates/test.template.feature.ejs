@@ -61,7 +61,8 @@ Scenario: explore <%= operation.operationId %> inline
 	const responseSchema = operation.responseBody? Object.values(operation.responses[operation.responseCode].content)[0].schema : null;
 _%>
 
-@ignore @operation
+@ignore
+@operation @operationId=<%= operation.operationId %> @openapi-file=<%= openapiFile %>
 Scenario: operation <%= serviceName %>/<%= operation.operationId %>
 * def args = 
 """

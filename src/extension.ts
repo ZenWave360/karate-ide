@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
+import { URL } from 'url';
 import KarateTestsProvider from '@/views/tests/KarateTestsProvider';
-import ProviderDebugAdapter from '@/debug/ProviderDebugAdapter';
+import ProviderDebugAdapter from '@/execution/ProviderDebugAdapter';
 import StatusBarProvider from '@/views/status-bar/StatusBarProvider';
 import CodeLensProvider from '@/codelens/CodeLensProvider';
 import DefinitionProvider from '@/codelens/DefinitionProvider';
@@ -27,30 +28,14 @@ import { karateExecutionsTreeProvider as executionsTreeProvider } from '@/views/
 import { generateKarateTestFromOpenAPI, generateKarateMocksFromOpenAPI } from '@/generators/openapi/OpenAPIGenerator';
 import { LocalStorageService } from '@/commands/LocalStorageService';
 import { CompletionItemProvider } from './codelens/CompletionProvider';
-import { NetworkLog, NetworkRequestResponseLog } from './server/KarateEventLogsModels';
-import { KarateExecutionProcess } from './debug/KarateExecutionProcess';
+import { NetworkLog, NetworkRequestResponseLog, PayloadProperty } from './server/KarateEventLogsModels';
+import { KarateExecutionProcess } from './execution/KarateExecutionProcess';
 import { configureClasspath } from './commands/ConfigureClasspath';
+import { karateOutputChannel } from './execution/KarateOutputChannel';
 
 let karateTestsWatcher = null;
 
 export function activate(context: vscode.ExtensionContext) {
-    const extensionId = 'KarateIDE.karate-ide';
-    const version = vscode.extensions.getExtension(extensionId).packageJSON.version;
-    const [mayor, minor, patch] = version.split('.');
-    if (mayor > 0 && new Date() > new Date('2021-10-11')) {
-        vscode.window
-            .showErrorMessage(
-                `${extensionId}: Due to an error in version numbers this version number v${version} is no longer supported and it will not receive updates.
-                Please use extension page to manually uninstall this version and then search and reinstall version 0.9.x/1.0.x from Marketplace`,
-                'Open Extension Page'
-            )
-            .then(result => {
-                if (result === 'Open Extension Page') {
-                    vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(`vscode:extension/${extensionId}`));
-                }
-            });
-    }
-
     let karateTestsProvider = new KarateTestsProvider();
     let debugAdapterProvider = new ProviderDebugAdapter();
     let statusBarProvider = new StatusBarProvider(context);
@@ -61,6 +46,15 @@ export function activate(context: vscode.ExtensionContext) {
 
     function registerCommand(command: string, callback: (...args: any[]) => any, thisArg?: any) {
         context.subscriptions.push(vscode.commands.registerCommand(command, callback));
+    }
+
+    function createTreeView(viewId: string, options: vscode.TreeViewOptions<any>) {
+        const treeView = vscode.window.createTreeView(viewId, options);
+        context.subscriptions.push(treeView);
+        if (typeof options.treeDataProvider['setTreeView'] === 'function') {
+            options.treeDataProvider['setTreeView'](treeView);
+        }
+        return treeView;
     }
 
     LocalStorageService.initialize(context.workspaceState);
@@ -85,6 +79,12 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.env.clipboard.writeText(item.label.toString());
         }
     });
+    registerCommand('karateIDE.karateNetworkLogs.copyAsPath', (item: PayloadProperty) => {
+        const jsonPath = item?.jsonPath();
+        if (jsonPath) {
+            vscode.env.clipboard.writeText(jsonPath.replace(/^\$\./g, ''));
+        }
+    });
     registerCommand('karateIDE.karateNetworkLogs.copyAsCURL', (item: NetworkLog | NetworkRequestResponseLog) => {
         const httplog: NetworkRequestResponseLog = item instanceof NetworkLog ? item.parent : item;
         const request = httplog.request;
@@ -94,8 +94,21 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.env.clipboard.writeText(template);
         vscode.window.showInformationMessage('Copied to clipboard');
     });
-    registerCommand('karateIDE.karateNetworkLogs.copyAsKarateMock', item => {
-        vscode.window.showWarningMessage('This feature is coming soon.');
+    registerCommand('karateIDE.karateNetworkLogs.copyAsKarateMock', (item: NetworkRequestResponseLog | NetworkLog) => {
+        try {
+            item = item instanceof NetworkLog ? item.parent : item;
+            const mock = `Scenario:  methodIs('${item.method}') && pathMatches('${new URL(item.url).pathname}')
+* def response = '${JSON.stringify(item.response.payload.json)}'
+* def responseStatus = ${item.status}\n`;
+
+            vscode.env.clipboard.writeText(mock);
+        } catch (e) {
+            vscode.window.showErrorMessage(e.message);
+        }
+    });
+    registerCommand('karateIDE.showNetworkRequestResponseLog', (payload, description) => {
+        payload = payload && typeof payload === 'object' ? JSON.stringify(payload, null, 2) : payload + '';
+        karateOutputChannel.showOutputLogs(`// ${description || ''}\n${payload || ''}`);
     });
 
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('karate-ide', debugAdapterProvider));
@@ -106,24 +119,23 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.languages.registerCompletionItemProvider(karateFile, new CompletionItemProvider(), ...["'", '"']));
     //let registerFoldingRangeProvider = vscode.languages.registerFoldingRangeProvider(foldingRangeTarget, foldingRangeProvider);
 
-    context.subscriptions.push(vscode.window.createTreeView('karate-ide-tests', { showCollapseAll: true, treeDataProvider: karateTestsProvider }));
+    createTreeView('karate-ide-tests', { showCollapseAll: true, treeDataProvider: karateTestsProvider });
 
     // NetworkLogs View
     const networkLogsProvider = new KarateNetworkLogsTreeProvider();
     registerCommand('karateIDE.karateNetworkLogs.clearTree', () => networkLogsProvider.clear());
     registerCommand('karateIDE.karateNetworkLogs.showScenarios.true', () => networkLogsProvider.setShowScenarios(true));
     registerCommand('karateIDE.karateNetworkLogs.showScenarios.false', () => networkLogsProvider.setShowScenarios(false));
-    context.subscriptions.push(vscode.window.createTreeView('karate-network-logs', { showCollapseAll: true, treeDataProvider: networkLogsProvider }));
+    createTreeView('karate-network-logs', { showCollapseAll: true, treeDataProvider: networkLogsProvider });
     // Executions View
     registerCommand('karateIDE.karateExecutionsTree.relaunchDebugAll', relaunchDebugAll);
     registerCommand('karateIDE.karateExecutionsTree.relaunchDebug', relaunchDebug);
     registerCommand('karateIDE.karateExecutionsTree.relaunchRunAll', relaunchRunAll);
     registerCommand('karateIDE.karateExecutionsTree.relaunchRun', relaunchRun);
-    registerCommand('karateIDE.karateExecutionsTree.showOutputLogs', KarateExecutionProcess.showOutputLogs);
+    registerCommand('karateIDE.karateExecutionsTree.showOutputLogs', karateOutputChannel.showOutputLogs);
     registerCommand('karateIDE.karateExecutionsTree.relaunchLastExecution', relaunchLastExecution);
-    context.subscriptions.push(
-        vscode.window.createTreeView('karate-executions', { showCollapseAll: false, treeDataProvider: executionsTreeProvider })
-    );
+    registerCommand('karateIDE.karateExecutionsProcess.stopTestProcesses', () => KarateExecutionProcess.stopTestProcesses());
+    createTreeView('karate-executions', { showCollapseAll: false, treeDataProvider: executionsTreeProvider });
     const eventLogsServer = new EventLogsServer(data => {
         try {
             networkLogsProvider.processLoggingEvent(data);

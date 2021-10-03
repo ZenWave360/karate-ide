@@ -6,7 +6,6 @@ export { buildKarateTestDataObject, buildExampleFromSchema, buildKarateMockDataO
  * @param {*} statusCode
  */
 function buildKarateTestDataObject(operation: any, statusCode: string | number) {
-    // console.log(operation.parameters);
     const params = buildParametersSample(operation.parameters);
     const requestSchema = () => (Object.values(operation.requestBody.content)[0] as any).schema;
     const hasResponseContent = operation.responses[statusCode].content;
@@ -20,7 +19,6 @@ function buildKarateTestDataObject(operation: any, statusCode: string | number) 
 
     // schemas for nested arrays
     const responseMatchesEach = Object.entries(hasResponseContent ? responseSchema().properties || {} : {}).reduce((each, [property, schema]) => {
-        // console.log('property', property, schema);
         if (isArraySchema(schema)) {
             each[property] = buildKarateSchema((schema as any).items, {});
         }

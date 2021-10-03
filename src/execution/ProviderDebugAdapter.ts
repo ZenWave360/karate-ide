@@ -44,7 +44,11 @@ class ProviderDebugAdapter implements vscode.DebugAdapterDescriptorFactory, vsco
         const { root: projectRootPath } = getFileAndRootPath(vscode.Uri.file(featureFile));
 
         return new Promise((resolve, reject) => {
-            KarateExecutionProcess.execute(projectRootPath, debugCommandLine, port => {
+            const timeout = setTimeout(() => {
+                reject(); //reject(new Error('Timeout while waiting for debug adapter'));
+            }, 10000);
+            KarateExecutionProcess.executeInDebugServer(projectRootPath, debugCommandLine, port => {
+                clearTimeout(timeout);
                 resolve(new vscode.DebugAdapterServer(port));
             });
         });

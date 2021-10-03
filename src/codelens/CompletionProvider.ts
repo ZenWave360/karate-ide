@@ -17,9 +17,9 @@ export class CompletionItemProvider implements vscode.CompletionItemProvider {
         const regex = /read\(['"](.*)/gm;
         const groups = regex.exec(completionToken);
         const filePrefix = groups && groups.length === 2 ? groups[1] : '';
-        console.log('completionToken', completionToken, filePrefix);
+        // console.log('completionToken', completionToken, filePrefix);
         return filesManager.getAutoCompleteEntries(document.uri, filePrefix).map(item => {
-            item.insertText = item.label.replace(filePrefix, '');
+            item.insertText = item.label.toString().replace(filePrefix, '');
             return item;
         });
     }

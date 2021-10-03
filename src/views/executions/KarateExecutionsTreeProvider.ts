@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
-import { ITreeEntry, ITreeEntryCommand, LoggingEventVO, ThreadTreeEntry, TreeEntry } from '@/server/KarateEventLogsModels';
 import Icons from '@/Icons';
-import { Event } from '@/debug/KarateExecutionProcess';
+import { Event } from '@/execution/KarateExecutionProcess';
 
 export class SuiteExecution {
     constructor(public readonly name) {}
@@ -30,6 +29,7 @@ export class ScenarioOutlineExecution {
 
 export class ScenarioExecution {
     public eventEnd: Event | undefined;
+    public errors: string[] = [];
     constructor(public eventStart: Event) {}
 
     get name() {
@@ -40,11 +40,18 @@ export class ScenarioExecution {
 export type Execution = SuiteExecution | FeatureExecution | ScenarioOutlineExecution | ScenarioExecution;
 
 class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<Execution> {
-    private executions: FeatureExecution[] = [];
+    public executions: FeatureExecution[] = [];
     private auxParentFeatureOrOutline: ScenarioOutlineExecution | FeatureExecution = undefined;
 
     private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
+
+    private treeView: vscode.TreeView<Execution>;
+
+    public setTreeView(treeView: vscode.TreeView<Execution>) {
+        this.treeView = treeView;
+        this.configureViewTitle();
+    }
 
     public clear(): any {
         this.executions = [];
@@ -52,8 +59,11 @@ class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<Execution>
         this._onDidChangeTreeData.fire(null);
     }
 
+    public refresh = () => {
+        this._onDidChangeTreeData.fire(null);
+    };
+
     processEvent(event: Event): any {
-        console.log('event', event);
         if (event.event === 'featureStarted') {
             this.executions.push((this.auxParentFeatureOrOutline = new FeatureExecution(event)));
         } else if (event.event === 'featureFinished') {
@@ -69,6 +79,7 @@ class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<Execution>
             const scenarioExecution = parent.scenarioExecutions[parent.scenarioExecutions.length - 1];
             scenarioExecution.eventEnd = event;
             if (event.event === 'testFailed') {
+                scenarioExecution.errors.push(`${event.message}: ${event.details}`);
                 parent.errors.push(`${event.message}: ${event.details}`);
                 if (parent instanceof ScenarioOutlineExecution) {
                     parent.parent.errors.push(`${event.message}: ${event.details}`);
@@ -81,6 +92,10 @@ class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<Execution>
         this._onDidChangeTreeData.fire(null);
     }
 
+    configureViewTitle() {
+        // this.treeView.description = `TODO`;
+    }
+
     getTreeItem(execution: Execution): vscode.TreeItem | Thenable<vscode.TreeItem> {
         const treeItem = new vscode.TreeItem(execution.name, vscode.TreeItemCollapsibleState.Expanded);
         if (execution instanceof SuiteExecution) {
@@ -89,19 +104,19 @@ class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<Execution>
             treeItem.contextValue = 'FeatureExecution';
             treeItem.iconPath = execution.eventEnd ? (execution.errors.length ? Icons.error : Icons.pass) : Icons.loading;
             if (execution.errors.length) {
-                treeItem.tooltip = execution.errors.join('\n');
+                // treeItem.tooltip = execution.errors.join('\n');
             }
         } else if (execution instanceof ScenarioOutlineExecution) {
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
             treeItem.contextValue = 'ScenarioOutlineExecution';
             treeItem.iconPath = execution.eventEnd ? (execution.errors.length ? Icons.error : Icons.pass) : Icons.loading;
             if (execution.errors.length) {
-                treeItem.tooltip = execution.errors.join('\n');
+                // treeItem.tooltip = execution.errors.join('\n');
             }
         } else if (execution instanceof ScenarioExecution) {
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
             treeItem.contextValue = 'ScenarioExecution';
-            treeItem.iconPath = execution.eventEnd ? (execution.eventEnd.message ? Icons.error : Icons.pass) : Icons.loading;
+            treeItem.iconPath = execution.eventEnd ? (execution.eventEnd.event === 'testFailed' ? Icons.error : Icons.pass) : Icons.loading;
             if (execution.eventEnd?.message) {
                 treeItem.tooltip = `${execution.eventEnd.message}:\n ${execution.eventEnd.details}`;
             }

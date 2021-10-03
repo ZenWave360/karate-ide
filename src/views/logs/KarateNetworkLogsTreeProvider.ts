@@ -15,6 +15,8 @@ import {
 export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataProvider<ITreeEntry> {
     private eventLogsTree: { [key: string]: ThreadTreeEntry } = {};
     private showScenarios = false;
+    private httpResponsesCount: number = 0;
+    private lastHttpResponse: NetworkLog;
 
     private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
@@ -42,7 +44,13 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
         const threadName = event.thread;
         const threadTree = this.eventLogsTree[threadName] || new ThreadTreeEntry(threadName);
         this.eventLogsTree[threadName] = threadTree;
-        if (event.eventType.endsWith('_START')) {
+        if (event.eventType.endsWith('SUITE_START')) {
+            this.httpResponsesCount = 0;
+        } else if (event.eventType === 'SUITE_END') {
+            if (this.httpResponsesCount === 1) {
+                vscode.commands.executeCommand('karateIDE.showNetworkRequestResponseLog', this.lastHttpResponse.payload.json);
+            }
+        } else if (event.eventType.endsWith('_START')) {
             const parent = threadTree.stack[threadTree.stack.length - 1] || threadTree;
             threadTree.stack.push(new TreeEntry(parent as TreeEntry, event));
         } else if (event.eventType.endsWith('_END')) {
@@ -63,6 +71,8 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
             parent.response = response;
             parent.eventEnd = event;
             parent.children.push(response);
+            this.httpResponsesCount++;
+            this.lastHttpResponse = response;
         }
         this._onDidChangeTreeData.fire(null);
     }

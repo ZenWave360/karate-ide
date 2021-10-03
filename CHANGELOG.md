@@ -2,6 +2,29 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+# 1.0.x
+
+- [X] Http Logs
+  - [X] Click on http logs shows request/response/payloads pretty-printed in Karate OutputChannels
+  - [X] Copy as expression
+  - [X] Copy as Mock
+  - [~] Filter payload using JsonPath: Context Menu + Filtering WebView
+- [ ] Status Bar
+  - [X] Improve summary
+  - [X] Run/Debug buttons for each failed scenario
+  - [-] Run/Debug button to replay all and only failed scenarios
+    - [-] Not Supported By karate-core yet
+- [X] OutputChannel
+  - [no] Click-to-open to relative files
+  - [X] Colorize output channel
+- [X] Karate Process Server for execution startup performance
+  - [X] Keep Debug Session open
+  - [X] Keep Execution Session open
+- [ ] Move Run/Debug buttons to editor gutter
+  - [ ] Play button in gutter
+  - [ ] Debug button as right click menu
+  - [ ] Cross icon for failed tests with summary on hover
+
 # 0.9.x
 
 - [X] SmartPaste
@@ -9,21 +32,22 @@ All notable changes to the "karate-ide" extension will be documented in this fil
   - [X] "Paste json object as new row" on Outline Examples mapped by column name
   - [X] "Paste json array as new row" on Outline Examples
   - [X] SmartPaste fix and only on karate files
-- [ ] OpenAPI generator
+- [x] OpenAPI generator
   - [X] support both __arg and no __arg styles in @operation Scenarios
   - [X] generate Scenario Outlines examples as inline rows of params
-  - [ ] Refactor Schema validation generated code
+  - [x] Refactor Schema validation generated code
     - [X] Make default schema validation part of @validation Scenario
     - [-] Improve/flexibilize "match each" schema definition
     - [-] Allow mix both default and extended/custom schema validations
-- [X] VSCodeRuntimHook.java patches for karate unexpected behaviour
+- [X] VSCodeRuntimeHook.java patches for karate unexpected behavior
   - [x] onScenarioOutline start/stop
   - [x] onFeatureEnd on empty features
-- [ ] Improve classpath autocompletion
+- [x] Remove duplicates in classpath autocompletion
 - [X] Fix https://github.com/intuit/karate/issues/1499 "support calling other scenarios in the same (implied) feature by tag" in karate-core
-- [ ] Expose in karate-core "Keep karate debug session open" as Main command line option
+- [X] Expose in karate-core "Keep karate debug session open" as Main command line option
 - [X] StatusBar
-- [ ] Dynamic title bar in Executions View
+- [X] Dynamic title bar in Executions/Tests View
+
 # 0.8.x
 
 - [X] Execution Process: 
@@ -45,7 +69,7 @@ All notable changes to the "karate-ide" extension will be documented in this fil
 - [ ] Colorize
 - [ ] Reusable Debug Session
 - [X] Configure classpath command
-- [ ] SmartPaste fix and only on karate files
+- [x] SmartPaste fix and only on karate files
 # 0.5.0 
 
 - [x] Karate.env switcher
@@ -56,7 +80,7 @@ All notable changes to the "karate-ide" extension will be documented in this fil
   - [ ] Tree view (v2) with scenarios calls hierarchy
   - [ ] Click to open feature line where http calls are made
   - [ ] JsonPath filter command for opened payload json documents
-- [x] Excutions view:
+- [x] Executions view:
   - [x] Replay last execution
   - [x] Play single scenario from last execution
   - [x] Click to open scenario from executions tree

@@ -118,13 +118,27 @@ export class NetworkRequestResponseLog extends TreeEntry {
     asTreeItem() {
         const treeItem = new vscode.TreeItem(`${this.method} ${this.url} (${this.status})`, vscode.TreeItemCollapsibleState.Collapsed);
         treeItem.contextValue = 'NetworkRequestResponseLog';
+        if (this.response) {
+            treeItem.command = {
+                command: 'karateIDE.showNetworkRequestResponseLog',
+                title: '',
+                arguments: [this.response.payload.json, `Response ${this.method} ${this.url} (${this.status})`],
+            };
+        }
         return treeItem;
     }
 }
 
 export class NetworkLog implements ITreeEntry {
     public parent: NetworkRequestResponseLog;
-    constructor(private label: 'Request' | 'Response', public headers: Headers, public payload: Payload | null) {}
+    constructor(private label: 'Request' | 'Response', public headers: Headers, public payload: Payload | null) {
+        headers.parent = this;
+        payload.parent = this;
+    }
+
+    description() {
+        return `${this.label} ${this.parent.method} ${this.parent.url} (${this.parent.status})`;
+    }
 
     asTreeItem() {
         const treeItem = new vscode.TreeItem(`${this.label}:`, vscode.TreeItemCollapsibleState.Collapsed);
@@ -132,19 +146,34 @@ export class NetworkLog implements ITreeEntry {
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
         }
         treeItem.contextValue = 'NetworkLog' + this.label;
+        if (this.payload) {
+            treeItem.command = {
+                command: 'karateIDE.showNetworkRequestResponseLog',
+                title: '',
+                arguments: [this.payload.json, this.description()],
+            };
+        }
         return treeItem;
     }
 }
 
 export class Headers implements ITreeEntry {
-    next: null;
+    parent: NetworkLog;
     headers: Header[] = [];
     constructor(headers: { [key: string]: string }) {
         this.headers = Object.entries(headers).map(([key, value]) => new Header(key, value));
     }
+    description() {
+        return this.headers.map(h => `${h.key}: ${h.value}`).join('\n');
+    }
     asTreeItem() {
         const treeItem = new vscode.TreeItem(`Headers:`, vscode.TreeItemCollapsibleState.Collapsed);
         treeItem.contextValue = 'NetworkLogHeaders';
+        treeItem.command = {
+            command: 'karateIDE.showNetworkRequestResponseLog',
+            title: '',
+            arguments: [this.description(), `Headers for ${this.parent.description()}`],
+        };
         return treeItem;
     }
 }
@@ -155,51 +184,80 @@ export class Header implements ITreeEntry {
     asTreeItem() {
         const treeItem = new vscode.TreeItem(`${this.key}: ${this.value}`);
         treeItem.contextValue = 'NetworkLogHeader';
+        treeItem.command = {
+            command: 'karateIDE.showNetworkRequestResponseLog',
+            title: '',
+            arguments: [`${this.key}: ${this.value}`, 'header'],
+        };
         return treeItem;
     }
 }
 
 export class Payload implements ITreeEntry {
+    parent: NetworkLog;
+    json: any;
     properties: PayloadProperty[];
     constructor(public payload: string, private label = 'Payload') {
         try {
-            const json = JSON.parse(payload);
-            if (json) {
-                this.properties = Object.entries(json).map(([key, value]) => new PayloadProperty(key, value));
+            this.json = JSON.parse(payload);
+            if (this.json) {
+                this.properties = Object.entries(this.json).map(([key, value]) => new PayloadProperty(key, value, this));
             }
         } catch (e) {
-            console.error('error parsing payload "' + payload + '"', e.message);
+            // console.error('error parsing payload "' + payload + '"', e.message);
         }
     }
+
+    jsonPath() {
+        return '$';
+    }
+
     asTreeItem() {
         const treeItem = new vscode.TreeItem(`${this.label}:`, vscode.TreeItemCollapsibleState.Collapsed);
         treeItem.tooltip = JSON.stringify(this.payload, null, 2);
         treeItem.description = this.payload;
         treeItem.contextValue = 'NetworkLogPayload';
+        treeItem.command = {
+            command: 'karateIDE.showNetworkRequestResponseLog',
+            title: '',
+            arguments: [this.json, `Payload for ${this.parent.description()}`],
+        };
         return treeItem;
     }
 }
 
 export class PayloadProperty implements ITreeEntry {
-    next: null;
     properties: PayloadProperty[];
-    constructor(public key: string, public value: any) {
+    constructor(public key: string, public value: any, public parent: Payload | PayloadProperty) {
         try {
             if (typeof value === 'object') {
-                this.properties = Object.entries(value || {}).map(([nestedKey, nestedValue]) => new PayloadProperty(nestedKey, nestedValue));
+                this.properties = Object.entries(value || {}).map(([nestedKey, nestedValue]) => new PayloadProperty(nestedKey, nestedValue, this));
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
         }
     }
+
+    jsonPath() {
+        const parentPath = this.parent.jsonPath();
+        const thisPath = /^[0-9]+$/.test(this.key) ? `[${this.key}]` : this.key;
+        const separator = thisPath.startsWith('[') ? '' : '.';
+        return parentPath + separator + thisPath;
+    }
+
     asTreeItem() {
         const treeItem =
             this.properties && this.properties.length
                 ? new vscode.TreeItem(`${this.key}:`, vscode.TreeItemCollapsibleState.Collapsed)
                 : new vscode.TreeItem(`${this.key}: ${this.value}`, vscode.TreeItemCollapsibleState.None);
         treeItem.contextValue = 'NetworkLogPayloadProperty';
-        // treeItem.description = this.value;
+        treeItem.description = JSON.stringify(this.value);
         treeItem.tooltip = JSON.stringify(this.value, null, 2);
+        treeItem.command = {
+            command: 'karateIDE.showNetworkRequestResponseLog',
+            title: '',
+            arguments: [this.value, `${this.jsonPath()}`],
+        };
         return treeItem;
     }
 }

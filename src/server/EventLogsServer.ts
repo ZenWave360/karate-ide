@@ -12,17 +12,6 @@ export default class EventLogsServer {
 
     createServer() {
         this.server = net.createServer((socket: net.Socket) => {
-            console.log(
-                'Client connect: ' +
-                    socket.localAddress +
-                    ':' +
-                    socket.localPort +
-                    '. client remote address : ' +
-                    socket.remoteAddress +
-                    ':' +
-                    socket.remotePort
-            );
-
             socket.setEncoding('utf-8');
             socket.setTimeout(10000);
 
@@ -58,14 +47,9 @@ export default class EventLogsServer {
 
             // When client send data complete.
             socket.on('end', () => {
-                console.log('Client disconnect.');
-
                 // Get current connections count.
                 this.server.getConnections((err, count) => {
-                    if (!err) {
-                        // Print current connection count in server console.
-                        console.log('There are %d connections now. ', count);
-                    } else {
+                    if (err) {
                         console.error(JSON.stringify(err));
                     }
                 });
