@@ -96,7 +96,7 @@ class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<Execution>
     private configureViewTitle() {
         const karateEnv = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv'));
         const karateOptions = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateOptions'));
-        this.treeView.description = `Karate Env: '${karateEnv}', Karate Options: '${karateOptions}'`;
+        this.treeView.description = `Env: '${karateEnv}', Options: '${karateOptions}'`;
     }
 
     processEvent(event: Event): any {

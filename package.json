@@ -183,8 +183,8 @@
                 "command": "karateIDE.tests.switchKarateEnv",
                 "title": "Karate Env",
                 "icon": {
-                    "light": "resources/vscode-icons/light/gear.svg",
-                    "dark": "resources/vscode-icons/dark/gear.svg"
+                    "light": "resources/vscode-icons/light/telescope.svg",
+                    "dark": "resources/vscode-icons/dark/telescope.svg"
                 }
             },
             {
@@ -265,35 +265,19 @@
             },
             {
                 "command": "karateIDE.generators.openapi.test",
-                "title": "Generate Karate Test",
-                "icon": {
-                    "light": "resources/vscode-icons/light/karate-test.svg",
-                    "dark": "resources/vscode-icons/dark/karate-test.svg"
-                }
+                "title": "Generate Karate Test"
             },
             {
                 "command": "karateIDE.generators.openapi.mocks",
-                "title": "Generate Karate Mock",
-                "icon": {
-                    "light": "resources/vscode-icons/light/karate-test.svg",
-                    "dark": "resources/vscode-icons/dark/karate-test.svg"
-                }
+                "title": "Generate Karate Mock"
             },
             {
                 "command": "karateIDE.mocks.start",
-                "title": "Start Karate Mock Server",
-                "icon": {
-                    "light": "resources/vscode-icons/light/karate-test.svg",
-                    "dark": "resources/vscode-icons/dark/karate-test.svg"
-                }
+                "title": "Start Karate Mock Server"
             },
             {
                 "command": "karateIDE.configureClasspath",
-                "title": "Configure Karate-IDE karate classpath",
-                "icon": {
-                    "light": "resources/vscode-icons/light/karate-test.svg",
-                    "dark": "resources/vscode-icons/dark/karate-test.svg"
-                }
+                "title": "Configure Karate-IDE karate classpath"
             }
         ],
         "menus": {
@@ -488,7 +472,7 @@
                 },
                 "karateIDE.karateCli.debugCommandTemplate": {
                     "type": "string",
-                    "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.Main --backup-reportdir=false --keep-debug-server -d",
+                    "default": "java '-Dkarate.env=${karateEnv}' '-Dvscode.port=${vscodePort}' -cp '${classpath}' com.intuit.karate.Main --backup-reportdir=false --debug-keepalive -d",
                     "description": "Command line template for debug action. See documentation for available template variables and different recipes.",
                     "scope": "resource"
                 },

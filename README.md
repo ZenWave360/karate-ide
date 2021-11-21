@@ -12,6 +12,7 @@ Explore your APIs and Debug [Karate](https://github.com/intuit/karate) test scri
     - [What's New?](#whats-new)
         - [Blazing Fast test Startup](#blazing-fast-test-startup)
         - [Your data at your fingerprints](#your-data-at-your-fingerprints)
+        - [Replacing old Tests Explorer with native *Test API* from VSCode](#replacing-old-tests-explorer-with-native-test-api-from-vscode)
     - [Featuring](#featuring)
     - [From Manual Testing to Contract Testing](#from-manual-testing-to-contract-testing)
     - [Auto Configuration](#auto-configuration)
@@ -61,6 +62,16 @@ You can always use *Executions* and *Network Logs* tree views to select what log
 - Or Request/Response payloads, headers... in *Network Logs* tree view
 
 ![Karate-IDE](resources/screenshots/Karate-IDE-data-at-your-fingerprints.gif)
+
+### Replacing old Tests Explorer with native *Test API* from VSCode
+
+With the new Tests API, Visual Studio Code supports richer displays of outputs and diffs than was previously possible. This brings a lot of goodies to your user experience:
+
+- Better looking standard Run/Debug showing in the gutter (replacing old *code lenses*)
+- Test Explorer view allows you navigate and filter tests by name, tags, status, etc... To filter by tag use karate prefix in this way `@karate:@yourtag`
+- Failing tests error messages are presented in multiple and usefull ways (a tooltips, in the gutter, in the tests explorer...)
+
+![Karate-IDE](resources/screenshots/API-Tests-Explorer.gif)
 
 ## Featuring
 
