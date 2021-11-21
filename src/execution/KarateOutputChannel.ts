@@ -60,11 +60,11 @@ export class KarateOutputChannel {
             if (execution instanceof SuiteExecution) {
                 karateChannel.append(this.suiteLogs.get());
             } else if (execution instanceof FeatureExecution) {
-                karateChannel.append(this.featuresLogsMap.get(execution.name).get());
+                karateChannel.append(this.featuresLogsMap.get(execution.locationHint).get());
             } else if (execution instanceof ScenarioExecution) {
-                karateChannel.append(this.scenariosLogsMap.get(execution.name).get());
+                karateChannel.append(this.scenariosLogsMap.get(execution.locationHint).get());
             } else if (execution instanceof ScenarioOutlineExecution) {
-                karateChannel.append(this.scenarioOutlineLogsMap.get(execution.name).get());
+                karateChannel.append(this.scenarioOutlineLogsMap.get(execution.locationHint).get());
             } else if (typeof execution === 'string') {
                 karateChannel.append(execution);
             }

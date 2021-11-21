@@ -97,10 +97,6 @@
         "views": {
             "karate-ide": [
                 {
-                    "id": "karate-ide-tests",
-                    "name": "Karate Tests"
-                },
-                {
                     "id": "karate-executions",
                     "name": "Executions"
                 },
@@ -184,14 +180,6 @@
                 "title": "Copy as Karate Mock"
             },
             {
-                "command": "karateIDE.tests.refreshTree",
-                "title": "Refresh",
-                "icon": {
-                    "light": "resources/vscode-icons/light/refresh.svg",
-                    "dark": "resources/vscode-icons/dark/refresh.svg"
-                }
-            },
-            {
                 "command": "karateIDE.tests.switchKarateEnv",
                 "title": "Karate Env",
                 "icon": {
@@ -200,11 +188,11 @@
                 }
             },
             {
-                "command": "karateIDE.tests.configureFocus",
-                "title": "Config Focus",
+                "command": "karateIDE.tests.karateOptions",
+                "title": "Karate Options",
                 "icon": {
-                    "light": "resources/vscode-icons/light/filter.svg",
-                    "dark": "resources/vscode-icons/dark/filter.svg"
+                    "light": "resources/vscode-icons/light/settings.svg",
+                    "dark": "resources/vscode-icons/dark/settings.svg"
                 }
             },
             {
@@ -311,19 +299,14 @@
         "menus": {
             "view/title": [
                 {
-                    "command": "karateIDE.tests.refreshTree",
-                    "when": "view == karate-ide-tests",
+                    "command": "karateIDE.tests.switchKarateEnv",
+                    "when": "view == karate-executions",
                     "group": "navigation@1"
                 },
                 {
-                    "command": "karateIDE.tests.switchKarateEnv",
-                    "when": "view == karate-ide-tests",
-                    "group": "navigation@3"
-                },
-                {
-                    "command": "karateIDE.tests.configureFocus",
-                    "when": "view == karate-ide-tests",
-                    "group": "navigation@4"
+                    "command": "karateIDE.tests.karateOptions",
+                    "when": "view == karate-executions",
+                    "group": "navigation@2"
                 },
                 {
                     "command": "karateIDE.karateNetworkLogs.showScenarios.false",
@@ -535,7 +518,7 @@
                 },
                 "karateIDE.tests.globFilter": {
                     "type": "string",
-                    "default": "**/src/test/**/*[.feature|.yml]",
+                    "default": "**/src/test/**/*.{feature,yml}",
                     "description": "Glob pattern to filter files in Karate Tests view.",
                     "scope": "resource"
                 }

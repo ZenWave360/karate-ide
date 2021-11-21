@@ -47,120 +47,46 @@ function getFileAndRootPath(uri): { file: string; root: string } {
     return { root: rootPath, file: filePath };
 }
 
-async function getTestExecutionDetail(uri: vscode.Uri, type: vscode.FileType): Promise<ITestExecutionDetail[]> {
+async function getTestExecutionDetail(uri: vscode.Uri): Promise<ITestExecutionDetail[]> {
     let tedArray: ITestExecutionDetail[] = [];
 
-    if (type === vscode.FileType.File) {
-        let document = await vscode.workspace.openTextDocument(uri);
+    let document = await vscode.workspace.openTextDocument(uri);
 
-        let lineTestRegExp = new RegExp('^\\s*(Feature|Scenario|Scenario Outline):.*$');
-        let lineTagRegExp = new RegExp('^\\s*@.+$');
-        for (let line = 0; line < document.lineCount; line++) {
-            let ted: ITestExecutionDetail = new ITestExecutionDetail();
-            ted.testFeature = uri.fsPath;
+    let lineTestRegExp = new RegExp('^\\s*(Feature|Scenario|Scenario Outline):.*$');
+    let lineTagRegExp = new RegExp('^\\s*@.+$');
+    for (let line = 0; line < document.lineCount; line++) {
+        let ted: ITestExecutionDetail = new ITestExecutionDetail();
+        ted.testFeature = uri.fsPath;
 
-            let lineText = document.lineAt(line).text;
-            let lineTestMatch = lineText.match(lineTestRegExp);
-            if (lineTestMatch !== null && lineTestMatch.index !== undefined) {
-                ted.testTitle = lineText.trim();
-                ted.codelensLine = line;
+        let lineText = document.lineAt(line).text;
+        let lineTestMatch = lineText.match(lineTestRegExp);
+        if (lineTestMatch !== null && lineTestMatch.index !== undefined) {
+            ted.testTitle = lineText.trim();
+            ted.codelensLine = line;
 
-                if (line > 0) {
-                    let lineLastText = document.lineAt(line - 1).text;
-                    let lineTagMatch = lineLastText.match(lineTagRegExp);
-                    if (lineTagMatch !== null && lineTagMatch.index !== undefined) {
-                        ted.testTag = lineLastText.trim();
-                        ted.codelensLine--;
-                    } else {
-                        ted.testTag = '';
-                    }
-                }
-                let lineScenarioRegExp = new RegExp('^\\s*(Scenario|Scenario Outline):(.*)$');
-                let lineScenarioMatch = lineText.match(lineScenarioRegExp);
-                if (lineScenarioMatch !== null && lineScenarioMatch.index !== undefined) {
-                    ted.testLine = line + 1;
+            if (line > 0) {
+                let lineLastText = document.lineAt(line - 1).text;
+                let lineTagMatch = lineLastText.match(lineTagRegExp);
+                if (lineTagMatch !== null && lineTagMatch.index !== undefined) {
+                    ted.testTag = lineLastText.trim();
+                    ted.codelensLine--;
                 } else {
-                    ted.testLine = 0;
+                    ted.testTag = '';
                 }
-
-                tedArray.push(ted);
             }
-        }
-    } else {
-        let glob = String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter'));
-        let karateTestFiles = await vscode.workspace.findFiles(glob).then(value => {
-            return value;
-        });
-
-        let karateTestFilesFiltered = karateTestFiles.filter(karateTestFile => {
-            return karateTestFile.toString().startsWith(uri.toString());
-        });
-
-        let karateTestFoldersFiltered: Array<string> = [];
-        karateTestFilesFiltered.forEach(karateTestFile => {
-            karateTestFoldersFiltered.push(karateTestFile.fsPath.substring(0, karateTestFile.fsPath.lastIndexOf(path.sep)));
-        });
-
-        let foundFolder = karateTestFoldersFiltered.find(folder => {
-            return folder === uri.fsPath;
-        });
-
-        let classPathNormalized = '';
-        if (foundFolder !== undefined) {
-            classPathNormalized = uri.fsPath;
-        } else {
-            if (karateTestFoldersFiltered.length === 1) {
-                classPathNormalized = karateTestFoldersFiltered[0];
+            let lineScenarioRegExp = new RegExp('^\\s*(Scenario|Scenario Outline):(.*)$');
+            let lineScenarioMatch = lineText.match(lineScenarioRegExp);
+            if (lineScenarioMatch !== null && lineScenarioMatch.index !== undefined) {
+                ted.testLine = line + 1;
             } else {
-                let splitStrings = (a, sep = path.sep) => a.map(i => i.split(sep));
-                let elAt = i => a => a[i];
-                let rotate = a => a[0].map((e, i) => a.map(elAt(i)));
-                let allElementsEqual = arr => arr.every(e => e === arr[0]);
-                let commonPath = (input, sep = path.sep) => rotate(splitStrings(input, sep)).filter(allElementsEqual).map(elAt(0)).join(sep);
-
-                classPathNormalized = commonPath(karateTestFoldersFiltered);
+                ted.testLine = 0;
             }
+
+            tedArray.push(ted);
         }
-
-        let ted: ITestExecutionDetail = {
-            testTag: '',
-            testTitle: '',
-            testLine: 0,
-            testFeature: classPathNormalized,
-            codelensLine: 0,
-        };
-
-        tedArray.push(ted);
     }
 
     return tedArray;
 }
 
-function getChildAbsolutePath(basePath: string, childPath: string): string {
-    try {
-        let dirents = fs.readdirSync(basePath, { withFileTypes: true });
-        let result = null;
-
-        for (let ndx = 0; ndx < dirents.length; ndx++) {
-            let newBasePath = path.join(basePath, dirents[ndx].name);
-
-            if (dirents[ndx].isDirectory()) {
-                result = getChildAbsolutePath(newBasePath, childPath);
-            } else {
-                if (newBasePath.toLowerCase().endsWith(childPath)) {
-                    result = newBasePath;
-                }
-            }
-
-            if (result !== null) {
-                break;
-            }
-        }
-
-        return result;
-    } catch (e) {
-        return null;
-    }
-}
-
-export { filterByTags, getFileAndRootPath, getTestExecutionDetail, getChildAbsolutePath, ITestExecutionDetail };
+export { filterByTags, getFileAndRootPath, getTestExecutionDetail, ITestExecutionDetail };

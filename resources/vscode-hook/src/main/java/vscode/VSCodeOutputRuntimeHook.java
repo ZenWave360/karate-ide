@@ -81,8 +81,8 @@ public class VSCodeOutputRuntimeHook implements ExtendedRuntimeHook {
         try {
             if (fr.caller.depth == 0) {
                 String path = fr.feature.getResource().getRelativePath();
-                println(String.format(FEATURE_FINISHED, getCurrentTime(), (int) fr.result.getDurationMillis(), escape(fr.feature.getNameForReport())));
-                // log.trace(String.format(FEATURE_FINISHED, getCurrentTime(), (int) fr.result.getDurationMillis(), escape(fr.feature.getNameForReport())));
+                println(String.format(FEATURE_FINISHED, getCurrentTime(), path + ":" + fr.feature.getLine(), (int) fr.result.getDurationMillis(), escape(fr.feature.getNameForReport())));
+                // log.trace(String.format(FEATURE_FINISHED, getCurrentTime(), path + ":" + fr.feature.getLine(), (int) fr.result.getDurationMillis(), escape(fr.feature.getNameForReport())));
             }
         } catch (Exception e) {
             log.error("afterFeature error: {}", e.getMessage());
@@ -111,11 +111,11 @@ public class VSCodeOutputRuntimeHook implements ExtendedRuntimeHook {
                 String path = sr.scenario.getFeature().getResource().getRelativePath();
                 if (sr.result.isFailed()) {
                     StringUtils.Pair error = details(sr.result.getErrorMessage());
-                    println(String.format(SCENARIO_FAILED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(error.right), escape(error.left), escape(sr.scenario.getRefIdAndName()), ""));
-                    // log.trace(String.format(SCENARIO_FAILED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(error.right), escape(error.left), escape(sr.scenario.getRefIdAndName()), ""));
+                    println(String.format(SCENARIO_FAILED, getCurrentTime(), path + ":" + sr.scenario.getLine(), (int) sr.result.getDurationMillis(), sr.scenario.isOutlineExample(), sr.scenario.isDynamic(), escape(error.right), escape(error.left), escape(sr.scenario.getRefIdAndName()), ""));
+                    // log.trace(String.format(SCENARIO_FAILED, getCurrentTime(), path + ":" + fr.feature.getLine(), (int) sr.result.getDurationMillis(), sr.scenario.isOutlineExample(), sr.scenario.isDynamic(), escape(error.right), escape(error.right), escape(error.left), escape(sr.scenario.getRefIdAndName()), ""));
                 } else {
-                    println(String.format(SCENARIO_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(sr.scenario.getRefIdAndName())));
-                    // log.trace(String.format(SCENARIO_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(sr.scenario.getRefIdAndName())));
+                    println(String.format(SCENARIO_FINISHED, getCurrentTime(), path + ":" + sr.scenario.getLine(), (int) sr.result.getDurationMillis(), sr.scenario.isOutlineExample(), sr.scenario.isDynamic(), escape(sr.scenario.getRefIdAndName())));
+                    // log.trace(String.format(SCENARIO_FINISHED, getCurrentTime(), path + ":" + fr.feature.getLine(), (int) sr.result.getDurationMillis(), sr.scenario.isOutlineExample(), sr.scenario.isDynamic(), escape(sr.scenario.getRefIdAndName())));
                 }
             }
         } catch (Exception e) {
@@ -144,8 +144,8 @@ public class VSCodeOutputRuntimeHook implements ExtendedRuntimeHook {
             if (sr.caller.depth == 0) {
                 String path = sr.scenario.getFeature().getResource().getRelativePath();
                 String outlineName = getOutlineName(sr);
-                println(String.format(SCENARIO_OUTLINE_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(outlineName)));
-                // log.trace(String.format(SCENARIO_OUTLINE_FINISHED, getCurrentTime(), (int) sr.result.getDurationMillis(), escape(outlineName)));
+                println(String.format(SCENARIO_OUTLINE_FINISHED, getCurrentTime(), path + ":" + scenarioOutline.getLine(), (int) sr.result.getDurationMillis(), escape(outlineName)));
+                // log.trace(String.format(SCENARIO_OUTLINE_FINISHED, getCurrentTime(), path + ":" + scenarioOutline.getLine(), (int) sr.result.getDurationMillis(), escape(outlineName)));
             }
         } catch (Exception e) {
             log.error("afterScenarioOutline error: {}", e.getMessage());
@@ -188,9 +188,9 @@ public class VSCodeOutputRuntimeHook implements ExtendedRuntimeHook {
     private static final String FEATURE_STARTED = "##vscode {\"event\": \"featureStarted\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"name\": \"%s\"}";
     private static final String SCENARIO_OUTLINE_STARTED = "##vscode {\"event\": \"testOutlineStarted\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"name\": \"%s\", \"outline\":%s, \"dynamic\":%s }";
     private static final String SCENARIO_STARTED = "##vscode {\"event\": \"testStarted\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"name\": \"%s\", \"outline\":%s, \"dynamic\":%s }";
-    private static final String SCENARIO_FAILED = "##vscode {\"event\": \"testFailed\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"details\": \"%s\", \"message\": \"%s\", \"name\": \"%s\" %s}";
-    private static final String SCENARIO_FINISHED = "##vscode {\"event\": \"testFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
-    private static final String SCENARIO_OUTLINE_FINISHED = "##vscode {\"event\": \"testOutlineFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
-    private static final String FEATURE_FINISHED = "##vscode {\"event\": \"featureFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
+    private static final String SCENARIO_FAILED = "##vscode {\"event\": \"testFailed\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"duration\": \"%s\", \"outline\":%s, \"dynamic\":%s, \"details\": \"%s\", \"message\": \"%s\", \"name\": \"%s\" %s}";
+    private static final String SCENARIO_FINISHED = "##vscode {\"event\": \"testFinished\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"duration\": \"%s\", \"outline\":%s, \"dynamic\":%s, \"name\": \"%s\"}";
+    private static final String SCENARIO_OUTLINE_FINISHED = "##vscode {\"event\": \"testOutlineFinished\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
+    private static final String FEATURE_FINISHED = "##vscode {\"event\": \"featureFinished\", \"timestamp\": \"%s\", \"locationHint\": \"%s\", \"duration\": \"%s\", \"name\": \"%s\"}";
     static final String SUITE_FINISHED = "##vscode {\"event\": \"testSuiteFinished\", \"timestamp\": \"%s\", \"duration\": \"%s\"}";
 }

@@ -10,6 +10,7 @@ import {
     ScenarioOutlineExecution,
     SuiteExecution,
 } from '@/views/executions/KarateExecutionsTreeProvider';
+import * as karateTestManager from '@/execution/KarateTestsManager';
 import { karateOutputChannel } from './KarateOutputChannel';
 
 export type Event = {
@@ -23,6 +24,7 @@ export type Event = {
     featuresFound: string;
     outline: boolean;
     dynamic: boolean;
+    duration: number;
 };
 
 export type SummaryEvent = { running: boolean; passed: number; failed: number };
@@ -141,24 +143,25 @@ export class KarateExecutionProcess {
                             try {
                                 const event: Event = JSON.parse(line.substring(9, line.lastIndexOf('}') + 1));
                                 executionsTreeProvider.processEvent({ ...event, cwd: testServerProcess.cwd });
+                                karateTestManager.processEvent({ ...event, cwd: testServerProcess.cwd });
 
                                 if (event.event === 'featureStarted') {
-                                    karateOutputChannel.startFeature(event.name);
+                                    karateOutputChannel.startFeature(event.locationHint);
                                     this.reportProgress({ message: `${event.name}` });
                                 } else if (event.event === 'testStarted') {
-                                    karateOutputChannel.startScenario(event.name);
+                                    karateOutputChannel.startScenario(event.locationHint);
                                     this.reportProgress({ message: `${getFeatureName(event)} ${event.name}` });
                                 } else if (event.event === 'testOutlineStarted') {
-                                    karateOutputChannel.startScenarioOutline(event.name);
+                                    karateOutputChannel.startScenarioOutline(event.locationHint);
                                     this.reportProgress({ message: `${getFeatureName(event)} / ${event.name}` });
                                 } else if (event.event === 'testFinished' || event.event === 'testFailed') {
-                                    karateOutputChannel.endScenario(event.name);
+                                    karateOutputChannel.endScenario(event.locationHint);
                                     event.event === 'testFailed' ? this.summary.failed++ : this.summary.passed++;
                                     this.onExecuting.fire(this.summary);
                                 } else if (event.event === 'testOutlineFinished') {
-                                    karateOutputChannel.endScenarioOutline(event.name);
+                                    karateOutputChannel.endScenarioOutline(event.locationHint);
                                 } else if (event.event === 'featureFinished') {
-                                    karateOutputChannel.endFeature(event.name);
+                                    karateOutputChannel.endFeature(event.locationHint);
                                 } else if (event.event === 'testSuiteFinished') {
                                     this.isExecuting = false;
                                     this.summary.running = false;
@@ -168,6 +171,7 @@ export class KarateExecutionProcess {
                             } catch (e) {
                                 console.error('KarateExecutionProcess.on.data', line, e);
                             }
+                            // karateOutputChannel.appendAll(line + '\n');
                         } else {
                             if (this.isExecuting) {
                                 karateOutputChannel.appendAll(line + '\n');

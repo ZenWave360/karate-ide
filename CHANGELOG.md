@@ -20,10 +20,15 @@ All notable changes to the "karate-ide" extension will be documented in this fil
 - [X] Karate Process Server for execution startup performance
   - [X] Keep Debug Session open
   - [X] Keep Execution Session open
-- [ ] Move Run/Debug buttons to editor gutter
-  - [ ] Play button in gutter
-  - [ ] Debug button as right click menu
-  - [ ] Cross icon for failed tests with summary on hover
+- [X] Move Run/Debug buttons to editor gutter (Using native vscode Tests API)
+  - [X] Play button in gutter
+  - [X] Debug button as right click menu
+  - [X] Cross icon for failed tests with summary on hover
+- [ ] API Mock
+  - [ ] Contribute Mocks RuntimeHooks to karate-core
+  - [ ] Implement request/response validation with openapi for mocks
+  - [ ] Implement 'routable' openapi examples
+  - [ ] Generators for openapi examples
 
 # 0.9.x
 

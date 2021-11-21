@@ -14,6 +14,10 @@ export class FeatureExecution {
     get name() {
         return this.eventStart.name;
     }
+
+    get locationHint() {
+        return this.eventStart.locationHint;
+    }
 }
 
 export class ScenarioOutlineExecution {
@@ -25,6 +29,10 @@ export class ScenarioOutlineExecution {
     get name() {
         return this.eventStart.name;
     }
+
+    get locationHint() {
+        return this.eventStart.locationHint;
+    }
 }
 
 export class ScenarioExecution {
@@ -34,6 +42,10 @@ export class ScenarioExecution {
 
     get name() {
         return this.eventStart.name;
+    }
+
+    get locationHint() {
+        return this.eventStart.locationHint;
     }
 }
 
@@ -63,6 +75,30 @@ class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<Execution>
         this._onDidChangeTreeData.fire(null);
     };
 
+    async switchKarateEnv() {
+        let karateEnv = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv'));
+        karateEnv = await vscode.window.showInputBox({ prompt: 'Karate Env', value: karateEnv });
+        if (karateEnv !== undefined) {
+            await vscode.workspace.getConfiguration().update('karateIDE.karateCli.karateEnv', karateEnv);
+            this.configureViewTitle();
+        }
+    }
+
+    async karateOptions() {
+        let karateOptions = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateOptions'));
+        karateOptions = await vscode.window.showInputBox({ prompt: 'Karate Options', value: karateOptions });
+        if (karateOptions !== undefined) {
+            await vscode.workspace.getConfiguration().update('karateIDE.karateCli.karateOptions', karateOptions);
+            this.configureViewTitle();
+        }
+    }
+
+    private configureViewTitle() {
+        const karateEnv = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv'));
+        const karateOptions = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateOptions'));
+        this.treeView.description = `Karate Env: '${karateEnv}', Karate Options: '${karateOptions}'`;
+    }
+
     processEvent(event: Event): any {
         if (event.event === 'featureStarted') {
             this.executions.push((this.auxParentFeatureOrOutline = new FeatureExecution(event)));
@@ -90,10 +126,6 @@ class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<Execution>
             this.auxParentFeatureOrOutline = (this.auxParentFeatureOrOutline as ScenarioOutlineExecution).parent;
         }
         this._onDidChangeTreeData.fire(null);
-    }
-
-    configureViewTitle() {
-        // this.treeView.description = `TODO`;
     }
 
     getTreeItem(execution: Execution): vscode.TreeItem | Thenable<vscode.TreeItem> {

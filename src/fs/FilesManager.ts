@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as minimatch from 'minimatch';
 import { getFileAndRootPath } from '@/helper';
+import { reloadKarateTestsController } from '@/execution/KarateTestsManager';
 
 export class KarateTestTreeEntry {
     uri: vscode.Uri;
@@ -60,12 +61,13 @@ class FilesManager {
         });
 
         this.classpathFolders.forEach(async classpathFolder => {
-            const entries = (await vscode.workspace.findFiles('**/' + classpathFolder + '/**/*[.feature|.yml]'))
+            const entries = (await vscode.workspace.findFiles('**/' + classpathFolder + '/**/*.{feature,yml,json}'))
                 .map(f => path.relative(path.join(this.workspaceFolder.uri.fsPath, classpathFolder), f.fsPath))
                 .map(f => f.replace(/\\/g, '/'));
             this.cachedClasspathFiles.push(...entries);
         });
 
+        reloadKarateTestsController();
         this.watch();
     };
 
@@ -136,7 +138,7 @@ class FilesManager {
         return completionItems.filter(item => item.label.toString().startsWith(completionToken));
     }
 
-    public getKarateFiles(focus: string): KarateTestTreeEntry[] {
+    public getKarateFiles(focus?: string): KarateTestTreeEntry[] {
         const filteredEntries = (this.cachedKarateTestFiles || []).filter(
             f => !focus || (focus.length > 0 && minimatch(f, focus, { matchBase: true }))
         );

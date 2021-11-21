@@ -1,14 +1,11 @@
 import * as vscode from 'vscode';
 import { URL } from 'url';
-import KarateTestsProvider from '@/views/tests/KarateTestsProvider';
 import ProviderDebugAdapter from '@/execution/ProviderDebugAdapter';
 import StatusBarProvider from '@/views/status-bar/StatusBarProvider';
-import CodeLensProvider from '@/codelens/CodeLensProvider';
 import DefinitionProvider from '@/codelens/DefinitionProvider';
 import KarateNetworkLogsTreeProvider from '@/views/logs/KarateNetworkLogsTreeProvider';
 import EventLogsServer from '@/server/EventLogsServer';
 import HoverRunDebugProvider from '@/codelens/HoverRunDebugProvider';
-//import ProviderFoldingRange from "./providerFoldingRange";
 import {
     runKarateTest,
     debugKarateTest,
@@ -24,7 +21,10 @@ import {
 import { openFileInEditor } from '@/commands/DisplayCommands';
 import { smartPaste } from '@/commands/SmartPaste';
 
-import { karateExecutionsTreeProvider as executionsTreeProvider } from '@/views/executions/KarateExecutionsTreeProvider';
+import {
+    karateExecutionsTreeProvider as executionsTreeProvider,
+    karateExecutionsTreeProvider,
+} from '@/views/executions/KarateExecutionsTreeProvider';
 import { generateKarateTestFromOpenAPI, generateKarateMocksFromOpenAPI } from '@/generators/openapi/OpenAPIGenerator';
 import { LocalStorageService } from '@/commands/LocalStorageService';
 import { CompletionItemProvider } from './codelens/CompletionProvider';
@@ -32,15 +32,13 @@ import { NetworkLog, NetworkRequestResponseLog, PayloadProperty } from './server
 import { KarateExecutionProcess } from './execution/KarateExecutionProcess';
 import { configureClasspath } from './commands/ConfigureClasspath';
 import { karateOutputChannel } from './execution/KarateOutputChannel';
+import { filesManager } from './fs/FilesManager';
 
 let karateTestsWatcher = null;
 
 export function activate(context: vscode.ExtensionContext) {
-    let karateTestsProvider = new KarateTestsProvider();
     let debugAdapterProvider = new ProviderDebugAdapter();
     let statusBarProvider = new StatusBarProvider(context);
-    let codeLensProvider = new CodeLensProvider();
-    //let foldingRangeProvider = new ProviderFoldingRange();
 
     let karateFile = { language: 'karate', scheme: 'file' };
 
@@ -64,9 +62,8 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.tests.run', runKarateTest);
     registerCommand('karateIDE.tests.runAll', runAllKarateTests);
     registerCommand('karateIDE.tests.debugAll', debugAllKarateTests);
-    registerCommand('karateIDE.tests.refreshTree', async () => await karateTestsProvider.refresh());
-    registerCommand('karateIDE.tests.switchKarateEnv', () => karateTestsProvider.switchKarateEnv());
-    registerCommand('karateIDE.tests.configureFocus', () => karateTestsProvider.configureTestsFocus());
+    registerCommand('karateIDE.tests.switchKarateEnv', () => karateExecutionsTreeProvider.switchKarateEnv());
+    registerCommand('karateIDE.tests.karateOptions', () => karateExecutionsTreeProvider.karateOptions());
     registerCommand('karateIDE.tests.open', openFileInEditor);
     registerCommand('karateIDE.generators.openapi.test', generateKarateTestFromOpenAPI);
     registerCommand('karateIDE.generators.openapi.mocks', generateKarateMocksFromOpenAPI);
@@ -113,13 +110,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('karate-ide', debugAdapterProvider));
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('karate-ide', debugAdapterProvider));
-    context.subscriptions.push(vscode.languages.registerCodeLensProvider(karateFile, codeLensProvider));
     context.subscriptions.push(vscode.languages.registerHoverProvider(karateFile, new HoverRunDebugProvider(context)));
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(karateFile, new DefinitionProvider()));
     context.subscriptions.push(vscode.languages.registerCompletionItemProvider(karateFile, new CompletionItemProvider(), ...["'", '"']));
-    //let registerFoldingRangeProvider = vscode.languages.registerFoldingRangeProvider(foldingRangeTarget, foldingRangeProvider);
-
-    createTreeView('karate-ide-tests', { showCollapseAll: true, treeDataProvider: karateTestsProvider });
 
     // NetworkLogs View
     const networkLogsProvider = new KarateNetworkLogsTreeProvider();
@@ -145,7 +138,7 @@ export function activate(context: vscode.ExtensionContext) {
     });
     eventLogsServer.start();
 
-    setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter')), karateTestsProvider);
+    setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter')), filesManager);
 
     vscode.workspace.onDidChangeConfiguration(e => {
         let karateTestsGlobFilter = e.affectsConfiguration('karateIDE.tests.globFilter');
@@ -156,7 +149,7 @@ export function activate(context: vscode.ExtensionContext) {
                 // do nothing
             }
 
-            setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter')), karateTestsProvider);
+            setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter')), filesManager);
         }
     });
 }
@@ -169,14 +162,14 @@ function setupWatcher(watcher, watcherGlob, provider) {
     watcher = vscode.workspace.createFileSystemWatcher(watcherGlob);
 
     watcher.onDidCreate(e => {
-        provider.refresh();
+        provider.loadFiles();
     });
     watcher.onDidChange(e => {
-        provider.refresh();
+        provider.loadFiles();
     });
     watcher.onDidDelete(e => {
-        provider.refresh();
+        provider.loadFiles();
     });
 
-    provider.refresh();
+    provider.loadFiles();
 }

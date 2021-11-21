@@ -76,7 +76,7 @@ public class VSCodeHook implements RuntimeHook {
         if (sr.caller.depth == 0) {
             ScenarioOutline scenarioOutline = sr.scenario.getSection().isOutline() ? sr.scenario.getSection().getScenarioOutline() : null;
             if (currentOutline.get() != null && !currentOutline.get().equals(scenarioOutline)) { // changing from an outline
-                runtimeHooks.stream().forEach(h -> h.afterScenarioOutline(sr.scenario.getSection().getScenarioOutline(), sr));
+                runtimeHooks.stream().forEach(h -> h.afterScenarioOutline(currentOutline.get(), sr));
                 currentOutline.set(null);
             }
             if (scenarioOutline != null && !scenarioOutline.equals(currentOutline.get())) { // entering an outline
