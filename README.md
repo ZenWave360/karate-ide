@@ -13,6 +13,7 @@ Explore your APIs and Debug [Karate](https://github.com/intuit/karate) test scri
         - [Blazing Fast test Startup](#blazing-fast-test-startup)
         - [Your data at your fingerprints](#your-data-at-your-fingerprints)
         - [Replacing old Tests Explorer with native *Test API* from VSCode](#replacing-old-tests-explorer-with-native-test-api-from-vscode)
+        - [OpenAPI schemas and examples meets Karate Mocks](#openapi-schemas-and-examples-meets-karate-mocks)
     - [Featuring](#featuring)
     - [From Manual Testing to Contract Testing](#from-manual-testing-to-contract-testing)
     - [Auto Configuration](#auto-configuration)
@@ -20,7 +21,7 @@ Explore your APIs and Debug [Karate](https://github.com/intuit/karate) test scri
     - [SmartPaste as Outline Example files/rows](#smartpaste-as-outline-example-filesrows)
     - [Reusing generated Scenarios in complex flow/sequence tests](#reusing-generated-scenarios-in-complex-flowsequence-tests)
     - [Generating Mocks from OpenAPI definitions](#generating-mocks-from-openapi-definitions)
-    - [Start your Mocks Server from a Menu](#start-your-mocks-server-from-a-menu)
+    - [Start your Mocks Server from context Menu](#start-your-mocks-server-from-context-menu)
     - [Debug Karate Scripts](#debug-karate-scripts)
     - [Configuration Options](#configuration-options)
         - [vscode/launch.json](#vscodelaunchjson)
@@ -32,7 +33,6 @@ Explore your APIs and Debug [Karate](https://github.com/intuit/karate) test scri
     - [Other functionality](#other-functionality)
         - [Karate.env switcher](#karateenv-switcher)
         - [SmartPaste from cURL in Karate files](#smartpaste-from-curl-in-karate-files)
-        - [Tests Filtering / Focus](#tests-filtering--focus)
         - [Code Navigation and Definition Peek](#code-navigation-and-definition-peek)
         - [Auto-Completion](#auto-completion)
         - [Kill vscode.KarateTestProcess command](#kill-vscodekaratetestprocess-command)
@@ -40,6 +40,7 @@ Explore your APIs and Debug [Karate](https://github.com/intuit/karate) test scri
 <!-- /TOC -->
 
 ## What's New?
+
 ### Blazing Fast test Startup
 
 Save a few seconds on each test startup time. With this new release we have introduced `vscode.KarateTestProcess` that reuses the java process in charge or running your Karate tests and debugging sessions.
@@ -73,21 +74,36 @@ With the new Tests API, Visual Studio Code supports richer displays of outputs a
 
 ![Karate-IDE](resources/screenshots/API-Tests-Explorer.gif)
 
+### OpenAPI schemas and examples meets Karate Mocks
+
+You can now:
+
+- Leverage OpenAPI schemas and examples for request/response validation and declarative stateless mocks.
+- Use KarateDSL for powerful yet simple stateful mocks.
+- Use openapi examples to populate your karate mocks initial data.
+
+See [Start your Mocks Server from context Menu](#start-your-mocks-server-from-context-menu).
+
+Navigate to https://github.com/ivangsa/apimock for more details about this integration.
+
 ## Featuring
 
 With this extension you can:
 
-- Generate Karate test features from OpenAPI definitions (openapi 3.0.0 as yml is currently supported)
-- Quickly explore your apis using generated `@inline` Scenarios
+- Generate Karate test from OpenAPI definitions (openapi 3.0.0 as yml is currently supported)
+- Quickly explore your apis using generated Scenarios and Scenario Outlines
 - Explore your logs as colorized `OutputChannel`s. Seamless switch from one channel per scenario or all output together (inspired by IntelliJ), search output with Ctrl+F is also supported...
 - Explore HTTP requests/responses as structured tree views. Switch between list view and nested scenario calls. Copy payload json or export as cURL.
-- `SmartPaste` (Ctrl+V) json payloads as new files/rows for ScenarioOutline Examples
-- `SmartPaste` (Ctrl+V) cURL as Karate tests.
-- Navigate features and supporting files with `Ctrl+<click>` supporting relative, classpath and even `@tags` on same (or different) feature file.
+- `SmartPaste` (Ctrl+Shift+V) json payloads as new files/rows for ScenarioOutline Examples
+- `SmartPaste` (Ctrl+Shift+V) cURL as Karate tests.
+- Navigate features and supporting files with `Ctrl+<click>` supporting relative, classpath and even `@tags` on same (or different) feature file now works.
 - Autocompletion of classpath feature names. It honors your classpath settings (see [configuration options](#configuration-options)) when scanning/caching features files.
 - Generate Karate Server Side Features (a.k.a. Mocks) from OpenAPI definitions.
 - Start `Karate Mock Server` from an UI menu and run your tests against this mock server.
+- Leverage OpenAPI schemas to validate your mocks requests/responses.
+- Use your OpenAPI examples as mock data.
 - Switch `karate.env` directly from the UI.
+- Configure `karate.options` directly from the UI.
 
 ## From Manual Testing to Contract Testing
 
@@ -134,9 +150,17 @@ You don't need to keep writing http based scenarios every time, but directly ref
 
 You can also generate Mock features for your complete api from openapi definitions. Right click in a openapi yml file and select `Generate Karate Mocks`.
 
-## Start your Mocks Server from a Menu
+## Start your Mocks Server from context Menu
 
-Start your Mocks Server from a menu and test them directly in KarateIDE. See [Karate Documentation](https://karatelabs.github.io/karate/karate-netty/) for details about how to use Karate for **Contract Testing**.
+Configure `"karateIDE.karateCli.mockServerOptions"` in `.vscode/settings.json`: '-p' for port (use 0 for a random port and '${port}' to be prompted each time), '-P' for prefix or contextPath.
+
+```json
+{
+    "karateIDE.karateCli.mockServerOptions": "--watch=true -p 3000 -P api/v3",
+}
+```
+
+To start your MocksServer from context menu select one or more mock features and one openapi.yml definition and right clicking on a selected feature you will be presented with context menu `Start Karate Mock Server`.
 
 ## Debug Karate Scripts
 
@@ -144,12 +168,12 @@ You can also Debug Karate scripts inside KarateIDE. Karate Debug Server is **pro
 
 You can:
 
--   set breakpoints
--   step-by-step debugging
--   navigate scenario call stack with their variables
--   inspect and copy variables, values or their json path expression
--   interactive debug console where you can print, update variable values or test jsonPath expressions
--   hot reloading (with caveats)
+- set breakpoints
+- step-by-step debugging
+- navigate scenario call stack with their variables
+- inspect and copy variables, values or their json path expression
+- interactive debug console where you can print, update variable values or test jsonPath expressions
+- hot reloading (with caveats)
 
 https://twitter.com/KarateDSL/status/1167533484560142336
 
@@ -221,7 +245,7 @@ There is also `${KarateTestRunner}` template variable if you want to build a com
 
 ### Multimodule projects
 
-For multimodule project, you may need to configure `karateIDE.multimodule.rootModuleMarkerFile`. Use pom.xml, build.gradle or any other file that sits on the root of each module.
+For multimodule project, you may need to configure `karateIDE.multimodule.rootModuleMarkerFile`. Use pom.xml, build.gradle, package.json or any other file that sits on the root of each module.
 
 Karate java process will be started on that folder (first parent folder of current feature file containing a marker file) so classpath will be relative to that folder.
 
@@ -235,11 +259,6 @@ You can switch karate.env from the grear icon on tests tree view. When using Kar
 
 ![Karate-IDE](resources/screenshots/KarateIDE-SmartPaste_From_Curl.gif)
 
-### Tests Filtering / Focus
-
-You have two different ways to filter files that appears on Tests Tree View: using `karateIDE.tests.globFilter` in settings for global filtering and `Focus` icon for temporal filtering of tests and tags.
-
-In `Focus` you can filter by name pattern and by scenario _@tags_ supporting "or & and" constructions: separate tags by comma for AND, quote them for OR and prefix the with ~@ for NOT.
 ### Code Navigation and Definition Peek
 
 You can navigate between files, features and scenario @tags using `Control-Click` or _peek_ definitions with `Alt+F12`
