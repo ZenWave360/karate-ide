@@ -109,7 +109,7 @@
         "commands": [
             {
                 "command": "karateIDE.paste",
-                "title": "Karate Smart Paste"
+                "title": "KarateIDE Smart Paste"
             },
             {
                 "command": "karateIDE.tests.run",
@@ -478,8 +478,14 @@
                 },
                 "karateIDE.karateCli.mockServerCommandTemplate": {
                     "type": "string",
-                    "default": "java -cp '${classpath}' com.intuit.karate.Main -m '${feature}' -p ${port}",
+                    "default": "java -cp '${classpath}' io.github.apimock.Main -o ${openapi} -m '${feature}' ${mockServerOptions}",
                     "description": "Command line template for starting a mock server. See documentation for available template variables and different recipes.",
+                    "scope": "resource"
+                },
+                "karateIDE.karateCli.mockServerOptions": {
+                    "type": "string",
+                    "default": "-p 3000 -P /",
+                    "description": "MockServer options: '-p' for port (use 0 for a random port and '${port}' to be prompted each time), '-P' for prefix or contextPath",
                     "scope": "resource"
                 },
                 "karateIDE.karateCli.useKarateTestServer": {
@@ -532,38 +538,6 @@
                 "linux": "Ctrl+Shift+V",
                 "mac": "Cmd+V",
                 "when": "editorTextFocus"
-            },
-            {
-                "command": "karateIDE.tests.run",
-                "args": null,
-                "key": "Ctrl+R Ctrl+1",
-                "linux": "Ctrl+Shift+R Ctrl+Shift+1",
-                "mac": "Cmd+R Cmd+1",
-                "when": "editorTextFocus && editorLangId == karate"
-            },
-            {
-                "command": "karateIDE.tests.runAll",
-                "args": null,
-                "key": "Ctrl+R Ctrl+A",
-                "linux": "Ctrl+Shift+R Ctrl+Shift+A",
-                "mac": "Cmd+R Cmd+A",
-                "when": "editorTextFocus && editorLangId == karate"
-            },
-            {
-                "command": "karateIDE.tests.debug",
-                "args": null,
-                "key": "Ctrl+D Ctrl+1",
-                "linux": "Ctrl+Shift+D Ctrl+Shift+1",
-                "mac": "Cmd+D Cmd+1",
-                "when": "editorTextFocus && editorLangId == karate"
-            },
-            {
-                "command": "karateIDE.tests.debugAll",
-                "args": null,
-                "key": "Ctrl+D Ctrl+A",
-                "linux": "Ctrl+Shift+D Ctrl+Shift+A",
-                "mac": "Cmd+D Cmd+A",
-                "when": "editorTextFocus && editorLangId == karate"
             }
         ],
         "languages": [

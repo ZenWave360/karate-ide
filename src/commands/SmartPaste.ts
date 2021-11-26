@@ -93,7 +93,7 @@ function getWordAtPosition(text: string, position: number, separator: string[] =
 const curlIgnores = ['accept-', 'upgrade-', 'user-', 'connection', 'referer', 'sec-', 'origin', 'host', 'content-length'];
 
 const convertCurl = (raw: string) => {
-    raw = raw.replace('--data-binary', '--data');
+    raw = raw.replace('--data-binary', '--data').replace('--data-raw', '--data');
     const curl: object = parseCurl(raw);
     const headers: object = curl['header'] || {};
 
@@ -115,6 +115,9 @@ const convertCurl = (raw: string) => {
 
     if (!body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
         body = "''";
+    }
+    if (body.includes('\n')) {
+        body = '\n"""\n' + body + '\n"""\n';
     }
 
     if (body) {
