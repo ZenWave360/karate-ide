@@ -3,7 +3,7 @@
     "displayName": "Karate IDE",
     "description": "Explore your APIs and debug Karate test scripts within VS Code",
     "icon": "resources/karate.png",
-    "version": "0.9.6",
+    "version": "0.9.7",
     "license": "MIT",
     "publisher": "KarateIDE",
     "bugs": {
@@ -245,7 +245,7 @@
                 "command": "karateIDE.generators.openapi.businessFlowTest",
                 "title": "KarateIDE: Generate Karate Business Flow Test"
             },
-                        {
+            {
                 "command": "karateIDE.generators.openapi.mocks-validation",
                 "title": "KarateIDE: Generate Karate Mock Validation"
             },
