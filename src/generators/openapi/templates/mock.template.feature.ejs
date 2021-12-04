@@ -1,11 +1,9 @@
-@mock
+@mock @openapi-file=<%= openapiFile %>
 Feature: <%= apiName %> Mock
 
 Background: 
 * configure cors = true
 * configure responseHeaders = { 'Content-Type': 'application/json' }
-* def uuid = () => java.util.UUID.randomUUID() + '';
-* def apis = {};
 
 <%_
 for(const operation of operations) {

@@ -1,8 +1,6 @@
 import * as path from 'path';
 import { getFileAndRootPath } from '@/helper';
-
 import * as vscode from 'vscode';
-import { KarateTestTreeEntry } from '@/fs/FilesManager';
 import EventLogsServer from '@/server/EventLogsServer';
 import { KarateExecutionProcess } from '@/execution/KarateExecutionProcess';
 import { Execution, SuiteExecution } from '@/views/executions/KarateExecutionsTreeProvider';
@@ -11,14 +9,16 @@ let debugFeature: string = null;
 let lastExecutionType: 'RUN' | 'DEBUG' = null;
 let lastExecution = null;
 
-export function debugAllKarateTests(entry: KarateTestTreeEntry) {
-    debugKarateTest(entry.feature.path, entry.feature.line);
-}
+// TODO
+// export function debugAllKarateTests(entry: KarateTestTreeEntry) {
+//     debugKarateTest(entry.feature.path, entry.feature.line);
+// }
 
 export function debugKarateTest(feature, line) {
-    if (feature instanceof KarateTestTreeEntry) {
-        return debugAllKarateTests(feature);
-    }
+    // TODO
+    // if (feature instanceof KarateTestTreeEntry) {
+    //     return debugAllKarateTests(feature);
+    // }
     debugFeature = feature + (line > 1 ? `:${line}` : '');
     vscode.commands.executeCommand('workbench.action.debug.start');
 }
@@ -64,30 +64,14 @@ export function getKarateOptions() {
     return karateOptions.replace('${karateEnv}', karateEnv);
 }
 
-export async function getDebugCommandLine() {
+export async function getCommandLine(type: 'RUN' | 'DEBUG', feature?: string) {
+    const commandName = type === 'RUN' ? 'runCommandTemplate' : 'debugCommandTemplate';
+
     const vscodePort = EventLogsServer.getPort();
     const karateEnv: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv');
     const classpath: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('classpath');
     const karateOptions: string = getKarateOptions();
-    const debugCommandTemplate: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('debugCommandTemplate');
-
-    return debugCommandTemplate
-        .replace('${vscodePort}', vscodePort)
-        .replace('${karateEnv}', karateEnv)
-        .replace('${classpath}', processClasspath(classpath))
-        .replace('${karateOptions}', karateOptions);
-}
-
-async function getRunCommandLine(feature: string) {
-    const vscodePort = EventLogsServer.getPort();
-    const karateEnv: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv');
-    const classpath: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('classpath');
-    const karateOptions: string = getKarateOptions();
-    let debugCommandTemplate: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('runCommandTemplate');
-
-    if (debugCommandTemplate.includes('${KarateTestRunner}')) {
-        debugCommandTemplate = debugCommandTemplate.replace('${KarateTestRunner}', await getKarateTestRunnerName());
-    }
+    let debugCommandTemplate: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get(commandName);
 
     return debugCommandTemplate
         .replace('${vscodePort}', vscodePort)
@@ -97,55 +81,20 @@ async function getRunCommandLine(feature: string) {
         .replace('${feature}', feature);
 }
 
-async function getStartMockCommandLine(openapi: string, feature: string) {
-    const classpath: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('classpath');
-    const mockServerOptions: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('mockServerOptions');
-    let debugCommandTemplate: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('mockServerCommandTemplate');
-
-    if (debugCommandTemplate.includes('${port}')) {
-        debugCommandTemplate = debugCommandTemplate.replace('${port}', await vscode.window.showInputBox({ prompt: 'Mock Server Port', value: '0' }));
-    }
-
-    return debugCommandTemplate
-        .replace('${classpath}', processClasspath(classpath, 'apimock.jar'))
-        .replace('${mockServerOptions}', mockServerOptions)
-        .replace('${openapi}', openapi || '')
-        .replace('${feature}', feature || '');
-}
-
-async function getKarateTestRunnerName() {
-    let karateJunitRunner = String(vscode.workspace.getConfiguration('karateIDE.karateTestRunner').get('karateJunitRunner'));
-    if (Boolean(vscode.workspace.getConfiguration('karateIDE.karateTestRunner').get('promptToSpecify'))) {
-        karateJunitRunner = await vscode.window.showInputBox({ prompt: 'Karate JUnit Runner', value: karateJunitRunner });
-        if (karateJunitRunner !== undefined && karateJunitRunner !== '') {
-            await vscode.workspace.getConfiguration().update('karateIDE.karateIDE.karateJunitRunner', karateJunitRunner);
-        }
-    }
-    return karateJunitRunner;
-}
-
-export async function startMockServer(featureFile: vscode.Uri, featureFiles: vscode.Uri[]) {
-    // console.log('startMockServer', arguments);
-    const openapi = featureFiles.map(f => f.fsPath.replace(/\\/g, '/')).filter(f => f.endsWith('.json') || f.endsWith('.yaml') || f.endsWith('.yml'));
-    const features = featureFiles.map(f => f.fsPath.replace(/\\/g, '/')).filter(f => f.endsWith('.feature'));
-    const command = await getStartMockCommandLine(openapi[0], features.join(','));
-    let exec = new vscode.ShellExecution(command, {});
-    let task = new vscode.Task({ type: 'karate' }, vscode.TaskScope.Workspace, 'Karate Mock Server', 'karate', exec, []);
-    vscode.tasks.executeTask(task);
-}
-
-export function runAllKarateTests(entry: KarateTestTreeEntry) {
-    runKarateTest(entry.feature.path, entry.feature.line);
-}
+// TODO
+// export function runAllKarateTests(entry: KarateTestTreeEntry) {
+//     runKarateTest(entry.feature.path, entry.feature.line);
+// }
 
 export async function runKarateTest(feature, line) {
-    if (feature instanceof KarateTestTreeEntry) {
-        return runAllKarateTests(feature);
-    }
+    // TODO
+    // if (feature instanceof KarateTestTreeEntry) {
+    //     return runAllKarateTests(feature);
+    // }
 
     const path = feature + (line > 1 ? `:${line}` : '');
     const fileAndRootPath = getFileAndRootPath(vscode.Uri.file(path));
-    const runCommand = await getRunCommandLine(fileAndRootPath.file);
+    const runCommand = await getCommandLine('RUN', fileAndRootPath.file);
 
     KarateExecutionProcess.executeInTestServer(fileAndRootPath.root, runCommand);
     lastExecution = path;
@@ -180,7 +129,7 @@ export function relaunchRun(entry: Execution) {
     if (entry instanceof SuiteExecution) {
         return relaunchRunAll();
     }
-    const [feature, line] = entry.eventStart.locationHint.split(':');
+    const [feature, line] = entry?.eventStart.locationHint.split(':');
     runKarateTest(path.join(entry.eventStart.cwd, feature), line);
 }
 

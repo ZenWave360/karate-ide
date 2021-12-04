@@ -2,7 +2,7 @@ import * as net from 'net';
 import { getFileAndRootPath } from '@/helper';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { getDebugCommandLine, getDebugFile, getKarateOptions } from '@/commands/RunDebug';
+import { getCommandLine, getDebugFile, getKarateOptions } from '@/commands/RunDebug';
 import { KarateExecutionProcess } from './KarateExecutionProcess';
 import { domainToASCII } from 'url';
 
@@ -40,7 +40,7 @@ class ProviderDebugAdapter implements vscode.DebugAdapterDescriptorFactory, vsco
         executable: vscode.DebugAdapterExecutable | undefined
     ): Promise<vscode.ProviderResult<vscode.DebugAdapterDescriptor>> {
         const featureFile = getDebugFile();
-        const debugCommandLine = await getDebugCommandLine();
+        const debugCommandLine = await getCommandLine('DEBUG');
         const { root: projectRootPath } = getFileAndRootPath(vscode.Uri.file(featureFile));
 
         return new Promise((resolve, reject) => {

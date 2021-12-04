@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+let sep = path.delimiter;
 
 export async function configureClasspath() {
     const classpathJarExtension = vscode.extensions.getExtension('KarateIDE.karate-classpath-jar');
@@ -27,7 +28,6 @@ export async function configureClasspath() {
         });
     }
     const answer = await vscode.window.showQuickPick(items, { canPickMany: false });
-    let sep = path.delimiter;
     let classpath = `src/test/java${sep}src/test/resources${sep}target/classes${sep}target/test-classes${sep}`;
     if (answer) {
         if (answer.label === 'Karate.jar') {
@@ -58,7 +58,7 @@ export async function configureClasspath() {
 
     if (scopeAnswer) {
         const scope = scopeAnswer === 'Write configuration to Global Settings';
-        await vscode.workspace.getConfiguration().update('karateIDE.karateCli.classpath', classpath, scope);
+        await vscode.workspace.getConfiguration().update('karateIDE.karateCli.classpath', classpath.replace(/;/g, sep), scope);
         vscode.window.showInformationMessage('Your KarateIDE classpath is now configured.');
     }
 }

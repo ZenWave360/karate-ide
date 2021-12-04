@@ -1,0 +1,33 @@
+<%- openapiFiles.map(o => `@openapi-file=${o}`).join(' ') %>
+Feature: <%= testName %>
+
+Background:
+* url baseUrl
+
+@business-flow 
+<%- operationIds.map(o => `@operationId=${o}`).join(' ') %>
+Scenario: <%= testName %>
+
+* def auth = { username: '', password: '' }
+
+<%_
+    for(const operation of operations) {
+    _%>
+# <%= operation.operationId %> <%= openapiFiles.length > 1? operation.openapiFile : '' %>
+# <%- ( operation.operation.summary || '').replace(/\n/, '\n# ') %>
+    <%_ if (operation.params) { _%>
+Given def params = <%- JSON.stringify(operation.params) %>
+    <%_ } _%>
+    <%_ if (operation.body) { _%>
+Given def body =
+"""
+<%- JSON.stringify(operation.body, null, 2) %>
+"""
+    <%_ } _%>
+When call read('<%= operation.feature %>@operation')
+Then match responseStatus == <%= operation.statusCode %>
+* def <%= operation.operationId %>Response = response
+
+    <%_
+    }
+_%>

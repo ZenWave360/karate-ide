@@ -87,7 +87,7 @@ export class KarateExecutionProcess {
         vscode.window.withProgress({ location, title, cancellable: true }, async (progress, token) => {
             this.progress = progress;
             token.onCancellationRequested(() => {
-                this.debugProcess.process && this.debugProcess.process.kill();
+                testServer.process && testServer.process.kill();
                 karateOutputChannel.append('[Canceled]\n', false);
                 this.onExecuting.fire({ running: false, passed: 0, failed: 0 });
             });

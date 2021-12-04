@@ -1,0 +1,38 @@
+@mock-validation @openapi-file=<%= openapiFile %>
+Feature: <%= testName %>
+
+Background: 
+* url baseUrl
+* def auth = { username: '', password: '' }
+* def authHeader = call read('classpath:karate-auth.js') auth
+* configure headers = authHeader || {}
+
+<%_
+for(const model of operations) {
+    const operation = model.operation;
+_%>
+# <%= operation.summary %>
+@operationId=<%= operation.operationId %>
+Scenario: validate <%= operation.operationId %> mock endpoint
+<%_ if (model.params) { _%>
+Given def params = <%- JSON.stringify(model.params) %>
+<%_ } _%>
+<%_ if (model.body) { _%>
+Given def body =
+"""
+<%- JSON.stringify(model.body, null, 2) %>
+"""
+<%_ } _%>
+Given path <%- ["'", operation.path, "'"].join('').replace(/{/g, "', params.").replace(/}/g, ", '").replace(/, ''/, '') %>
+<%_ if(Object.keys(operation.queryParams).length) { _%>
+	<%_ for(param of Object.values(operation.queryParams)) { _%>
+And param <%= param.name %> = params.<%= param.name %>
+	<%_	} _%>
+<%_	} _%>
+<%_	if(model.body) { _%>
+And request body
+<%_ } _%>
+When method <%= operation.method.toUpperCase() %>
+Then status <%= model.statusCode %>
+
+<%_ } _%>

@@ -9,11 +9,9 @@ All notable changes to the "karate-ide" extension will be documented in this fil
   - [X] Copy as expression
   - [X] Copy as Mock
   - [~] Filter payload using JsonPath: Context Menu + Filtering WebView
-- [ ] Status Bar
-  - [X] Improve summary
-  - [X] Run/Debug buttons for each failed scenario
-  - [-] Run/Debug button to replay all and only failed scenarios
-    - [-] Not Supported By karate-core yet
+- [X] Status Bar
+  - [X] Real time test execution status
+  - [X] Click to relaunch last run/debug
 - [X] OutputChannel
   - [no] Click-to-open to relative files
   - [X] Colorize output channel
@@ -25,10 +23,17 @@ All notable changes to the "karate-ide" extension will be documented in this fil
   - [X] Debug button as right click menu
   - [X] Cross icon for failed tests with summary on hover
 - [ ] API Mock
+  - [X] APIMock library for reusing openapi schemas and examples in Karate Mocks
+  - [X] UI Mock Runner with apimock/openapi support
   - [ ] Contribute Mocks RuntimeHooks to karate-core
-  - [ ] Implement request/response validation with openapi for mocks
-  - [ ] Implement 'routable' openapi examples
-  - [ ] Generators for openapi examples
+  - [x] Implement request/response validation with openapi for mocks
+  - [x] Implement 'routable' openapi examples
+  - [x] Generators for openapi examples
+- [ ] OpenAPI generators
+  - [X] Business flow test generator
+  - [ ] Stateful mock generator
+  - [X] Test for mock validation (simple)
+- [ ] Linkedin article: "from zero to contract testing for rest apis"
 
 # 0.9.x
 

@@ -89,4 +89,4 @@ async function getTestExecutionDetail(uri: vscode.Uri): Promise<ITestExecutionDe
     return tedArray;
 }
 
-export { filterByTags, getFileAndRootPath, getTestExecutionDetail, ITestExecutionDetail };
+export { filterByTags, getFileAndRootPath };

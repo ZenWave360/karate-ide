@@ -1,9 +1,11 @@
+@openapi-file=<%= openapiFile %>
 Feature: <%= operation.summary %>
 	<%= operation.description %>
 
 Background:
 * url baseUrl
 
+@operationId=<%= operation.operationId %>
 Scenario Outline: Test <%= operation.operationId %> for <status> status code
 <% if (operation.method === 'get' || operation.method === 'delete') { %>
 	* def params = __row
@@ -37,7 +39,7 @@ Scenario Outline: Test <%= operation.operationId %> for <status> status code
 	_%>
 <% } %>
 
-@ignore @inline
+@operationId=<%= operation.operationId %>
 Scenario: explore <%= operation.operationId %> inline
 	You may use this test for quick API exploratorial purposes.
 <%_ if (operation.method === 'get' || operation.method === 'delete') { _%>
@@ -88,11 +90,10 @@ And headers headers
 And request args.body
 <%_ } _%>
 When method <%= operation.method.toUpperCase() %>
-
-* def expectedStatusCode = args.statusCode || responseStatus
-* match responseStatus == expectedStatusCode
-
+# validate status code
+* if (args.statusCode && responseStatus != args.statusCode) karate.fail(`status code was: ${responseStatus}, expected: ${args.statusCode}`)
 <% if (operation.responseBody) { _%>
+# validate response body
 * if (args.matchResponse === true) karate.call('<%= operation.operationId %>.feature@validate')
 
 @ignore @validate

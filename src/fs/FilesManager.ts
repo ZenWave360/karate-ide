@@ -8,12 +8,12 @@ import { reloadKarateTestsController } from '@/execution/KarateTestsManager';
 export class KarateTestTreeEntry {
     uri: vscode.Uri;
     type: vscode.FileType;
-    command?: vscode.Command;
+    // command?: vscode.Command;
     title: string;
-    tooltip?: string;
-    feature: { path: string; line?: number };
+    // tooltip?: string;
+    // feature: { path: string; line?: number };
     children: KarateTestTreeEntry[];
-    tags: any;
+    // tags: any;
     constructor(partial: Partial<KarateTestTreeEntry>) {
         Object.assign(this, partial);
     }
@@ -127,6 +127,19 @@ class FilesManager {
         return result;
     }
 
+    public getClasspathRelativePath(file: vscode.Uri) {
+        let relativePath = vscode.workspace.asRelativePath(file.fsPath);
+        for (const folder of this.classpathFolders) {
+            if (relativePath.startsWith(folder)) {
+                relativePath = relativePath.replace(folder, '');
+                relativePath = relativePath.replace(/^\//g, '');
+                break;
+            }
+        }
+
+        return relativePath.replace(/\\/g, '/');
+    }
+
     public getAutoCompleteEntries(documentUri: vscode.Uri, completionToken: string): vscode.CompletionItem[] {
         const relativeTo = path.relative(this.workspaceFolder.uri.fsPath, path.dirname(documentUri.fsPath)).replace(/\\/g, '/');
         let completionStrings = [];
@@ -214,7 +227,7 @@ class FilesManager {
                         uri,
                         type: isDirectory ? vscode.FileType.Directory : vscode.FileType.File,
                         title: key,
-                        feature: { path: uri.fsPath, line: null },
+                        // feature: { path: uri.fsPath, line: null },
                         children: isDirectory ? this.convertToEntryTree(value, vscode.workspace.asRelativePath(uri.fsPath, false)) : null,
                     });
                 })

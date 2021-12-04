@@ -6,18 +6,7 @@ import DefinitionProvider from '@/codelens/DefinitionProvider';
 import KarateNetworkLogsTreeProvider from '@/views/logs/KarateNetworkLogsTreeProvider';
 import EventLogsServer from '@/server/EventLogsServer';
 import HoverRunDebugProvider from '@/codelens/HoverRunDebugProvider';
-import {
-    runKarateTest,
-    debugKarateTest,
-    runAllKarateTests,
-    debugAllKarateTests,
-    relaunchDebugAll,
-    relaunchRunAll,
-    relaunchDebug,
-    relaunchRun,
-    startMockServer,
-    relaunchLastExecution,
-} from '@/commands/RunDebug';
+import { relaunchDebugAll, relaunchRunAll, relaunchDebug, relaunchRun, relaunchLastExecution } from '@/commands/RunDebug';
 import { openFileInEditor } from '@/commands/DisplayCommands';
 import { smartPaste } from '@/commands/SmartPaste';
 
@@ -25,7 +14,7 @@ import {
     karateExecutionsTreeProvider as executionsTreeProvider,
     karateExecutionsTreeProvider,
 } from '@/views/executions/KarateExecutionsTreeProvider';
-import { generateKarateTestFromOpenAPI, generateKarateMocksFromOpenAPI } from '@/generators/openapi/OpenAPIGenerator';
+import { generateKarateTestFromOpenAPI } from '@/generators/openapi/OpenAPIGenerator';
 import { LocalStorageService } from '@/commands/LocalStorageService';
 import { CompletionItemProvider } from './codelens/CompletionProvider';
 import { NetworkLog, NetworkRequestResponseLog, PayloadProperty } from './server/KarateEventLogsModels';
@@ -33,10 +22,14 @@ import { KarateExecutionProcess } from './execution/KarateExecutionProcess';
 import { configureClasspath } from './commands/ConfigureClasspath';
 import { karateOutputChannel } from './execution/KarateOutputChannel';
 import { filesManager } from './fs/FilesManager';
+import { disposables } from './execution/KarateTestsManager';
+import { generateBusinessFlowTest } from './generators/openapi/OpenAPIBusinessFlowGenerator';
+import { generateKarateMocksFromOpenAPI, generateKarateMockValidation } from './generators/openapi/OpenAPIMocksGenerator';
 
 let karateTestsWatcher = null;
 
 export function activate(context: vscode.ExtensionContext) {
+    context.subscriptions.push(...disposables);
     let debugAdapterProvider = new ProviderDebugAdapter();
     let statusBarProvider = new StatusBarProvider(context);
 
@@ -58,16 +51,13 @@ export function activate(context: vscode.ExtensionContext) {
     LocalStorageService.initialize(context.workspaceState);
 
     registerCommand('karateIDE.paste', smartPaste);
-    registerCommand('karateIDE.tests.debug', debugKarateTest);
-    registerCommand('karateIDE.tests.run', runKarateTest);
-    registerCommand('karateIDE.tests.runAll', runAllKarateTests);
-    registerCommand('karateIDE.tests.debugAll', debugAllKarateTests);
-    registerCommand('karateIDE.tests.switchKarateEnv', () => karateExecutionsTreeProvider.switchKarateEnv());
-    registerCommand('karateIDE.tests.karateOptions', () => karateExecutionsTreeProvider.karateOptions());
-    registerCommand('karateIDE.tests.open', openFileInEditor);
+    registerCommand('karateIDE.karateExecutionsTree.open', openFileInEditor);
+    registerCommand('karateIDE.karateExecutionsTree.switchKarateEnv', () => karateExecutionsTreeProvider.switchKarateEnv());
+    registerCommand('karateIDE.karateExecutionsTree.karateOptions', () => karateExecutionsTreeProvider.karateOptions());
     registerCommand('karateIDE.generators.openapi.test', generateKarateTestFromOpenAPI);
     registerCommand('karateIDE.generators.openapi.mocks', generateKarateMocksFromOpenAPI);
-    registerCommand('karateIDE.mocks.start', startMockServer);
+    registerCommand('karateIDE.generators.openapi.mocks-validation', generateKarateMockValidation);
+    registerCommand('karateIDE.generators.openapi.businessFlowTest', generateBusinessFlowTest);
     registerCommand('karateIDE.configureClasspath', configureClasspath);
     registerCommand('karateIDE.karateNetworkLogs.copyAsPayload', (item: vscode.TreeItem | any) => {
         if (item.value) {
