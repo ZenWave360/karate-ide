@@ -7,12 +7,12 @@
     "license": "MIT",
     "publisher": "KarateIDE",
     "bugs": {
-        "url": "https://github.com/ivangsa/karate-ide/issues"
+        "url": "https://github.com/ZenWave360/karate-ide/issues"
     },
-    "homepage": "https://github.com/ivangsa/karate-ide/blob/master/README.md",
+    "homepage": "https://github.com/ZenWave360/karate-ide/blob/master/README.md",
     "repository": {
         "type": "git",
-        "url": "https://github.com/ivangsa/karate-ide.git"
+        "url": "https://github.com/ZenWave360/karate-ide.git"
     },
     "author": {
         "name": "Iván García Sainz-Aja",
@@ -23,7 +23,8 @@
         "vscode": "^1.61.0"
     },
     "categories": [
-        "Other"
+        "Other",
+        "Testing"
     ],
     "keywords": [
         "karate",
