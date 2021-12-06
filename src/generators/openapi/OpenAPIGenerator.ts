@@ -14,7 +14,7 @@ import {
     serviceName,
 } from './OpenAPIGeneratorUtils';
 import { buildKarateTestDataObject, buildParametersSample } from './test-data-generator';
-const testTemplateFile = require('./templates/test.template.feature.ejs');
+const testTemplateFile = require('./templates/test.feature.ejs');
 const karateAuthTemplateFile = require('./templates/karate-auth.js.ejs');
 
 export async function generateKarateTestFromOpenAPI(file: vscode.Uri) {

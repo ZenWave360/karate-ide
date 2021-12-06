@@ -6,7 +6,7 @@ import { parseOpenAPI } from '../json-schema-ref-parser';
 import { findOperationById, render } from './OpenAPIGeneratorUtils';
 import { buildKarateTestDataObject } from './test-data-generator';
 import { promptToSaveFeature } from './OpenAPIGenerator';
-const FLOW_TEST_TEMPLATE = require('./templates/business-flow.test.template.feature.ejs');
+const FLOW_TEST_TEMPLATE = require('./templates/flow-test.feature.ejs');
 
 export async function generateBusinessFlowTest(unused: vscode.Uri, features: vscode.Uri[]) {
     if (features.length > 2) {

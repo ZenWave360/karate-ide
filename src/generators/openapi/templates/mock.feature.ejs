@@ -1,0 +1,69 @@
+@mock @openapi-file=<%= openapiFile %>
+Feature: Mock
+
+Background: 
+* configure cors = true
+* configure responseHeaders = { 'Content-Type': 'application/json' }
+* def paginate = (array, page, limit) => { return { contents: array.slice(page * limit, (page * limit) + limit), total: array.length, page, limit } }
+
+# can be populated from <%= openapiFile %>#/components/examples
+<%_for(const varName of varNames) { _%>
+* def <%= varName %> = []
+<%_ } _%>
+
+<%_
+for(const operation of operations) {
+    var varName = operation.responseDtoNamePlural || pathVarMap[operation.path];
+    var dtoName = operation.responseDtoName || 'dto';
+_%>
+# <%= operation.summary %>
+@<%= operation.operationId %>
+Scenario:  methodIs('<%= operation.method %>') && pathMatches('<%- operation.path %>')
+<%_ if(operation.responseIsObject && operation.method.toLowerCase() === 'get') { _%>
+  * def response = <%= varName %>.find(<%= dtoName %> => <%= dtoName %>.<%= operation.responseDtoId || 'id' %> == pathParams.<%= operation.pathParm %>)
+  * def responseStatus = response? 200 : 404
+
+<%_ } _%>
+<%_  if(operation.responseIsArray) { _%>
+  <%_ for(param in operation.queryParams) { _%>
+  * def <%= param %> = paramValue('<%= param %>')
+  <%_ } _%>
+  ## TODO review this filter and remove this comment
+  * def response = <%= varName %>.filter(<%= dtoName %> => <%= dtoName %>)
+  * def responseStatus = 200
+
+<%_ } _%>
+<%_  if(operation.responseIsPaginated) { _%>
+  <%_ for(param in operation.queryParams) { _%>
+  * def <%= param %> = paramValue('<%= param %>')
+  <%_ } _%>
+  * def page = paramValue('page') || 0
+  * def limit = paramValue('limit') || 10
+  ## TODO review this filter and remove this comment
+  * def response = paginate(<%= varName %>.filter(<%= dtoName %> => <%= dtoName %>), page, limit)
+  * def responseStatus = 200
+
+<%_ } _%>
+<%_  if(operation.method.toLowerCase() === 'post') { _%>
+  * def <%= dtoName %> = request
+  ## TODO review this id assignment and remove this comment
+  * <%= dtoName %>.<%= operation.responseDtoId || 'id' %> = sequenceNext()
+  * <%= varName %>.push(<%= dtoName %>)
+  * def response = <%= dtoName %>
+  * def responseStatus = 200
+
+<%_ } _%>
+<%_  if(operation.method.toLowerCase() === 'put') { _%>
+  ## TODO review this find by id and remove this comment
+  * def index = <%= varName %>.findIndex(<%= dtoName %> => <%= dtoName %>.<%= operation.responseDtoId || 'id' %> == request.<%= operation.responseDtoId || 'id' %>)
+  * def response = (index >= 0? <%= varName %>[index] = request : null)
+  * def responseStatus = index >= 0? 200 : 404
+
+<%_ } _%>
+<%_  if(operation.method.toLowerCase() === 'delete') { _%>
+  ## TODO review this find by id and remove this comment
+  * def response = <%= varName %>.find(<%= dtoName %> => <%= dtoName %>.<%= operation.responseDtoId || 'id' %> == pathParams.<%= operation.pathParm %>)
+  * def responseStatus = response? 200 : 404
+
+<%_ } _%>
+<%_ } _%>

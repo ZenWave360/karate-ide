@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import * as pluralize from 'pluralize';
 
 export function normalizeTag(tagName) {
     return (tagName || 'Default').split(' ').map(_.upperFirst).join('');
@@ -61,6 +62,13 @@ export function prepareData(operation) {
     operation.responseCode = Object.keys(operation.responses)[0];
     operation.operationName = _.upperFirst(operation.operationId);
     operation.parameters = operation.parameters || [];
+    operation.responseSchema = operation.responseBody ? operation.responseBody.schema : null;
+    operation.responseDtoName = operation.responseBody ? getDtoName(operation.responseBody.schema) : null;
+    operation.responseDtoNamePlural = operation.responseDtoName ? pluralize(operation.responseDtoName) : null;
+    operation.responseIsObject = operation.responseBody ? operation.responseBody.schema.type === 'object' : false;
+    operation.responseIsArray = operation.responseBody ? isArray(operation.responseBody.schema) : false;
+    operation.responseIsPrimitive = operation.responseBody ? !operation.responseBody || operation.responseBody.schema.type === 'string' : false;
+    operation.responseIsPaginated = isPagination(operation.responseSchema);
 
     operation.pathParams = {};
     operation.queryParams = {};
@@ -74,6 +82,38 @@ export function prepareData(operation) {
     }
 
     return operation;
+}
+
+function isPagination(schema) {
+    if (!schema || schema.type !== 'object') {
+        return false;
+    }
+    if (schema.hasOwnProperty('x-paginated')) {
+        return schema['x-paginated'];
+    }
+    const properties = Object.values(schema.properties || {});
+    if (
+        properties.length === 3 &&
+        properties.filter((p: any) => p.type === 'integer').length === 2 &&
+        properties.filter((p: any) => p.type === 'array').length === 1
+    ) {
+        return true;
+    }
+    return false;
+}
+
+function isArray(schema) {
+    return schema && schema.type === 'array';
+}
+
+export function getDtoName(schema) {
+    if (isPagination(schema)) {
+        return getDtoName(schema.properties.find(p => p.type === 'array').items);
+    }
+    if (isArray(schema)) {
+        return getDtoName(schema.items);
+    }
+    return _.lowerFirst(schema?.original$ref?.split('/').pop());
 }
 
 export function padCellsForTabularData(headers: string[], examplesByStatus: { [index: string]: { paramExamples: string[] } }) {

@@ -1,30 +1,26 @@
-import * as vscode from 'vscode';
-import { URL } from 'url';
-import ProviderDebugAdapter from '@/execution/ProviderDebugAdapter';
-import StatusBarProvider from '@/views/status-bar/StatusBarProvider';
 import DefinitionProvider from '@/codelens/DefinitionProvider';
-import KarateNetworkLogsTreeProvider from '@/views/logs/KarateNetworkLogsTreeProvider';
-import EventLogsServer from '@/server/EventLogsServer';
 import HoverRunDebugProvider from '@/codelens/HoverRunDebugProvider';
-import { relaunchDebugAll, relaunchRunAll, relaunchDebug, relaunchRun, relaunchLastExecution } from '@/commands/RunDebug';
 import { openFileInEditor } from '@/commands/DisplayCommands';
-import { smartPaste } from '@/commands/SmartPaste';
-
-import {
-    karateExecutionsTreeProvider as executionsTreeProvider,
-    karateExecutionsTreeProvider,
-} from '@/views/executions/KarateExecutionsTreeProvider';
-import { generateKarateTestFromOpenAPI } from '@/generators/openapi/OpenAPIGenerator';
 import { LocalStorageService } from '@/commands/LocalStorageService';
+import { relaunchDebug, relaunchDebugAll, relaunchLastExecution, relaunchRun, relaunchRunAll } from '@/commands/RunDebug';
+import { smartPaste } from '@/commands/SmartPaste';
+import ProviderDebugAdapter from '@/execution/ProviderDebugAdapter';
+import { generateKarateTestFromOpenAPI } from '@/generators/openapi/OpenAPIGenerator';
+import EventLogsServer from '@/server/EventLogsServer';
+import { karateExecutionsTreeProvider } from '@/views/executions/KarateExecutionsTreeProvider';
+import KarateNetworkLogsTreeProvider from '@/views/logs/KarateNetworkLogsTreeProvider';
+import StatusBarProvider from '@/views/status-bar/StatusBarProvider';
+import { URL } from 'url';
+import * as vscode from 'vscode';
 import { CompletionItemProvider } from './codelens/CompletionProvider';
-import { NetworkLog, NetworkRequestResponseLog, PayloadProperty } from './server/KarateEventLogsModels';
-import { KarateExecutionProcess } from './execution/KarateExecutionProcess';
 import { configureClasspath } from './commands/ConfigureClasspath';
+import { KarateExecutionProcess } from './execution/KarateExecutionProcess';
 import { karateOutputChannel } from './execution/KarateOutputChannel';
-import { filesManager } from './fs/FilesManager';
 import { disposables } from './execution/KarateTestsManager';
+import { filesManager } from './fs/FilesManager';
 import { generateBusinessFlowTest } from './generators/openapi/OpenAPIBusinessFlowGenerator';
 import { generateKarateMocksFromOpenAPI, generateKarateMockValidation } from './generators/openapi/OpenAPIMocksGenerator';
+import { NetworkLog, NetworkRequestResponseLog, PayloadProperty } from './server/KarateEventLogsModels';
 
 let karateTestsWatcher = null;
 
@@ -118,7 +114,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.karateExecutionsTree.showOutputLogs', karateOutputChannel.showOutputLogs);
     registerCommand('karateIDE.karateExecutionsTree.relaunchLastExecution', relaunchLastExecution);
     registerCommand('karateIDE.karateExecutionsProcess.stopTestProcesses', () => KarateExecutionProcess.stopTestProcesses());
-    createTreeView('karate-executions', { showCollapseAll: false, treeDataProvider: executionsTreeProvider });
+    createTreeView('karate-executions', { showCollapseAll: false, treeDataProvider: karateExecutionsTreeProvider });
     const eventLogsServer = new EventLogsServer(data => {
         try {
             networkLogsProvider.processLoggingEvent(data);
