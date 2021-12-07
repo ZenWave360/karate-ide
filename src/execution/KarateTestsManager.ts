@@ -1,8 +1,9 @@
+import * as vscode from 'vscode';
+import * as path from 'path';
 import { debugKarateTest, runKarateTest } from '@/commands/RunDebug';
 import { filesManager, KarateTestTreeEntry } from '@/fs/FilesManager';
 // import { getTestExecutionDetail, ITestExecutionDetail } from '@/helper';
 import { parseFeature, Feature } from '@/feature';
-import * as vscode from 'vscode';
 import { Event } from './KarateExecutionProcess';
 import { getStartMockCommandLine, startMockServer } from './CommandUtils';
 
@@ -12,66 +13,18 @@ const testItems = new Map<string, vscode.TestItem>();
 
 export function reloadKarateTestsController() {
     testItems.clear();
+    testsController.items.replace([]);
+    mocksController.items.replace([]);
     const karateFiles = filesManager.getKarateFiles();
     function addTestItems(karateTestEntries: KarateTestTreeEntry[], parent: vscode.TestItemCollection) {
         karateTestEntries.forEach(async element => {
             if (element.type === vscode.FileType.Directory) {
                 const folder = testsController.createTestItem(element.uri.fsPath, element.title, element.uri);
                 parent.add(folder);
+                testItems.set(folder.id, folder);
                 addTestItems(element.children, folder.children);
             } else if (element.type === vscode.FileType.File && element.uri.fsPath.endsWith('.feature')) {
-                const feature: Feature = await parseFeature(element.uri);
-                if (!feature || feature.tags.includes('@ignore')) {
-                    return; // continue next loop
-                }
-                if (feature.tags.includes('@mock')) {
-                    const mockItem = mocksController.createTestItem(element.uri.fsPath, element.title, element.uri);
-                    mockItem.tags = feature.tags.map(tag => new vscode.TestTag(tag));
-                    mockItem.range = new vscode.Range(0, 0, 1, 0);
-                    mockItem.canResolveChildren = false;
-                    mocksController.items.add(mockItem);
-                    return;
-                }
-                const featureTestItem = testsController.createTestItem(element.uri.fsPath, element.title, element.uri);
-                featureTestItem.tags = feature.tags.map(tag => new vscode.TestTag(tag));
-                featureTestItem.range = new vscode.Range(0, 0, 1, 0);
-                featureTestItem.canResolveChildren = true;
-                // let tedArray: ITestExecutionDetail[] = await parseFeature(featureTestItem.uri);
-                feature.scenarios.forEach(scenario => {
-                    if (scenario.tags.includes('@ignore')) {
-                        return; // continue next loop
-                    }
-                    const scenarioTestItem = testsController.createTestItem(
-                        `${featureTestItem.uri.fsPath}:${scenario.line}`,
-                        scenario.title,
-                        featureTestItem.uri
-                    );
-                    scenarioTestItem.range = new vscode.Range(scenario.line - 1, 0, scenario.line, 0);
-                    scenarioTestItem.tags = scenario.tags.map(tag => new vscode.TestTag(tag));
-                    scenarioTestItem.canResolveChildren = false;
-                    featureTestItem.children.add(scenarioTestItem);
-                    testItems.set(scenarioTestItem.id, scenarioTestItem);
-                    if (scenario.examples?.length > 0) {
-                        scenarioTestItem.canResolveChildren = true;
-                        scenario.examples.forEach(example => {
-                            const exampleTestItem = testsController.createTestItem(
-                                `${featureTestItem.uri.fsPath}:${example.line}`,
-                                example.title,
-                                featureTestItem.uri
-                            );
-                            exampleTestItem.range = new vscode.Range(example.line - 1, 0, example.line, 0);
-                            exampleTestItem.tags = example.tags.map(tag => new vscode.TestTag(tag));
-                            exampleTestItem.canResolveChildren = false;
-                            scenarioTestItem.children.add(exampleTestItem);
-                            testItems.set(exampleTestItem.id, exampleTestItem);
-                        });
-                    }
-                });
-                if (featureTestItem.children.size > 0) {
-                    // TODO filter @ignore and @mock
-                    parent.add(featureTestItem);
-                    testItems.set(featureTestItem.id, featureTestItem);
-                }
+                await processFeature(element, parent);
             }
         });
     }
@@ -79,11 +32,95 @@ export function reloadKarateTestsController() {
     console.log('Karate tests reloaded', testsController.items);
 }
 
+export async function addFeature(uri: vscode.Uri) {
+    const paths = uri.fsPath.split(path.sep);
+    let parent = null;
+    while (!parent && paths.length > 0) {
+        const fsPath = paths.join(path.sep);
+        parent = testItems.get(fsPath);
+        paths.pop();
+    }
+    parent = (parent && parent.items) || testsController.items;
+    processFeature(new KarateTestTreeEntry({ uri, type: vscode.FileType.File, title: path.basename(uri.fsPath) }), parent);
+}
+
+export async function removeFeature(uri: vscode.Uri) {
+    const parent = testItems.get(path.dirname(uri.fsPath)).children;
+    parent && parent.delete(uri.fsPath);
+}
+
+export async function reloadFeature(uri: vscode.Uri) {
+    processFeature(new KarateTestTreeEntry({ uri, type: vscode.FileType.File, title: path.basename(uri.fsPath) }));
+}
+
+async function processFeature(element: KarateTestTreeEntry, parent?: vscode.TestItemCollection) {
+    if (!parent) {
+        parent = testItems.get(path.dirname(element.uri.fsPath)).children;
+    }
+    parent.delete(element.uri.fsPath);
+    const feature: Feature = await parseFeature(element.uri);
+    if (!feature) {
+        return;
+    }
+    if (feature.tags.includes('@mock')) {
+        const mockItem = mocksController.createTestItem(element.uri.fsPath, element.title, element.uri);
+        mockItem.tags = feature.tags.map(tag => new vscode.TestTag(tag));
+        mockItem.range = new vscode.Range(0, 0, 1, 0);
+        mockItem.canResolveChildren = false;
+        mocksController.items.add(mockItem);
+        return;
+    }
+    if (feature.tags.includes('@ignore')) {
+        return;
+    }
+    const featureTestItem = testsController.createTestItem(element.uri.fsPath, element.title, element.uri);
+    featureTestItem.tags = feature.tags.map(tag => new vscode.TestTag(tag));
+    featureTestItem.range = new vscode.Range(0, 0, 1, 0);
+    featureTestItem.canResolveChildren = true;
+    // let tedArray: ITestExecutionDetail[] = await parseFeature(featureTestItem.uri);
+    feature.scenarios.forEach(scenario => {
+        if (scenario.tags.includes('@ignore')) {
+            return; // continue next loop
+        }
+        const scenarioTestItem = testsController.createTestItem(
+            `${featureTestItem.uri.fsPath}:${scenario.line}`,
+            scenario.title,
+            featureTestItem.uri
+        );
+        scenarioTestItem.range = new vscode.Range(scenario.line - 1, 0, scenario.line, 0);
+        scenarioTestItem.tags = scenario.tags.map(tag => new vscode.TestTag(tag));
+        scenarioTestItem.canResolveChildren = false;
+        featureTestItem.children.add(scenarioTestItem);
+        testItems.set(scenarioTestItem.id, scenarioTestItem);
+        if (scenario.examples?.length > 0) {
+            scenarioTestItem.canResolveChildren = true;
+            scenario.examples.forEach(example => {
+                const exampleTestItem = testsController.createTestItem(
+                    `${featureTestItem.uri.fsPath}:${example.line}`,
+                    example.title,
+                    featureTestItem.uri
+                );
+                exampleTestItem.range = new vscode.Range(example.line - 1, 0, example.line, 0);
+                exampleTestItem.tags = example.tags.map(tag => new vscode.TestTag(tag));
+                exampleTestItem.canResolveChildren = false;
+                scenarioTestItem.children.add(exampleTestItem);
+                testItems.set(exampleTestItem.id, exampleTestItem);
+            });
+        }
+    });
+    if (featureTestItem.children.size > 0) {
+        // TODO filter @ignore and @mock
+        parent.add(featureTestItem);
+        testItems.set(featureTestItem.id, featureTestItem);
+    }
+}
+
 let testRunner: vscode.TestRun | undefined;
 function runHandler(shouldDebug: boolean, request: vscode.TestRunRequest, token: vscode.CancellationToken) {
     testRunner = testsController.createTestRun(request);
     const command = shouldDebug ? debugKarateTest : runKarateTest;
     const testFeature = request.include.map(t => t.id).join(';');
+    request.include.forEach(testItem => testRunner.enqueued(testItem));
     command(testFeature, null);
 }
 
@@ -115,6 +152,10 @@ async function mockHandler(request: vscode.TestRunRequest, token: vscode.Cancell
             }
         }
     });
+
+    token.onCancellationRequested(() => {
+        vscode.tasks.taskExecutions.find(t => t.task.name === 'Karate Mock Server').terminate();
+    });
 }
 
 let featureErrors = [];
@@ -125,11 +166,6 @@ export function processEvent(event: Event): void {
         featureErrors = [];
         // testRunner.started(findTestItem(event.cwd, event.locationHint));
     } else if (event.event === 'featureFinished') {
-        // if (featureErrors.length > 0) {
-        //     testRunner.failed(findTestItem(event.cwd, event.locationHint), featureErrors);
-        // } else {
-        //     testRunner.passed(findTestItem(event.cwd, event.locationHint), event.duration);
-        // }
     } else if (event.event === 'testOutlineStarted') {
         outlineErrors = [];
         testRunner.started(findTestItem(event.cwd, event.locationHint));
@@ -174,7 +210,7 @@ const mockProfile = mocksController.createRunProfile('Start Mock', vscode.TestRu
 });
 
 const mockStopProfile = mocksController.createRunProfile('Stop Mock', vscode.TestRunProfileKind.Run, async (request, token) => {
-    console.log('Stop Mock');
+    vscode.tasks.taskExecutions.find(t => t.task.name === 'Karate Mock Server').terminate();
 });
 
 export const disposables = [runProfile, debugProfile, mockProfile, mockStopProfile, testsController, mocksController];

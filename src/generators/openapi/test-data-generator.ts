@@ -7,10 +7,10 @@ export { buildKarateTestDataObject, buildExampleFromSchema, buildKarateMockDataO
  */
 function buildKarateTestDataObject(operation: any, statusCode: string | number) {
     const params = buildParametersSample(operation.parameters);
-    const requestSchema = () => (Object.values(operation.requestBody.content)[0] as any).schema;
-    const hasResponseContent = operation.responses[statusCode].content;
+    const requestSchema = () => (Object.values(operation.requestBody.content)[0] as any)?.schema;
+    const hasResponseContent = operation.responses[statusCode].content && Object.keys(operation.responses[statusCode].content).length > 0;
     const responseSchema = () => {
-        const schema = (Object.values(operation.responses[statusCode].content)[0] as any).schema;
+        const schema = (Object.values(operation.responses[statusCode].content)[0] as any)?.schema;
         return isArraySchema(schema) ? schema.items : schema;
     };
 
@@ -141,7 +141,7 @@ function buildExampleForProperty(schema, name) {
 }
 
 function isArraySchema(schema) {
-    const type = Array.isArray(schema.type) ? schema.type[0] : schema.type;
+    const type = Array.isArray(schema?.type) ? schema.type[0] : schema?.type;
     return type === 'array';
 }
 

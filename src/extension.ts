@@ -124,38 +124,13 @@ export function activate(context: vscode.ExtensionContext) {
     });
     eventLogsServer.start();
 
-    setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter')), filesManager);
-
     vscode.workspace.onDidChangeConfiguration(e => {
-        let karateTestsGlobFilter = e.affectsConfiguration('karateIDE.tests.globFilter');
-        if (karateTestsGlobFilter) {
-            try {
-                karateTestsWatcher.dispose();
-            } catch (e) {
-                // do nothing
-            }
-
-            setupWatcher(karateTestsWatcher, String(vscode.workspace.getConfiguration('karateIDE.tests').get('globFilter')), filesManager);
+        if (e.affectsConfiguration('karateIDE.tests.globFilter')) {
+            filesManager.loadFiles();
         }
     });
 }
 
 export function deactivate() {
     karateTestsWatcher.dispose();
-}
-
-function setupWatcher(watcher, watcherGlob, provider) {
-    watcher = vscode.workspace.createFileSystemWatcher(watcherGlob);
-
-    watcher.onDidCreate(e => {
-        provider.loadFiles();
-    });
-    watcher.onDidChange(e => {
-        provider.loadFiles();
-    });
-    watcher.onDidDelete(e => {
-        provider.loadFiles();
-    });
-
-    provider.loadFiles();
 }

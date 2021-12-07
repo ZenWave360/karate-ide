@@ -3,17 +3,13 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as minimatch from 'minimatch';
 import { getFileAndRootPath } from '@/helper';
-import { reloadKarateTestsController } from '@/execution/KarateTestsManager';
+import { addFeature, reloadFeature, reloadKarateTestsController, removeFeature } from '@/execution/KarateTestsManager';
 
 export class KarateTestTreeEntry {
     uri: vscode.Uri;
     type: vscode.FileType;
-    // command?: vscode.Command;
     title: string;
-    // tooltip?: string;
-    // feature: { path: string; line?: number };
     children: KarateTestTreeEntry[];
-    // tags: any;
     constructor(partial: Partial<KarateTestTreeEntry>) {
         Object.assign(this, partial);
     }
@@ -74,9 +70,9 @@ class FilesManager {
     private watch() {
         this.watcher && this.watcher.dispose();
         this.watcher = vscode.workspace.createFileSystemWatcher(this.testsGlobFilter);
-        this.watcher.onDidCreate(this.loadFiles);
-        this.watcher.onDidChange(this.loadFiles);
-        this.watcher.onDidDelete(this.loadFiles);
+        this.watcher.onDidCreate(uri => addFeature(uri));
+        this.watcher.onDidChange(uri => reloadFeature(uri));
+        this.watcher.onDidDelete(uri => removeFeature(uri));
     }
 
     public getPeekDefinitions(document: vscode.TextDocument, token: string): vscode.Definition {

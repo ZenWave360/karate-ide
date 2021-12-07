@@ -449,7 +449,7 @@
                 },
                 "karateIDE.karateCli.mockServerOptions": {
                     "type": "string",
-                    "default": "-p 3000 -P /",
+                    "default": "-p 3000",
                     "description": "MockServer options: '-p' for port (use 0 for a random port and '${port}' to be prompted each time), '-P' for prefix or contextPath",
                     "scope": "resource"
                 },
@@ -461,7 +461,7 @@
                 },
                 "karateIDE.tests.globFilter": {
                     "type": "string",
-                    "default": "**/src/test/**/*.{feature,yml}",
+                    "default": "**/src/test/**/*.feature",
                     "description": "Glob pattern to filter files in Karate Tests view.",
                     "scope": "resource"
                 }

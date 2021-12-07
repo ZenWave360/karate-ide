@@ -37,7 +37,7 @@ async function generateKarateStatefulMock(file: vscode.Uri, api, targetFile: vsc
             operation.responseDtoId = properties ? (properties.hasOwnProperty('id') ? 'id' : Object.keys(properties)[0]) : null;
         }
     });
-    render(MOCKS_TEMPLATE, targetFile, model);
+    await render(MOCKS_TEMPLATE, targetFile, model);
     await vscode.window.showTextDocument(targetFile);
 }
 
@@ -47,7 +47,12 @@ export async function generateKarateMockValidation(file: vscode.Uri) {
     const selected = await askForOperations(operations);
     const targetFile = await promptToSaveFeature();
     if (targetFile) {
-        await generateKarateMockValidationTest(file, api, targetFile, selected);
+        try {
+            await generateKarateMockValidationTest(file, api, targetFile, selected);
+        } catch (e) {
+            console.error(e);
+            vscode.window.showErrorMessage(e.message);
+        }
     }
 }
 
@@ -65,6 +70,6 @@ async function generateKarateMockValidationTest(file: vscode.Uri, api, targetFil
             matchResponse: true,
         };
     });
-    render(MOCKS_TEST_TEMPLATE, targetFile, model);
+    await render(MOCKS_TEST_TEMPLATE, targetFile, model);
     await vscode.window.showTextDocument(targetFile);
 }

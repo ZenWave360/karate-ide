@@ -137,15 +137,19 @@ export function padCellsForTabularData(headers: string[], examplesByStatus: { [i
     }
 }
 
-export function render(template, target: vscode.Uri, model) {
-    const options = {};
-    try {
-        ejs.renderFile(path.join(__dirname, template), model, options, function (err, output) {
-            vscode.workspace.fs.writeFile(target, Buffer.from((err && err.message) || output));
-        });
-    } catch (error) {
-        console.error(error.message);
-    }
+export function render(template, target: vscode.Uri, model): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const options = {};
+        try {
+            ejs.renderFile(path.join(__dirname, template), model, options, function (err, output) {
+                vscode.workspace.fs.writeFile(target, Buffer.from((err && err.message) || output));
+                resolve();
+            });
+        } catch (error) {
+            console.error(error.message);
+            reject(error);
+        }
+    });
 }
 
 export async function findResourcesFolder(openapi: vscode.Uri) {

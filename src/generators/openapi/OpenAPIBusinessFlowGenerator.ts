@@ -51,7 +51,7 @@ export async function generateBusinessFlowTest(unused: vscode.Uri, features: vsc
                 .replace(/\/|(.feature)/g, ' ')
                 .trim();
             model.openapiFiles = [...new Set(model.openapiFiles)];
-            render(FLOW_TEST_TEMPLATE, targetFile, model);
+            await render(FLOW_TEST_TEMPLATE, targetFile, model);
             await vscode.window.showTextDocument(targetFile);
         }
     }

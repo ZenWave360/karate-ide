@@ -47,7 +47,7 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
         if (event.eventType.endsWith('SUITE_START')) {
             this.httpResponsesCount = 0;
         } else if (event.eventType === 'SUITE_END') {
-            if (this.httpResponsesCount === 1) {
+            if (this.httpResponsesCount === 1 && !this.lastHttpResponse?.parent?.eventEnd?.failureMessage) {
                 vscode.commands.executeCommand('karateIDE.showNetworkRequestResponseLog', this.lastHttpResponse.payload.json);
             }
         } else if (event.eventType.endsWith('_START')) {
