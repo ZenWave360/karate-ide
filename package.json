@@ -3,7 +3,7 @@
     "displayName": "Karate IDE",
     "description": "Explore your APIs and debug Karate test scripts within VS Code",
     "icon": "resources/karate.png",
-    "version": "0.9.7",
+    "version": "0.9.8",
     "license": "MIT",
     "publisher": "KarateIDE",
     "bugs": {
