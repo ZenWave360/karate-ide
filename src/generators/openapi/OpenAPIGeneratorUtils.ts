@@ -118,7 +118,7 @@ export function getDtoName(schema) {
 
 export function padCellsForTabularData(headers: string[], examplesByStatus: { [index: string]: { paramExamples: string[] } }) {
     const maxLengths = headers.map(header => header.length);
-    const data: string[][] = Object.values(examplesByStatus).map(example => example.paramExamples);
+    const data: string[][] = Object.values(examplesByStatus).map(example => example.paramExamples) || [];
     data.forEach(row => {
         row.forEach((cell, i) => {
             maxLengths[i] = Math.max(maxLengths[i], (cell + '').length);
@@ -141,8 +141,8 @@ export function render(template, target: vscode.Uri, model): Promise<void> {
     return new Promise((resolve, reject) => {
         const options = {};
         try {
-            ejs.renderFile(path.join(__dirname, template), model, options, function (err, output) {
-                vscode.workspace.fs.writeFile(target, Buffer.from((err && err.message) || output));
+            ejs.renderFile(path.join(__dirname, template), model, options, async function (err, output) {
+                await vscode.workspace.fs.writeFile(target, Buffer.from((err && err.message) || output));
                 resolve();
             });
         } catch (error) {

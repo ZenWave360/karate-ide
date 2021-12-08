@@ -151,6 +151,11 @@ function isArraySchema(schema) {
  * @param {*} options
  */
 function buildKarateSchema(schema, options) {
+    options.visited = options.visited || [];
+    if (options.visited.includes(schema)) {
+        return null;
+    }
+    options.visited.push(schema);
     const type = Array.isArray(schema.type) ? schema.type[0] : schema.type;
     const required = options.requiredProps && options.requiredProps.includes(options.name);
     const nullable = schema.nullable === true || (Array.isArray(schema.type) && schema.type.includes("'null'"));
