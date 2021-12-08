@@ -117,6 +117,15 @@ class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<Execution>
         }
     }
 
+    async mockServerOptions() {
+        let mockServerOptions = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('mockServerOptions'));
+        mockServerOptions = await vscode.window.showInputBox({ prompt: 'MockServer Options', value: mockServerOptions });
+        if (mockServerOptions !== undefined) {
+            await vscode.workspace.getConfiguration().update('karateIDE.karateCli.mockServerOptions', mockServerOptions);
+            this.configureViewTitle();
+        }
+    }
+
     private configureViewTitle() {
         const karateEnv = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv'));
         const karateOptions = String(vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateOptions'));

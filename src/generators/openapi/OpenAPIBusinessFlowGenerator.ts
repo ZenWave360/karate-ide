@@ -9,7 +9,7 @@ import { promptToSaveFeature } from './OpenAPIGenerator';
 const FLOW_TEST_TEMPLATE = require('./templates/flow-test.feature.ejs');
 
 export async function generateBusinessFlowTest(unused: vscode.Uri, features: vscode.Uri[]) {
-    if (features.length > 2) {
+    if (features.length < 2) {
         vscode.window.showErrorMessage('You need to select more than one feature file in order to generate a business flow test');
         return;
     }

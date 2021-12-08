@@ -155,7 +155,7 @@ function runHandler(shouldDebug: boolean, request: vscode.TestRunRequest, token:
     command(testFeature, null);
 
     token?.onCancellationRequested(() => {
-        // TODO KarateExecutionProcess.cancel();
+        KarateExecutionProcess.stopTestProcesses();
     });
 }
 

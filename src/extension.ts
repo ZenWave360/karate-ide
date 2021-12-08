@@ -49,6 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.karateExecutionsTree.open', openFileInEditor);
     registerCommand('karateIDE.karateExecutionsTree.switchKarateEnv', () => karateExecutionsTreeProvider.switchKarateEnv());
     registerCommand('karateIDE.karateExecutionsTree.karateOptions', () => karateExecutionsTreeProvider.karateOptions());
+    registerCommand('karateIDE.karateExecutionsTree.mockServerOptions', () => karateExecutionsTreeProvider.mockServerOptions());
     registerCommand('karateIDE.generators.openapi.test', generateKarateTestFromOpenAPI);
     registerCommand('karateIDE.generators.openapi.mocks', generateKarateMocksFromOpenAPI);
     registerCommand('karateIDE.generators.openapi.mocks-validation', generateKarateMockValidation);

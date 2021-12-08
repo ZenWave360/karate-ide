@@ -1,23 +1,28 @@
 # Karate IDE
 
-KarateIDE is a REST APIs client and a Testing UI for [KarateDSL](https://github.com/intuit/karate). Explore your APIs, generate reusable Karate tests and mocks from OpenAPI definitions and run and debug your test scripts within VS Code.
+> After one year of development **KarateIDE reaches Version 1.0.0**.
+> The best user experience for KarateDSL, by far!!
+> But don't take our word and see by yourself.
+
+KarateIDE is a REST APIs client and a Testing UI for [KarateDSL](https://github.com/intuit/karate). You can explore your APIs, generate reusable Karate Tests, stateful Mocks and complex Business Flow tests from OpenAPI definitions and run and debug your test scripts and mocks from within VS Code.
 
 <!-- TOC -->
 
 - [Karate IDE](#karate-ide)
     - [What's New?](#whats-new)
-        - [Blazing Fast test Startup](#blazing-fast-test-startup)
+        - [Blazing Fast tests Startup](#blazing-fast-tests-startup)
         - [Your data at your fingerprints](#your-data-at-your-fingerprints)
         - [Replacing old Tests Explorer with native *Test API* from VSCode](#replacing-old-tests-explorer-with-native-test-api-from-vscode)
-        - [OpenAPI schemas and examples meets Karate Mocks](#openapi-schemas-and-examples-meets-karate-mocks)
+        - [Three new Code Generators for Stateful Mocks and Business Flows from OpenAPI definitions](#three-new-code-generators-for-stateful-mocks-and-business-flows-from-openapi-definitions)
     - [Featuring](#featuring)
     - [From Manual Testing to Contract Testing](#from-manual-testing-to-contract-testing)
     - [Auto Configuration](#auto-configuration)
     - [OpenAPI Generator for Quick Exploration and Manual Testing](#openapi-generator-for-quick-exploration-and-manual-testing)
     - [SmartPaste as Outline Example files/rows](#smartpaste-as-outline-example-filesrows)
-    - [Reusing generated Scenarios in complex flow/sequence tests](#reusing-generated-scenarios-in-complex-flowsequence-tests)
-    - [Generating Mocks from OpenAPI definitions](#generating-mocks-from-openapi-definitions)
-    - [Start your Mocks Server from context Menu](#start-your-mocks-server-from-context-menu)
+    - [Generate Tests that simulates end-user Business Flows](#generate-tests-that-simulates-end-user-business-flows)
+    - [Generating Stateful Mocks from OpenAPI definitions](#generating-stateful-mocks-from-openapi-definitions)
+    - [Start your Mocks Server from Editor and Tests Explorer sidebar](#start-your-mocks-server-from-editor-and-tests-explorer-sidebar)
+        - [OpenAPI schemas and examples meets Karate Mocks](#openapi-schemas-and-examples-meets-karate-mocks)
     - [Debug Karate Scripts](#debug-karate-scripts)
     - [Configuration Options](#configuration-options)
         - [vscode/launch.json](#vscodelaunchjson)
@@ -27,7 +32,7 @@ KarateIDE is a REST APIs client and a Testing UI for [KarateDSL](https://github.
         - [Run/Debug command templates](#rundebug-command-templates)
         - [Multimodule projects](#multimodule-projects)
     - [Other functionality](#other-functionality)
-        - [Karate.env switcher](#karateenv-switcher)
+        - [Karate.env switcher, Karate Options and MockServer Options](#karateenv-switcher-karate-options-and-mockserver-options)
         - [SmartPaste from cURL in Karate files](#smartpaste-from-curl-in-karate-files)
         - [Code Navigation and Definition Peek](#code-navigation-and-definition-peek)
         - [Auto-Completion](#auto-completion)
@@ -37,7 +42,7 @@ KarateIDE is a REST APIs client and a Testing UI for [KarateDSL](https://github.
 
 ## What's New?
 
-### Blazing Fast test Startup
+### Blazing Fast tests Startup
 
 Save a few seconds on each test startup time. With this new release we have introduced `vscode.KarateTestProcess` that reuses the java process in charge or running your Karate tests and debugging sessions.
 
@@ -66,49 +71,43 @@ With the new Tests API, Visual Studio Code supports richer displays of outputs a
 
 - Better looking standard Run/Debug showing in the gutter (replacing old *code lenses*)
 - Test Explorer view allows you navigate and filter tests by name, tags, status, etc... To filter by tag use karate prefix in this way `@karate:@yourtag`
-- Failing tests error messages are presented in multiple and usefull ways (a tooltips, in the gutter, in the tests explorer...)
+- Failing tests error messages are presented in multiple and useful ways (a tooltips, in the gutter, in the tests explorer...)
+- Start your Mock Server from Editor and Tests Explorer sidebar
 
 ![Karate-IDE](resources/screenshots/API-Tests-Explorer.gif)
 
-### OpenAPI schemas and examples meets Karate Mocks
+### Three new Code Generators for Stateful Mocks and Business Flows from OpenAPI definitions
 
-You can now:
+KarateIDE features three new code generators from OpenAPI definitions. Now you can:
 
-- Leverage OpenAPI schemas and examples for request/response validation and declarative stateless mocks.
-- Use KarateDSL for powerful yet simple stateful mocks.
-- Use openapi examples to populate your karate mocks initial data.
-
-See [Start your Mocks Server from context Menu](#start-your-mocks-server-from-context-menu).
-
-Navigate to https://github.com/ivangsa/apimock for more details about this integration.
+    - [Generate Tests that simulates end-user Business Flows](#generate-tests-that-simulates-end-user-business-flows)
+    - [Generating Stateful Mocks from OpenAPI definitions](#generating-stateful-mocks-from-openapi-definitions)
+    - Simple Test features to fully Validate your Mocks
 
 ## Featuring
 
 With this extension you can:
 
-- Generate Karate test from OpenAPI definitions (openapi 3.0.0 as yml is currently supported)
-- Quickly explore your apis using generated Scenarios and Scenario Outlines
+- Generate code for tests, stateful mocks and complex business flow tests from OpenAPI definitions (openapi 3.0.0 as yml is currently supported)
+- Quickly explore your apis using generated Scenarios and Scenario Outlines.
 - Explore your logs as colorized `OutputChannel`s. Seamless switch from one channel per scenario or all output together (inspired by IntelliJ), search output with Ctrl+F is also supported...
 - Explore HTTP requests/responses as structured tree views. Switch between list view and nested scenario calls. Copy payload json or export as cURL.
 - `SmartPaste` (Ctrl+Shift+V) json payloads as new files/rows for ScenarioOutline Examples
 - `SmartPaste` (Ctrl+Shift+V) cURL as Karate tests.
 - Navigate features and supporting files with `Ctrl+<click>` supporting relative, classpath and even `@tags` on same (or different) feature file now works.
 - Autocompletion of classpath feature names. It honors your classpath settings (see [configuration options](#configuration-options)) when scanning/caching features files.
-- Generate Karate Server Side Features (a.k.a. Mocks) from OpenAPI definitions.
-- Start `Karate Mock Server` from an UI menu and run your tests against this mock server.
 - Leverage OpenAPI schemas to validate your mocks requests/responses.
 - Use your OpenAPI examples as mock data.
-- Switch `karate.env` directly from the UI.
-- Configure `karate.options` directly from the UI.
+- Switch `karate.env`, cnfigure `karate.options` and `mockServerOptions` directly from the UI.
 
 ## From Manual Testing to Contract Testing
 
 - Explore, navigate and manual test your API with [OpenAPI generator](#openapi-generator-for-quick-exploration-and-manual-testing)
 - Quickly create Scenario Outline Examples using [SmartPaste](#smartpaste-as-outile-example-filesrows) feature
 - Validate your response payload using/customizing generated `matchers`
-- Build [functional tests](#reusing-generated-scenarios-in-complex-flowsquence-tests) mimicking user flows reusing generated karate tests
-- [Generate Karate Mocks](#generating-complete-mocks-from-openapi-definitions) from OpenAPI definitions
-- Start and test your [Mocks Server](#start-your-mocks-server-from-a-menu) from KarateIDE
+- Generate [functional tests](#reusing-generated-scenarios-in-complex-flowsquence-tests) mimicking user flows reusing generated karate tests
+- [Generate Karate stateful Mocks](#generating-complete-mocks-from-openapi-definitions) from OpenAPI definitions
+- Start and test your [Mocks Server](#start-your-mocks-server-from-a-menu) from KarateIDE editor.
 - Test and debug your mocks right inside KarateIDE
 
 Checkout https://github.com/ZenWave360/karate-openapi-petstore.git for what autogenerated tests and mocks looks like.
@@ -134,19 +133,20 @@ When you are happy with your exploratory test payload and params you can paste a
 
 ![Karate-IDE](resources/screenshots/KarateIDE-SmartPaste_Outline_Examples.gif)
 
-## Reusing generated Scenarios in complex flow/sequence tests
+## Generate Tests that simulates end-user Business Flows
 
-Generated scenarios can be reused and invoked from other tests, implementing more complex sequences or flows.
+You can compose business flows calling those autogenerated karate tests. 
+KarateIDE can generate an almost finished skeleton for you: select in order two or more autogenerated feature files, right-click and choose “KarateIDE: Generate Flow Test”, you will be prompted for a destination file *et voilà*.
 
 You don't need to keep writing http based scenarios every time, but directly reference your API operations by the very name they are documented in your OpenAPI definition.
 
-![alt](resources/screenshots/SequenceTestWithGeneratedScenarios.png)
+![alt](resources/screenshots/CRUD.png)
 
-## Generating Mocks from OpenAPI definitions
+## Generating Stateful Mocks from OpenAPI definitions
 
-You can also generate Mock features for your complete api from openapi definitions. Right click in a openapi yml file and select `Generate Karate Mocks`.
+You can also generate stateful Mock features from openapi definitions, yes stateful mocks!!. Right click in a openapi yml file and select `KarateIDE: Generate Karate Mocks`.
 
-## Start your Mocks Server from context Menu
+## Start your Mocks Server from Editor and Tests Explorer sidebar
 
 Configure `"karateIDE.karateCli.mockServerOptions"` in `.vscode/settings.json`: '-p' for port (use 0 for a random port and '${port}' to be prompted each time), '-P' for prefix or contextPath.
 
@@ -156,7 +156,19 @@ Configure `"karateIDE.karateCli.mockServerOptions"` in `.vscode/settings.json`: 
 }
 ```
 
-To start your MocksServer from context menu select one or more mock features and one openapi.yml definition and right clicking on a selected feature you will be presented with context menu `Start Karate Mock Server`.
+KarateIDE mock server now integrates with VSCode Tests API so you can start your mocks right from the editor or the Tests Explorer side activity bar.
+
+![KarateIDE PetMock.feature](resources/screenshots/pet-mock.png)
+
+### OpenAPI schemas and examples meets Karate Mocks
+
+You can now:
+
+- Leverage OpenAPI schemas and examples for request/response validation and declarative stateless mocks.
+- Use KarateDSL for powerful yet simple stateful mocks.
+- Use openapi examples to populate your karate mocks initial data.
+
+Navigate to https://github.com/ivangsa/apimock for more details about this integration.
 
 ## Debug Karate Scripts
 
@@ -245,9 +257,11 @@ Karate java process will be started on that folder (first parent folder of curre
 
 ## Other functionality
 
-### Karate.env switcher
+### Karate.env switcher, Karate Options and MockServer Options
 
-You can switch karate.env from the grear icon on tests tree view. When using Karate-IDE for manual testing or exploring APIs you will find very handy this environment switcher.
+You can switch `karate.env`, Karate options and MockServer options from Executions View title bar. When using Karate-IDE for manual testing or exploring APIs you will find very handy this options switcher.
+
+![Karate-IDE Options Buttons](resources/screenshots/options.png)
 
 ### SmartPaste from cURL in Karate files
 

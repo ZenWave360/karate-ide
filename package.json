@@ -183,6 +183,14 @@
                 }
             },
             {
+                "command": "karateIDE.karateExecutionsTree.mockServerOptions",
+                "title": "Mock Server Options",
+                "icon": {
+                    "light": "resources/vscode-icons/light/server.svg",
+                    "dark": "resources/vscode-icons/dark/server.svg"
+                }
+            },
+            {
                 "command": "karateIDE.karateExecutionsTree.open",
                 "title": "Open In Editor",
                 "icon": {
@@ -266,6 +274,11 @@
                     "command": "karateIDE.karateExecutionsTree.karateOptions",
                     "when": "view == karate-executions",
                     "group": "navigation@2"
+                },
+                {
+                    "command": "karateIDE.karateExecutionsTree.mockServerOptions",
+                    "when": "view == karate-executions",
+                    "group": "navigation@3"
                 },
                 {
                     "command": "karateIDE.karateNetworkLogs.showScenarios.false",
