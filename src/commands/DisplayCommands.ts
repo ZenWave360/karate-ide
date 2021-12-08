@@ -1,4 +1,4 @@
-import { FeatureExecution, ScenarioExecution, ScenarioOutlineExecution } from '@/views/executions/KarateExecutionsTreeProvider';
+import { FeatureExecution, ScenarioExecution, ScenarioOutlineExecution } from '@/views/KarateExecutionsTreeProvider';
 // import { KarateTestTreeEntry } from '@/fs/FilesManager';
 import * as path from 'path';
 import * as vscode from 'vscode';

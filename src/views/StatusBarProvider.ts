@@ -1,10 +1,5 @@
 import { KarateExecutionProcess, SummaryEvent } from '@/execution/KarateExecutionProcess';
-import {
-    FeatureExecution,
-    karateExecutionsTreeProvider,
-    ScenarioExecution,
-    ScenarioOutlineExecution,
-} from '@/views/executions/KarateExecutionsTreeProvider';
+import { FeatureExecution, karateExecutionsTreeProvider, ScenarioExecution, ScenarioOutlineExecution } from '@/views/KarateExecutionsTreeProvider';
 import * as vscode from 'vscode';
 
 class StatusBarProvider {
@@ -13,10 +8,9 @@ class StatusBarProvider {
     constructor(context) {
         this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 50);
         this.statusBarItem.command = {
-            command: 'karateIDE.karateExecutionsTree.relaunchLastExecution',
+            command: 'karateIDE.karateExecutionsTree.runLastExecution',
             title: 'Run/Debug Last Execution',
             tooltip: 'Run/Debug Last Execution',
-            arguments: [],
         };
 
         const resultsJsonWatcher = vscode.workspace.createFileSystemWatcher('**/karate-reports/karate-summary-json.txt');

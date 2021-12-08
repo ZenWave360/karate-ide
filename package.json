@@ -191,7 +191,7 @@
                 }
             },
             {
-                "command": "karateIDE.karateExecutionsTree.relaunchDebugAll",
+                "command": "karateIDE.karateExecutionsTree.debugAll",
                 "title": "Relaunch Last Karate Debug Execution",
                 "icon": {
                     "light": "resources/vscode-icons/light/debug-alt-small.svg",
@@ -199,7 +199,7 @@
                 }
             },
             {
-                "command": "karateIDE.karateExecutionsTree.relaunchDebug",
+                "command": "karateIDE.karateExecutionsTree.debug",
                 "title": "Debug this Execution",
                 "icon": {
                     "light": "resources/vscode-icons/light/debug-alt-small.svg",
@@ -207,7 +207,7 @@
                 }
             },
             {
-                "command": "karateIDE.karateExecutionsTree.relaunchRunAll",
+                "command": "karateIDE.karateExecutionsTree.runAll",
                 "title": "Relaunch Last Karate Run Execution",
                 "icon": {
                     "light": "resources/vscode-icons/light/run-all.svg",
@@ -215,7 +215,7 @@
                 }
             },
             {
-                "command": "karateIDE.karateExecutionsTree.relaunchRun",
+                "command": "karateIDE.karateExecutionsTree.run",
                 "title": "Run this Execution",
                 "icon": {
                     "light": "resources/vscode-icons/light/run-all.svg",
@@ -223,7 +223,7 @@
                 }
             },
             {
-                "command": "karateIDE.karateExecutionsTree.relaunchLastExecution",
+                "command": "karateIDE.karateExecutionsTree.runLastExecution",
                 "title": "Run/Debug Last Execution",
                 "icon": {
                     "light": "resources/vscode-icons/light/run-all.svg",
@@ -285,12 +285,12 @@
             ],
             "view/item/context": [
                 {
-                    "command": "karateIDE.karateExecutionsTree.relaunchDebug",
+                    "command": "karateIDE.karateExecutionsTree.debug",
                     "when": "view == karate-executions",
                     "group": "inline@1"
                 },
                 {
-                    "command": "karateIDE.karateExecutionsTree.relaunchRun",
+                    "command": "karateIDE.karateExecutionsTree.run",
                     "when": "view == karate-executions",
                     "group": "inline@2"
                 },

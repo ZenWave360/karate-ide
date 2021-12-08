@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import Icons from '@/Icons';
 import { Event } from '@/execution/KarateExecutionProcess';
+import { launchTest, relaunchTest } from '@/execution/KarateTestsManager';
 
 export class SuiteExecution {
     constructor(public readonly name) {}
@@ -50,6 +52,28 @@ export class ScenarioExecution {
 }
 
 export type Execution = SuiteExecution | FeatureExecution | ScenarioOutlineExecution | ScenarioExecution;
+
+export function debugTestEntry(entry: Execution) {
+    if (entry instanceof SuiteExecution) {
+        return relaunchTest('DEBUG');
+    }
+    let [feature, line] = entry.eventStart.locationHint.split(':');
+    if (entry?.eventStart.event === 'featureStarted') {
+        line = '1';
+    }
+    launchTest(path.join(entry.eventStart.cwd, feature), line, 'DEBUG');
+}
+
+export function runTestEntry(entry: Execution) {
+    if (entry instanceof SuiteExecution) {
+        return relaunchTest('RUN');
+    }
+    let [feature, line] = entry?.eventStart.locationHint.split(':');
+    if (entry?.eventStart.event === 'featureStarted') {
+        line = '1';
+    }
+    launchTest(path.join(entry.eventStart.cwd, feature), line, 'RUN');
+}
 
 class KarateExecutionsTreeProvider implements vscode.TreeDataProvider<Execution> {
     public executions: FeatureExecution[] = [];

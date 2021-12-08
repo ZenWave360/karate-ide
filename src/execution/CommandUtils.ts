@@ -3,9 +3,35 @@ import { getFileAndRootPath } from '@/helper';
 import * as vscode from 'vscode';
 import EventLogsServer from '@/server/EventLogsServer';
 import { KarateExecutionProcess } from '@/execution/KarateExecutionProcess';
-import { Execution, SuiteExecution } from '@/views/executions/KarateExecutionsTreeProvider';
+import { Execution, SuiteExecution } from '@/views/KarateExecutionsTreeProvider';
 
-function processClasspath(classpath: string, jar: 'vscode.jar' | 'apimock.jar' = 'vscode.jar') {
+export function getKarateOptions() {
+    const karateEnv: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv');
+    const karateOptions: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateOptions');
+    if (Boolean(vscode.workspace.getConfiguration('karateIDE.karateCli').get('addHookToClasspath'))) {
+        return '-H vscode.VSCodeHook ' + karateOptions;
+    }
+    return karateOptions.replace('${karateEnv}', karateEnv);
+}
+
+export async function getCommandLine(type: 'RUN' | 'DEBUG', feature?: string) {
+    const commandName = type === 'RUN' ? 'runCommandTemplate' : 'debugCommandTemplate';
+
+    const vscodePort = EventLogsServer.getPort();
+    const karateEnv: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv');
+    const classpath: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('classpath');
+    const karateOptions: string = getKarateOptions();
+    let debugCommandTemplate: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get(commandName);
+
+    return debugCommandTemplate
+        .replace('${vscodePort}', vscodePort)
+        .replace('${karateEnv}', karateEnv)
+        .replace('${classpath}', processClasspath(classpath))
+        .replace('${karateOptions}', karateOptions)
+        .replace('${feature}', feature);
+}
+
+export function processClasspath(classpath: string, jar: 'vscode.jar' | 'apimock.jar' = 'vscode.jar') {
     if (classpath.includes('${m2.repo}')) {
         const m2Repo: string =
             vscode.workspace.getConfiguration('karateIDE.karateCli').get('m2Repo') ||

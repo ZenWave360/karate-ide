@@ -9,7 +9,7 @@ import {
     ScenarioExecution,
     ScenarioOutlineExecution,
     SuiteExecution,
-} from '@/views/executions/KarateExecutionsTreeProvider';
+} from '@/views/KarateExecutionsTreeProvider';
 import * as karateTestManager from '@/execution/KarateTestsManager';
 import { karateOutputChannel } from './KarateOutputChannel';
 

@@ -1,11 +1,42 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import { debugKarateTest, runKarateTest } from '@/commands/RunDebug';
+import { Feature, parseFeature } from '@/feature';
 import { filesManager, KarateTestTreeEntry } from '@/fs/FilesManager';
-// import { getTestExecutionDetail, ITestExecutionDetail } from '@/helper';
-import { parseFeature, Feature } from '@/feature';
-import { Event } from './KarateExecutionProcess';
-import { getStartMockCommandLine, startMockServer } from './CommandUtils';
+import { getFileAndRootPath } from '@/helper';
+import * as path from 'path';
+import * as vscode from 'vscode';
+import { getCommandLine, getStartMockCommandLine } from './CommandUtils';
+import { Event, KarateExecutionProcess } from './KarateExecutionProcess';
+
+let lastExecution = null;
+let lastExecutionType: 'RUN' | 'DEBUG' = null;
+
+export function getDebugFile() {
+    return lastExecution;
+}
+
+export function launchTest(feature, line, type: 'RUN' | 'DEBUG') {
+    lastExecution = feature + (line > 1 ? `:${line}` : '');
+    lastExecutionType = type;
+    runHandler(type === 'DEBUG', { include: [testItems.get(lastExecution)] }, null);
+}
+
+export function relaunchTest(type: 'RUN' | 'DEBUG' = lastExecutionType) {
+    launchTest(lastExecution, 0, type);
+}
+
+export function debugKarateTest(feature, line) {
+    lastExecutionType = 'DEBUG';
+    lastExecution = feature + (line > 1 ? `:${line}` : '');
+    vscode.commands.executeCommand('workbench.action.debug.start');
+}
+
+export async function runKarateTest(feature, line) {
+    lastExecutionType = 'RUN';
+    lastExecution = feature + (line > 1 ? `:${line}` : '');
+    const fileAndRootPath = getFileAndRootPath(vscode.Uri.file(lastExecution));
+    const runCommand = await getCommandLine('RUN', fileAndRootPath.file);
+
+    KarateExecutionProcess.executeInTestServer(fileAndRootPath.root, runCommand);
+}
 
 const testsController = vscode.tests.createTestController('karate', 'Karate Tests');
 const mocksController = vscode.tests.createTestController('mocks', 'Karate Mocks');
@@ -122,6 +153,10 @@ function runHandler(shouldDebug: boolean, request: vscode.TestRunRequest, token:
     const testFeature = request.include.map(t => t.id).join(';');
     request.include.forEach(testItem => testRunner.enqueued(testItem));
     command(testFeature, null);
+
+    token?.onCancellationRequested(() => {
+        // TODO KarateExecutionProcess.cancel();
+    });
 }
 
 let mockRunner: vscode.TestRun | undefined;

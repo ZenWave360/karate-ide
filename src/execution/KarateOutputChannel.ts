@@ -1,10 +1,4 @@
-import {
-    Execution,
-    FeatureExecution,
-    ScenarioExecution,
-    ScenarioOutlineExecution,
-    SuiteExecution,
-} from '@/views/executions/KarateExecutionsTreeProvider';
+import { Execution, FeatureExecution, ScenarioExecution, ScenarioOutlineExecution, SuiteExecution } from '@/views/KarateExecutionsTreeProvider';
 import * as vscode from 'vscode';
 
 const karateChannel = vscode.window.createOutputChannel('Karate');

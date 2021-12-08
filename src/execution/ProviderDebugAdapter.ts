@@ -1,10 +1,8 @@
-import * as net from 'net';
-import { getFileAndRootPath } from '@/helper';
-import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { getCommandLine, getDebugFile, getKarateOptions } from '@/commands/RunDebug';
+import { getFileAndRootPath } from '@/helper';
+import { getCommandLine, getKarateOptions } from './CommandUtils';
 import { KarateExecutionProcess } from './KarateExecutionProcess';
-import { domainToASCII } from 'url';
+import { getDebugFile } from './KarateTestsManager';
 
 const DEFAULT_CONFIG = {
     type: 'karate-ide',
