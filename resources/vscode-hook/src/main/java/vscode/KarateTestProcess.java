@@ -1,12 +1,17 @@
 package vscode;
 
 import com.intuit.karate.Main;
+import com.intuit.karate.StringUtils;
+import com.intuit.karate.resource.ResourceUtils;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
@@ -18,8 +23,9 @@ import java.util.stream.Collectors;
 
 public class KarateTestProcess implements Runnable {
 
-    private static final Logger karateLog = LoggerFactory.getLogger("com.intuit.karate");
-    private static final Logger log = LoggerFactory.getLogger("com.intuit.karate");
+    private static final String LOGBACK_CONFIG = "logback.configurationFile";
+    private static Logger karateLog;
+    private static Logger log;
 
     private static boolean isStopped = false;
     private static boolean singleThread = false;
@@ -32,12 +38,21 @@ public class KarateTestProcess implements Runnable {
     }
 
     public static void main(String[] args) throws Exception {
-
-//        String commandLine = "-H vscode.VSCodeHook  'src\\test\\resources\\apis\\PetApi\\findPetsByStatus.feature:7'";
-//        Main karateMain = Main.parseKarateOptions(commandLine);
-//        karateMain.getPaths().replaceAll(path -> path.replaceAll("^'|'$|^\"|\"$", "")); // unquote
-//        log.info("Executing Karate Paths " + karateMain.getPaths());
-//        System.exit(0);
+        String logbackConfig = System.getProperty(LOGBACK_CONFIG);
+        if (StringUtils.isBlank(logbackConfig)) {
+            File logbackXml = ResourceUtils.classPathOrFile("logback.xml");
+            File logbackTest = ResourceUtils.classPathOrFile("logback-test.xml");
+            if (logbackTest != null) {
+                System.setProperty(LOGBACK_CONFIG, "logback-test.xml");
+            } else if (logbackXml != null) {
+                System.setProperty(LOGBACK_CONFIG, "logback.xml");
+            } else {
+                System.setProperty(LOGBACK_CONFIG, "logback-nofile.xml");
+            }
+        }
+        resetLoggerConfig();
+        karateLog = LoggerFactory.getLogger("com.intuit.karate");
+        log = LoggerFactory.getLogger("vscode.KarateTestProcess");
 
         int port = 0;
         boolean isDebug = false;
@@ -142,4 +157,17 @@ public class KarateTestProcess implements Runnable {
         }
     }
 
+    private static void resetLoggerConfig() {
+        ILoggerFactory factory = LoggerFactory.getILoggerFactory();
+        try {
+            Method reset = factory.getClass().getDeclaredMethod("reset");
+            reset.invoke(factory);
+            Class clazz = Class.forName("ch.qos.logback.classic.util.ContextInitializer");
+            Object temp = clazz.getDeclaredConstructors()[0].newInstance(factory);
+            Method autoConfig = clazz.getDeclaredMethod("autoConfig");
+            autoConfig.invoke(temp);
+        } catch (Exception e) {
+            // ignore
+        }
+    }
 }
