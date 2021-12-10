@@ -33,6 +33,10 @@ class FilesManager {
             if (e.affectsConfiguration('karateIDE.tests.globFilter') || e.affectsConfiguration('karateIDE.karateCli.classpath')) {
                 this.loadFiles();
             }
+
+            if (e.affectsConfiguration('karateIDE.tests.watchForFeatures')) {
+                this.watch();
+            }
         });
 
         this.loadFiles();
@@ -69,10 +73,14 @@ class FilesManager {
 
     private watch() {
         this.watcher && this.watcher.dispose();
-        this.watcher = vscode.workspace.createFileSystemWatcher(this.testsGlobFilter);
-        this.watcher.onDidCreate(uri => addFeature(uri));
-        this.watcher.onDidChange(uri => reloadFeature(uri));
-        this.watcher.onDidDelete(uri => removeFeature(uri));
+        const isWatchEnabled = Boolean(vscode.workspace.getConfiguration('karateIDE.tests').get('watchForFeatures'));
+        vscode.commands.executeCommand('setContext', 'KarateIDE:isWatchEnabled', isWatchEnabled);
+        if (isWatchEnabled) {
+            this.watcher = vscode.workspace.createFileSystemWatcher(this.testsGlobFilter);
+            this.watcher.onDidCreate(uri => addFeature(uri));
+            this.watcher.onDidChange(uri => reloadFeature(uri));
+            this.watcher.onDidDelete(uri => removeFeature(uri));
+        }
     }
 
     public getPeekDefinitions(document: vscode.TextDocument, token: string): vscode.Definition {

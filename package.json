@@ -115,10 +115,6 @@
                 "title": "KarateIDE Smart Paste"
             },
             {
-                "command": "karateIDE.karateCli.debugCommand",
-                "title": "Returns processed 'karateIDE.karateCli.debugCommandTemplate' config"
-            },
-            {
                 "command": "karateIDE.karateExecutionsTree.clearTree",
                 "title": "Clear",
                 "icon": {
@@ -261,6 +257,14 @@
             {
                 "command": "karateIDE.configureClasspath",
                 "title": "KarateIDE: Configure Classpath"
+            },
+            {
+                "command": "karateIDE.karateExecutionsTree.refresh",
+                "title": "Reload Karate Features",
+                "icon": {
+                    "light": "resources/vscode-icons/light/refresh.svg",
+                    "dark": "resources/vscode-icons/dark/refresh.svg"
+                }
             }
         ],
         "menus": {
@@ -279,6 +283,11 @@
                     "command": "karateIDE.karateExecutionsTree.mockServerOptions",
                     "when": "view == karate-executions",
                     "group": "navigation@3"
+                },
+                {
+                    "command": "karateIDE.karateExecutionsTree.refresh",
+                    "when": "view == karate-executions && !KarateIDE:isWatchEnabled",
+                    "group": "navigation@4"
                 },
                 {
                     "command": "karateIDE.karateNetworkLogs.showScenarios.false",
@@ -476,6 +485,12 @@
                     "type": "string",
                     "default": "**/src/test/**/*.feature",
                     "description": "Glob pattern to filter files in Karate Tests view.",
+                    "scope": "resource"
+                },
+                "karateIDE.tests.watchForFeatures": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Disable watching for workspace file changes if you experience problems with vscode 'rg' process eating up all your CPU.",
                     "scope": "resource"
                 }
             }
