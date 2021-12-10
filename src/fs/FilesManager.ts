@@ -1,9 +1,8 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
+import { addFeature, reloadFeature, reloadKarateTestsController, removeFeature } from '@/execution/KarateTestsManager';
 import * as fs from 'fs';
 import * as minimatch from 'minimatch';
-import { getFileAndRootPath } from '@/helper';
-import { addFeature, reloadFeature, reloadKarateTestsController, removeFeature } from '@/execution/KarateTestsManager';
+import * as path from 'path';
+import * as vscode from 'vscode';
 
 export class KarateTestTreeEntry {
     uri: vscode.Uri;
@@ -80,6 +79,8 @@ class FilesManager {
             this.watcher.onDidCreate(uri => addFeature(uri));
             this.watcher.onDidChange(uri => reloadFeature(uri));
             this.watcher.onDidDelete(uri => removeFeature(uri));
+        } else {
+            vscode.workspace.onDidChangeTextDocument(e => e.document.languageId === 'karate' && reloadFeature(e.document.uri));
         }
     }
 
@@ -112,8 +113,8 @@ class FilesManager {
             // console.log('searching for @tag', tag);
             const lines = fs.readFileSync(definitions[0]).toString().split('\n');
             for (let line = 0; line < lines.length; line++) {
-                if (new RegExp(`^\\s*(@\\w+)*\\s*(@${tag})\\s*(@\\w+)*\\s*$`, 'g').exec(lines[line])) {
-                    // console.log('peeking with @tag', definitions[0], line);
+                const lineText = lines[line].trim();
+                if (lineText.startsWith('@') && lineText.split(/\s+/).includes('@' + tag)) {
                     return new vscode.Location(vscode.Uri.file(definitions[0]), new vscode.Position(line, 0));
                 }
             }

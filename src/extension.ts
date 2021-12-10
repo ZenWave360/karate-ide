@@ -1,5 +1,4 @@
-import DefinitionProvider from '@/codelens/DefinitionProvider';
-import HoverRunDebugProvider from '@/codelens/HoverRunDebugProvider';
+import DefinitionProvider from '@/completion/DefinitionProvider';
 import { openFileInEditor } from '@/commands/DisplayCommands';
 import { LocalStorageService } from '@/commands/LocalStorageService';
 import { smartPaste } from '@/commands/SmartPaste';
@@ -11,7 +10,7 @@ import KarateNetworkLogsTreeProvider from '@/views/KarateNetworkLogsTreeProvider
 import StatusBarProvider from '@/views/StatusBarProvider';
 import { URL } from 'url';
 import * as vscode from 'vscode';
-import { CompletionItemProvider } from './codelens/CompletionProvider';
+import { CompletionItemProvider } from './completion/CompletionProvider';
 import { configureClasspath } from './commands/ConfigureClasspath';
 import { KarateExecutionProcess } from './execution/KarateExecutionProcess';
 import { karateOutputChannel } from './execution/KarateOutputChannel';
@@ -97,7 +96,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('karate-ide', debugAdapterProvider));
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('karate-ide', debugAdapterProvider));
-    context.subscriptions.push(vscode.languages.registerHoverProvider(karateFile, new HoverRunDebugProvider(context)));
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(karateFile, new DefinitionProvider()));
     context.subscriptions.push(vscode.languages.registerCompletionItemProvider(karateFile, new CompletionItemProvider(), ...["'", '"']));
 

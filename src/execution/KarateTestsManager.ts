@@ -151,7 +151,11 @@ function runHandler(shouldDebug: boolean, request: vscode.TestRunRequest, token:
     testRunner = testsController.createTestRun(request);
     const command = shouldDebug ? debugKarateTest : runKarateTest;
     const testFeature = request.include.map(t => t.id).join(';');
-    request.include.forEach(testItem => testRunner.enqueued(testItem));
+    const enqueue = testItem => {
+        testRunner.enqueued(testItem);
+        testItem.children.forEach(testItem => enqueue(testItem));
+    };
+    request.include.forEach(testItem => enqueue(testItem));
     command(testFeature, null);
 
     token?.onCancellationRequested(() => {

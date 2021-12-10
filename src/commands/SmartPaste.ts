@@ -116,7 +116,7 @@ const convertCurl = (raw: string) => {
     if (!body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
         body = "''";
     }
-    if (body.includes('\n')) {
+    if (body && body.includes('\n')) {
         body = '\n"""\n' + body + '\n"""\n';
     }
 
