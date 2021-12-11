@@ -4,26 +4,34 @@
 > The best user experience for KarateDSL, by far!!
 > But don't take our word and see by yourself.
 
-KarateIDE is a REST APIs client and a Testing UI for [KarateDSL](https://github.com/intuit/karate). You can explore your APIs, generate reusable Karate Tests, stateful Mocks and complex Business Flow tests from OpenAPI definitions and run and debug your test scripts and mocks from within VS Code.
+KarateIDE is:
+
+- A REST Client: that uses [KarateDSL](https://github.com/karatelabs/karate) tests to explore your API, import/export from cURL generate tests and mocks from OpenAPI.
+- OpenAPI Generator:
+  - Karate Tests: you can immediately run, with validation, inline payload examples and scenario outlines for each response code of your API.
+  - Stateful Mocks: that combine OpenAPI schemas validation and examples to load mock datasets.
+  - Mock Validation Tests: simpler tests to validate your mocks.
+  - Business Flow Tests: you can even generate tests that spans multiple API calls reusing generated karate tests
+
+KarateIDE is the best user experience for KarateDSL and contract testing... By far!!
+
+Checkout https://github.com/ZenWave360/karate-openapi-petstore.git for a complete example with auto-generated tests, mocks and business flow tests.
 
 <!-- TOC -->
 
 - [Karate IDE](#karate-ide)
-    - [What's New?](#whats-new)
+    - [Features](#features)
         - [Blazing Fast tests Startup](#blazing-fast-tests-startup)
+        - [Generate Karate Tests from OpenAPI definitions](#generate-karate-tests-from-openapi-definitions)
+        - [Generate Stateful Mocks and start the right from the editor](#generate-stateful-mocks-and-start-the-right-from-the-editor)
+        - [Generate Simpler Tests for Mock Validation](#generate-simpler-tests-for-mock-validation)
+        - [Generate Tests simulating Business Flows spawning multiple API calls](#generate-tests-simulating-business-flows-spawning-multiple-api-calls)
+        - [SmartPaste sample payload into new files in scenario outline examples](#smartpaste-sample-payload-into-new-files-in-scenario-outline-examples)
         - [Your data at your fingerprints](#your-data-at-your-fingerprints)
         - [Replacing old Tests Explorer with native *Test API* from VSCode](#replacing-old-tests-explorer-with-native-test-api-from-vscode)
-        - [Three new Code Generators for Stateful Mocks and Business Flows from OpenAPI definitions](#three-new-code-generators-for-stateful-mocks-and-business-flows-from-openapi-definitions)
-    - [Featuring](#featuring)
-    - [From Manual Testing to Contract Testing](#from-manual-testing-to-contract-testing)
-    - [Auto Configuration](#auto-configuration)
-    - [OpenAPI Generator for Quick Exploration and Manual Testing](#openapi-generator-for-quick-exploration-and-manual-testing)
-    - [SmartPaste as Outline Example files/rows](#smartpaste-as-outline-example-filesrows)
-    - [Generate Tests that simulates end-user Business Flows](#generate-tests-that-simulates-end-user-business-flows)
-    - [Generating Stateful Mocks from OpenAPI definitions](#generating-stateful-mocks-from-openapi-definitions)
-    - [Start your Mocks Server from Editor and Tests Explorer sidebar](#start-your-mocks-server-from-editor-and-tests-explorer-sidebar)
+        - [Auto Configuration](#auto-configuration)
         - [OpenAPI schemas and examples meets Karate Mocks](#openapi-schemas-and-examples-meets-karate-mocks)
-    - [Debug Karate Scripts](#debug-karate-scripts)
+        - [Debug Karate Scripts](#debug-karate-scripts)
     - [Configuration Options](#configuration-options)
         - [vscode/launch.json](#vscodelaunchjson)
         - [Karate classpath](#karate-classpath)
@@ -40,7 +48,7 @@ KarateIDE is a REST APIs client and a Testing UI for [KarateDSL](https://github.
 
 <!-- /TOC -->
 
-## What's New?
+## Features
 
 ### Blazing Fast tests Startup
 
@@ -48,20 +56,35 @@ Save a few seconds on each test startup time. With this new release we have intr
 
 When running Karate tests in batch a few seconds may not be a lot, but while you are developing, debugging and exploring your api saving a few seconds on each run makes a huge difference!!
 
-![Karate-IDE](resources/screenshots/Karate-IDE-blazing-fast.gif)
+![Karate-IDE](resources/screenshots/KarareIDE-Blazing-Fast.gif)
 
 If you are experiencing any trouble or want to rollback to standard process just set `karateIDE.karateCli.useKarateTestServer` setting to `false`.
 
+### Generate Karate Tests from OpenAPI definitions
+
+![Karate-IDE](resources/screenshots/KarateIDE-Generate-Tests.gif)
+
+### Generate Stateful Mocks and start the right from the editor
+
+![Karate-IDE](resources/screenshots/KarateIDE-Generate-Mocks.gif)
+
+### Generate Simpler Tests for Mock Validation
+
+![Karate-IDE](resources/screenshots/KarateIDE-Generate-Mocks.gif)
+
+### Generate Tests simulating Business Flows spawning multiple API calls
+
+![Karate-IDE](resources/screenshots/KarateIDE-Generate-BusinessFlowTest.gif)
+
+![alt](resources/screenshots/CRUD.png)
+
+### SmartPaste sample payload into new files in scenario outline examples
+
+![Karate-IDE](resources/screenshots/KarateIDE-Paste-NewRow.gif)
+
 ### Your data at your fingerprints
 
-We are now using VSCode OutputChannels instead of the *good old terminal* for output logs. This means that we have now a lot more of flexibility on how we show the logs you want to see.
-
-For instance when your test run one single http request we understand you are mostly interested on response payload, pretty printed.
-
-You can always use *Executions* and *Network Logs* tree views to select what logs you want to focus on:
-
-- Single Scenario, Scenario Outline, Feature or the whole Suite on *Executions* tree view. Also error message is shown as tooltip.
-- Or Request/Response payloads, headers... in *Network Logs* tree view
+KarateIDE offers you many options to explore your response data and output logs. Use Executions and Network Logs tree view to explore them.
 
 ![Karate-IDE](resources/screenshots/Karate-IDE-data-at-your-fingerprints.gif)
 
@@ -76,42 +99,7 @@ With the new Tests API, Visual Studio Code supports richer displays of outputs a
 
 ![Karate-IDE](resources/screenshots/API-Tests-Explorer.gif)
 
-### Three new Code Generators for Stateful Mocks and Business Flows from OpenAPI definitions
-
-KarateIDE features three new code generators from OpenAPI definitions. Now you can:
-
-    - [Generate Tests that simulates end-user Business Flows](#generate-tests-that-simulates-end-user-business-flows)
-    - [Generating Stateful Mocks from OpenAPI definitions](#generating-stateful-mocks-from-openapi-definitions)
-    - Simple Test features to fully Validate your Mocks
-
-## Featuring
-
-With this extension you can:
-
-- Generate code for tests, stateful mocks and complex business flow tests from OpenAPI definitions (openapi 3.0.0 as yml is currently supported)
-- Quickly explore your apis using generated Scenarios and Scenario Outlines.
-- Explore your logs as colorized `OutputChannel`s. Seamless switch from one channel per scenario or all output together (inspired by IntelliJ), search output with Ctrl+F is also supported...
-- Explore HTTP requests/responses as structured tree views. Switch between list view and nested scenario calls. Copy payload json or export as cURL.
-- `SmartPaste` (Ctrl+Shift+V) json payloads as new files/rows for ScenarioOutline Examples
-- `SmartPaste` (Ctrl+Shift+V) cURL as Karate tests.
-- Navigate features and supporting files with `Ctrl+<click>` supporting relative, classpath and even `@tags` on same (or different) feature file now works.
-- Autocompletion of classpath feature names. It honors your classpath settings (see [configuration options](#configuration-options)) when scanning/caching features files.
-- Leverage OpenAPI schemas to validate your mocks requests/responses.
-- Use your OpenAPI examples as mock data.
-- Switch `karate.env`, cnfigure `karate.options` and `mockServerOptions` directly from the UI.
-
-## From Manual Testing to Contract Testing
-
-- Explore, navigate and manual test your API with [OpenAPI generator](#openapi-generator-for-quick-exploration-and-manual-testing)
-- Quickly create Scenario Outline Examples using [SmartPaste](#smartpaste-as-outile-example-filesrows) feature
-- Validate your response payload using/customizing generated `matchers`
-- Generate [functional tests](#reusing-generated-scenarios-in-complex-flowsquence-tests) mimicking user flows reusing generated karate tests
-- [Generate Karate stateful Mocks](#generating-complete-mocks-from-openapi-definitions) from OpenAPI definitions
-- Start and test your [Mocks Server](#start-your-mocks-server-from-a-menu) from KarateIDE editor.
-- Test and debug your mocks right inside KarateIDE
-
-Checkout https://github.com/ZenWave360/karate-openapi-petstore.git for what autogenerated tests and mocks looks like.
-## Auto Configuration
+### Auto Configuration
 
 You can configure this extension `classpath setting` installing [KarateIDE Classpath Jar](https://marketplace.visualstudio.com/items?itemName=KarateIDE.karate-classpath-jar) and running `KarateIDE: Configure Classpath` from Command Palette (View > Command Palette or Ctrl+Shift+P). 
 
@@ -120,45 +108,6 @@ Karate IDE Classpath Jar will update automatically to latest Karate version.
 ![Karate-IDE](resources/screenshots/KarateJar-classpath-config.gif)
 
 For further configuration options see [Configuration Section](#configuration-options)
-
-## OpenAPI Generator for Quick Exploration and Manual Testing
-
-Use OpenAPI generator for easily bootstrap reusable karate features for quick exploration and manual testing:
-
-![Karate-IDE](resources/screenshots/KarateIDE-OpenAPI_Generator.gif)
-
-## SmartPaste as Outline Example files/rows
-
-When you are happy with your exploratory test payload and params you can paste as new files in Scenario Outlines rows using  Ctrl+V, you will be prompted for new json/yml file:
-
-![Karate-IDE](resources/screenshots/KarateIDE-SmartPaste_Outline_Examples.gif)
-
-## Generate Tests that simulates end-user Business Flows
-
-You can compose business flows calling those autogenerated karate tests. 
-KarateIDE can generate an almost finished skeleton for you: select in order two or more autogenerated feature files, right-click and choose “KarateIDE: Generate Flow Test”, you will be prompted for a destination file *et voilà*.
-
-You don't need to keep writing http based scenarios every time, but directly reference your API operations by the very name they are documented in your OpenAPI definition.
-
-![alt](resources/screenshots/CRUD.png)
-
-## Generating Stateful Mocks from OpenAPI definitions
-
-You can also generate stateful Mock features from openapi definitions, yes stateful mocks!!. Right click in a openapi yml file and select `KarateIDE: Generate Karate Mocks`.
-
-## Start your Mocks Server from Editor and Tests Explorer sidebar
-
-Configure `"karateIDE.karateCli.mockServerOptions"` in `.vscode/settings.json`: '-p' for port (use 0 for a random port and '${port}' to be prompted each time), '-P' for prefix or contextPath.
-
-```json
-{
-    "karateIDE.karateCli.mockServerOptions": "--watch=true -p 3000 -P api/v3",
-}
-```
-
-KarateIDE mock server now integrates with VSCode Tests API so you can start your mocks right from the editor or the Tests Explorer side activity bar.
-
-![KarateIDE PetMock.feature](resources/screenshots/pet-mock.png)
 
 ### OpenAPI schemas and examples meets Karate Mocks
 
@@ -170,7 +119,7 @@ You can now:
 
 Navigate to https://github.com/ivangsa/apimock for more details about this integration.
 
-## Debug Karate Scripts
+### Debug Karate Scripts
 
 You can also Debug Karate scripts inside KarateIDE. Karate Debug Server is **provided by karate-core** and we are also contributors to.
 
