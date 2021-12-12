@@ -41,7 +41,8 @@ Scenario Outline: Test <%= operation.operationId %> for <status> status code
 
 @operationId=<%= operation.operationId %>
 Scenario: explore <%= operation.operationId %> inline
-	You may use this test for quick API exploratorial purposes.
+	You can use this test to quickly explore your API.
+	You can then copy this payload and paste it with Ctrl+Shift+V as an Example row above.
 <%_ if (operation.method === 'get' || operation.method === 'delete') { _%>
 * def statusCode = <%= payload.statusCode %>
 * def params = <%- JSON.stringify(payload.params) %>

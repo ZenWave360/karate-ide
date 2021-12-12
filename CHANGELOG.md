@@ -2,7 +2,13 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
-# 1.0.x
+## 1.0.1
+
+- [X] Updates README.md with new screenshots and descriptions
+- [X] Adds `karateIDE.tests.watchForFeatures` to disable watching for workspace changes and circunvent vscode `rg` process eating up all CPU in some cases.
+- [X] Fixes ApiMock to stop sending responses as pretty printed JSON
+
+## 1.0.0
 
 - [X] Http Logs
   - [X] Click on http logs shows request/response/payloads pretty-printed in Karate OutputChannels
@@ -31,11 +37,11 @@ All notable changes to the "karate-ide" extension will be documented in this fil
   - [x] Generators for openapi examples
 - [ ] OpenAPI generators
   - [X] Business flow test generator
-  - [ ] Stateful mock generator
+  - [X] Stateful mock generator
   - [X] Test for mock validation (simple)
 - [ ] Linkedin article: "from zero to contract testing for rest apis"
 
-# 0.9.x
+## 0.9.x
 
 - [X] SmartPaste
   - [X] "Paste json as new file" on Outline Examples when pasted over a row with filename and insert row
@@ -58,7 +64,7 @@ All notable changes to the "karate-ide" extension will be documented in this fil
 - [X] StatusBar
 - [X] Dynamic title bar in Executions/Tests View
 
-# 0.8.x
+## 0.8.x
 
 - [X] Execution Process: 
   - [x] Replace Shell/Tasks and use child_process.spawn and OutpuChannel
@@ -80,7 +86,7 @@ All notable changes to the "karate-ide" extension will be documented in this fil
 - [ ] Reusable Debug Session
 - [X] Configure classpath command
 - [x] SmartPaste fix and only on karate files
-# 0.5.0 
+## 0.5.0 
 
 - [x] Karate.env switcher
 - [x] Focus/Filter features/scenarios and test-data files using glob regexps and karate tags
