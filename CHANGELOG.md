@@ -2,6 +2,10 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+## 1.0.2
+
+- improves Karate classpath configuration error messages
+- Adds LinkedIn white paper to README.md
 ## 1.0.1
 
 - [X] Updates README.md with new screenshots and descriptions
