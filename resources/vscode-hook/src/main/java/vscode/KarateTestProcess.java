@@ -1,7 +1,6 @@
 package vscode;
 
 import com.intuit.karate.Main;
-import com.intuit.karate.StringUtils;
 import com.intuit.karate.resource.ResourceUtils;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
@@ -38,8 +37,9 @@ public class KarateTestProcess implements Runnable {
     }
 
     public static void main(String[] args) throws Exception {
+        String checkIfKarateMainInClasspath = Main.class.getName();
         String logbackConfig = System.getProperty(LOGBACK_CONFIG);
-        if (StringUtils.isBlank(logbackConfig)) {
+        if (logbackConfig == null || logbackConfig.trim().length() == 0) {
             File logbackXml = ResourceUtils.classPathOrFile("logback.xml");
             File logbackTest = ResourceUtils.classPathOrFile("logback-test.xml");
             if (logbackTest != null) {

@@ -183,15 +183,18 @@ export class KarateExecutionProcess {
             child.stderr.setEncoding('utf8');
             child.stderr.on('data', data => {
                 karateOutputChannel.append(data);
-                if (data.includes('java.lang.ClassNotFoundException')) {
+                if (data.includes('java.lang.ClassNotFoundException: com.intuit.karate.Main')) {
+                    this.isExecuting = false;
+                    karateTestManager.processEvent({ event: 'testSuiteFinished' } as any);
+                    testServerProcess.cwd = testServerProcess.port = testServerProcess.process = null;
+
                     const message = `
-        NOTE: If you're seeing this message your "karateIDE.karateCli.classpath" setting is probably misconfigured.
-        Please refer to the documentation for more information https://github.com/ivangsa/karate-ide#karate-classpath
-        And run the "Configure Karate-IDE karate classpath" command for assistance (View > Command Palette or Ctrl+Shift+P).
-        You can also consider installing "KarateIDE Classpath Jar" extension so you don't need to download karate.jar
-        and stay up to date with the latest and greatest Karate release (coming soon).
+NOTE: If you're seeing this message your "karateIDE.karateCli.classpath" setting is probably misconfigured.
+Please, refer to https://github.com/ZenWave360/karate-ide#karate-classpath
+Consider installing https://marketplace.visualstudio.com/items?itemName=KarateIDE.karate-classpath-jar
+And run the "KarateIDE: Configure Classpath" command for assistance (View > Command Palette or Ctrl+Shift+P).
                     `;
-                    karateOutputChannel.append(message);
+                    setTimeout(() => karateOutputChannel.append(message), 100);
                 }
             });
 
