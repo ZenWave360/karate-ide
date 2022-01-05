@@ -14,7 +14,11 @@ KarateIDE is:
 
 KarateIDE is by far the best user experience for KarateDSL and Contract Testing!!
 
-Checkout https://github.com/ZenWave360/karate-openapi-petstore.git for a complete example with auto-generated tests, mocks, business flow tests and JUnit tests.
+Getting Started:
+
+- Checkout [From Manual to Contract Testing with KarateDSL and KarateIDE](https://www.linkedin.com/pulse/from-manual-contract-testing-karatedsl-karateide-garc%25C3%25ADa-sainz-aja/) white paper in LinkedIn
+- https://github.com/ZenWave360/karate-openapi-petstore.git companion project for a complete example with auto-generated tests, mocks, business flow tests and JUnit tests.
+- KarateIDE [Classpath Configuration](#karate-classpath) section, for configuring this vscode extension.
 
 <!-- TOC -->
 
