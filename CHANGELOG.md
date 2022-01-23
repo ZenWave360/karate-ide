@@ -2,6 +2,10 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+## 1.0.4
+
+-[X] Adds SmartPaste to editor/context
+
 ## 1.0.3
 
 -   [x] Fixes vscode RuntimeHook for Java 17

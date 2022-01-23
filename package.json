@@ -112,7 +112,7 @@
         "commands": [
             {
                 "command": "karateIDE.paste",
-                "title": "KarateIDE Smart Paste"
+                "title": "KarateIDE: Smart Paste"
             },
             {
                 "command": "karateIDE.karateExecutionsTree.clearTree",
@@ -396,6 +396,13 @@
                     "when": "resourceLangId == yml",
                     "command": "karateIDE.generators.openapi.mocks-validation",
                     "group": "karate@3"
+                }
+            ],
+            "editor/context": [
+                {
+                    "when": "resourceLangId == karate",
+                    "command": "karateIDE.paste",
+                    "group": "9_cutcopypaste@5"
                 }
             ]
         },
