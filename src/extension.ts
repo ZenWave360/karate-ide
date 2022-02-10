@@ -19,6 +19,7 @@ import { filesManager } from './fs/FilesManager';
 import { generateBusinessFlowTest } from './generators/openapi/OpenAPIBusinessFlowGenerator';
 import { generateKarateMocksFromOpenAPI, generateKarateMockValidation } from './generators/openapi/OpenAPIMocksGenerator';
 import { NetworkLog, NetworkRequestResponseLog, PayloadProperty } from './server/KarateEventLogsModels';
+import { generateKarateProject } from './generators/karate-project/KarateProjectGenerator';
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(...disposables);
@@ -53,6 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
     registerCommand('karateIDE.generators.openapi.mocks-validation', generateKarateMockValidation);
     registerCommand('karateIDE.generators.openapi.businessFlowTest', generateBusinessFlowTest);
     registerCommand('karateIDE.configureClasspath', configureClasspath);
+    registerCommand('karateIDE.generateKarateProject', generateKarateProject);
     registerCommand('karateIDE.karateNetworkLogs.copyAsPayload', (item: vscode.TreeItem | any) => {
         if (item.value) {
             vscode.env.clipboard.writeText(JSON.stringify(item.value, null, 2));

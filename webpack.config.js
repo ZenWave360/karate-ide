@@ -3,6 +3,7 @@
 'use strict';
 
 const path = require('path');
+const webpack = require('webpack');
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -39,7 +40,9 @@ const config = {
                 ],
             },
             { test: /\.ejs$/, type: 'asset/resource' },
+            { test: /\.zip$/, type: 'asset/resource' },
         ],
     },
+    plugins: [new webpack.IgnorePlugin({ resourceRegExp: /original-fs/, contextRegExp: /adm-zip/ })],
 };
 module.exports = config;
