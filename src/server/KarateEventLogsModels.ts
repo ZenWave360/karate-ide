@@ -122,7 +122,7 @@ export class NetworkRequestResponseLog extends TreeEntry {
             treeItem.command = {
                 command: 'karateIDE.showNetworkRequestResponseLog',
                 title: '',
-                arguments: [this.response.payload.json, `Response ${this.method} ${this.url} (${this.status})`],
+                arguments: [this.response.payload.json || this.response.payload.text, `Response ${this.method} ${this.url} (${this.status})`],
             };
         }
         return treeItem;
@@ -150,7 +150,7 @@ export class NetworkLog implements ITreeEntry {
             treeItem.command = {
                 command: 'karateIDE.showNetworkRequestResponseLog',
                 title: '',
-                arguments: [this.payload.json, this.description()],
+                arguments: [this.payload.json || this.payload.text, this.description()],
             };
         }
         return treeItem;
@@ -196,6 +196,7 @@ export class Header implements ITreeEntry {
 export class Payload implements ITreeEntry {
     parent: NetworkLog;
     json: any;
+    text: string;
     properties: PayloadProperty[];
     constructor(public payload: string, private label = 'Payload') {
         try {
@@ -204,7 +205,7 @@ export class Payload implements ITreeEntry {
                 this.properties = Object.entries(this.json).map(([key, value]) => new PayloadProperty(key, value, this));
             }
         } catch (e) {
-            // console.error('error parsing payload "' + payload + '"', e.message);
+            this.text = payload;
         }
     }
 
@@ -220,7 +221,7 @@ export class Payload implements ITreeEntry {
         treeItem.command = {
             command: 'karateIDE.showNetworkRequestResponseLog',
             title: '',
-            arguments: [this.json, `Payload for ${this.parent.description()}`],
+            arguments: [this.json || this.text, `Payload for ${this.parent.description()}`],
         };
         return treeItem;
     }
