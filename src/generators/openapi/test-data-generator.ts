@@ -1,3 +1,4 @@
+import * as OpenAPISampler from 'openapi-sampler';
 export { buildKarateTestDataObject, buildExampleFromSchema, buildKarateMockDataObject };
 
 /**
@@ -64,27 +65,7 @@ export function buildParametersSample(parameters) {
  * @param {*} options
  */
 function buildExampleFromSchema(schema, options) {
-    options.visited = options.visited || [];
-    if (options.visited.includes(schema)) {
-        return null;
-    }
-    options.visited.push(schema);
-    if (schema.allOf) {
-        return schema.allOf.reduce((allOfSchema, e) => Object.assign(allOfSchema, buildExampleFromSchema(e, options)), {});
-    }
-    if (schema.type === 'array') {
-        return [buildExampleFromSchema(schema.items, options)];
-    }
-    if (schema.type === 'object') {
-        const object = {};
-        Object.entries(schema.properties || {}).forEach(([key, value]) => {
-            if (!schema.required || schema.required.includes(key) || options.optional === true) {
-                object[key] = buildExampleFromSchema(value, { ...options, name: key });
-            }
-        });
-        return object;
-    }
-    return buildExampleForProperty(schema, options.name);
+    return OpenAPISampler.sample(schema, options);
 }
 
 function buildExampleForProperty(schema, name) {
