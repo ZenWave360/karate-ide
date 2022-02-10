@@ -9,7 +9,7 @@ export function openFileInEditor(uri, line = 1) {
         line = +_line - 1;
         uri = vscode.Uri.file(path.join(uri.eventStart.cwd, feature));
     }
-    var position = new vscode.Position(line, 0);
+    const position = new vscode.Position(line, 0);
     vscode.window.showTextDocument(uri).then(editor => {
         editor.selections = [new vscode.Selection(position, position)];
         editor.revealRange(new vscode.Range(position, position));
