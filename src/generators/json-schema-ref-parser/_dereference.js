@@ -6,49 +6,49 @@ const url = require('@apidevtools/json-schema-ref-parser/lib/util/url');
 const normalizeArgs = require('@apidevtools/json-schema-ref-parser/lib/normalize-args');
 const { JSONParserErrorGroup } = require('@apidevtools/json-schema-ref-parser/lib/util/errors');
 const { ono } = require('ono');
-const maybe = require("call-me-maybe");
+const maybe = require('call-me-maybe');
 
 module.exports = dereference;
 
 // @ivangsa
-async function dereference (path, schema, options, callback) {
-  let me = this;
-  let args = normalizeArgs(arguments);
+async function dereference(path, schema, options, callback) {
+    let me = this;
+    let args = normalizeArgs(arguments);
 
-  try {
-    await this.resolve(args.path, args.schema, args.options);
-    _dereference(me, args.options);
-    finalize(me);
-    return maybe(args.callback, Promise.resolve(me.schema));
-  }
-  catch (err) {
-    return maybe(args.callback, Promise.reject(err));
-  }
-};
+    try {
+        await this.resolve(args.path, args.schema, args.options);
+        _dereference(me, args.options);
+        finalize(me);
+        return maybe(args.callback, Promise.resolve(me.schema));
+    } catch (err) {
+        return maybe(args.callback, Promise.reject(err));
+    }
+}
 
 // @ivangsa
-function finalize (parser) {
-  const errors = JSONParserErrorGroup.getParserErrors(parser);
-  if (errors.length > 0) {
-    throw new JSONParserErrorGroup(parser);
-  }
+function finalize(parser) {
+    const errors = JSONParserErrorGroup.getParserErrors(parser);
+    if (errors.length > 0) {
+        throw new JSONParserErrorGroup(parser);
+    }
 }
 
 // @ivangsa
 function createDereferencedValue($ref, value, options) {
-    if (options.use$dereferencedObject) { // TODO decide a name for this option
+    if (options.use$dereferencedObject) {
+        // TODO decide a name for this option
         return {
             $dereferenced: {
                 ref: $ref,
-                value: Object.assign({}, cache.value, extraKeys)
-            }
+                value: Object.assign({}, value),
+            },
         };
     } else {
         Object.defineProperty(value, 'original$ref', {
             value: $ref,
             writable: true, //If its false can't modify value using equal symbol
             enumerable: true, // If its false can't able to get value in Object.keys and for in loop
-            configurable: false //if its false, can't able to modify value using defineproperty while writable in false
+            configurable: false, //if its false, can't able to modify value using defineproperty while writable in false
         });
         return value;
     }
@@ -167,7 +167,7 @@ function dereference$Ref($ref, path, pathFromRoot, parents, processedObjects, de
             return {
                 circular: cache.circular,
                 // @ivangsa
-                value: createDereferencedValue($ref.$ref, Object.assign({}, cache.value, extraKeys), options)
+                value: createDereferencedValue($ref.$ref, Object.assign({}, cache.value, extraKeys), options),
                 //  {
                 //     $dereferenced: {
                 //         ref: $ref.$ref,
