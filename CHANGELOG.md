@@ -4,7 +4,11 @@ All notable changes to the "karate-ide" extension will be documented in this fil
 
 ## 1.0.4
 
--[X] Adds SmartPaste to editor/context
+-   [x] Adds `KarateIDE: Generate Karate Project` command.
+-   [x] Adds SmartPaste to editor/context
+-   [x] Use 'openapi-sampler' for generating example payloads
+-   [x] Improves how text responses are shown in Karate Output Channel
+-   [x] Document `Kill Karate Process` and classpath cache
 
 ## 1.0.3
 
