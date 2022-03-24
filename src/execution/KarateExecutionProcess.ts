@@ -78,7 +78,7 @@ export class KarateExecutionProcess {
         this.isExecuting = true;
         executionsTreeProvider.clear();
         karateOutputChannel.clear();
-        karateOutputChannel.append(`Executing: ${command}\n\n`, true);
+        karateOutputChannel.appendAll(`cwd: ${testServer.cwd}\nExecuting: ${command}\n\n`, true);
         vscode.commands.executeCommand('karate-executions.focus');
         vscode.commands.executeCommand('karate-network-logs.focus');
 

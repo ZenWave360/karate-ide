@@ -40,12 +40,15 @@ export class KarateOutputChannel {
         }
     }
 
-    appendAll(text: string) {
+    appendAll(text: string, show: boolean = true, preserveFocus: boolean = true) {
         this.suiteLogs.append(text);
         this.featureLog && this.featureLog.append(text);
         this.scenarioLog && this.scenarioLog.append(text);
         this.scenarioOutlineLog && this.scenarioOutlineLog.append(text);
         karateChannel.append(text);
+        if (show) {
+            karateChannel.show(preserveFocus);
+        }
     }
 
     showOutputLogs = (execution: Execution | string, preserveFocus: boolean = true) => {

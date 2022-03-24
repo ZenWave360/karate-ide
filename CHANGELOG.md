@@ -15,6 +15,7 @@ All notable changes to the "karate-ide" extension will be documented in this fil
 -   [ ] Calculate classpath root when generating "Business Flow Tests"
 -   [x] Narrow down "activationEvents"
 -   [x] Upgrade generated karate-project templates
+-   [x] Show `cwd` on Execution logs and keep it when switching log views
 
 ## 1.0.4
 
