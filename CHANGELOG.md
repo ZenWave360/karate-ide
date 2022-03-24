@@ -10,11 +10,10 @@ All notable changes to the "karate-ide" extension will be documented in this fil
 -   [x] On config change `Kill Karate Process`
 -   [ ] Network Logs: adds section in tree for query params
 -   [ ] Network Logs: improves labels and tooltips
--   [ ] Fix target classpath folder for karate-auth.js
+-   [x] Fix target classpath folder for karate-auth.js
 -   [ ] Autogenerate matchResponse = "true" by default only for 2xx status codes
 -   [ ] Calculate classpath root when generating "Business Flow Tests"
--   [ ] Narrow down "activationEvents"
--   [x] Choose wise where to put the auth file
+-   [x] Narrow down "activationEvents"
 
 ## 1.0.4
 
