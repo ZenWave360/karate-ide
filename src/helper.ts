@@ -34,14 +34,14 @@ function getFileAndRootPath(uri): { file: string; root: string } {
     let filePathArray = filePath.split(path.sep);
 
     if (rootModuleMarkerFile && rootModuleMarkerFile.trim().length > 0) {
-        while (filePathArray.pop()) {
+        do {
             let runFileTestPath = filePathArray.join(path.sep);
             if (fs.existsSync(path.join(rootPath, runFileTestPath, rootModuleMarkerFile))) {
                 rootPath = path.join(rootPath, runFileTestPath);
                 filePath = uri.fsPath.replace(rootPath + path.sep, '');
                 break;
             }
-        }
+        } while (filePathArray.pop());
     }
 
     return { root: rootPath, file: filePath };

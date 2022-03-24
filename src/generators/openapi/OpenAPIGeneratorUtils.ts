@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as pluralize from 'pluralize';
+import { getFileAndRootPath } from '@/helper';
 
 export function normalizeTag(tagName) {
     return (tagName || 'Default').split(' ').map(_.upperFirst).join('');
@@ -155,11 +156,12 @@ export function render(template, target: vscode.Uri, model): Promise<void> {
     });
 }
 
-export async function findResourcesFolder(openapi: vscode.Uri) {
-    const folder = await vscode.workspace.getWorkspaceFolder(openapi);
-    const resourcesFolder = vscode.Uri.joinPath(folder.uri, 'src/test/resources');
+export async function findResourcesFolder(file: vscode.Uri) {
+    const rootPath = getFileAndRootPath(file).root;
+    const folder = vscode.Uri.file(rootPath);
+    const resourcesFolder = vscode.Uri.joinPath(folder, 'src/test/resources');
     if (fs.existsSync(resourcesFolder.fsPath)) {
         return resourcesFolder;
     }
-    return folder.uri;
+    return folder;
 }

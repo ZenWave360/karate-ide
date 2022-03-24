@@ -103,8 +103,8 @@ async function generateKarateTest(file, api, apisFolder: vscode.Uri, operations:
         render(testTemplateFile, vscode.Uri.joinPath(apisFolder, model.serviceName, `${model.operationId}.feature`), model);
     });
 
-    // TODO choose wise where to put the auth file
-    const resourcesRoot = await findResourcesFolder(file);
+    // choose where to put the auth file
+    const resourcesRoot = await findResourcesFolder(apisFolder);
     const karateAuthFile = vscode.Uri.joinPath(resourcesRoot, 'karate-auth.js');
     if (!fs.existsSync(karateAuthFile.fsPath)) {
         fs.copyFileSync(path.join(__dirname, karateAuthTemplateFile), karateAuthFile.fsPath);
@@ -112,4 +112,3 @@ async function generateKarateTest(file, api, apisFolder: vscode.Uri, operations:
 
     vscode.window.showInformationMessage(`Karate Test features generated in: ${vscode.workspace.asRelativePath(apisFolder, false)}`);
 }
-
