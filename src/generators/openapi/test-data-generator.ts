@@ -17,6 +17,7 @@ function buildKarateTestDataObject(operation: any, statusCode: string | number) 
 
     const body = operation.requestBody ? buildExampleFromSchema(requestSchema(), { optional: true }) : null;
     const responseMatch = hasResponseContent ? buildKarateSchema(responseSchema(), {}) : null;
+    const matchResponse = (statusCode + '').startsWith('2');
 
     // schemas for nested arrays
     const responseMatchesEach = Object.entries(hasResponseContent ? responseSchema().properties || {} : {}).reduce((each, [property, schema]) => {
@@ -31,7 +32,7 @@ function buildKarateTestDataObject(operation: any, statusCode: string | number) 
         headers: {},
         params,
         body,
-        matchResponse: true,
+        matchResponse,
         responseMatch,
         responseMatchesEach: responseMatchesEach,
     };
