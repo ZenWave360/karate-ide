@@ -127,6 +127,9 @@ export function activate(context: vscode.ExtensionContext) {
         if (e.affectsConfiguration('karateIDE.tests.globFilter')) {
             filesManager.loadFiles();
         }
+        if (e.affectsConfiguration('karateIDE')) {
+            KarateExecutionProcess.stopTestProcesses();
+        }
     });
 }
 
