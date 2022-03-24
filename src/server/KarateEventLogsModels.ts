@@ -1,4 +1,5 @@
 import Icons from '@/Icons';
+import { URL } from 'url';
 import * as vscode from 'vscode';
 
 export class LoggingEventVO {
@@ -131,13 +132,25 @@ export class NetworkRequestResponseLog extends TreeEntry {
 
 export class NetworkLog implements ITreeEntry {
     public parent: NetworkRequestResponseLog;
-    constructor(private label: 'Request' | 'Response', public headers: Headers, public payload: Payload | null) {
+    constructor(public readonly label: 'Request' | 'Response', public headers: Headers, public payload: Payload | null) {
         headers.parent = this;
         payload.parent = this;
     }
 
     description() {
         return `${this.label} ${this.parent.method} ${this.parent.url} (${this.parent.status})`;
+    }
+
+    getQueryParams() {
+        const url = new URL(this.parent.url);
+        const queryParamsMap = Array.from(url.searchParams?.entries()).reduce((map, [key, value]) => {
+            map[key] = value;
+            return map;
+        }, {});
+        if (Object.keys(queryParamsMap).length === 0) {
+            return null;
+        }
+        return new QueryParams(queryParamsMap, this);
     }
 
     asTreeItem() {
@@ -153,6 +166,41 @@ export class NetworkLog implements ITreeEntry {
                 arguments: [this.payload.json || this.payload.text, this.description()],
             };
         }
+        return treeItem;
+    }
+}
+
+export class QueryParams implements ITreeEntry {
+    params: QueryParam[] = [];
+    constructor(params: { [key: string]: string }, public parent: NetworkLog) {
+        this.params = Object.entries(params).map(([key, value]) => new QueryParam(key, value));
+    }
+    description() {
+        return this.params.map(h => `${h.key}: ${h.value}`).join('\n');
+    }
+    asTreeItem() {
+        const treeItem = new vscode.TreeItem(`Query Params:`, vscode.TreeItemCollapsibleState.Collapsed);
+        treeItem.contextValue = 'NetworkLogHeaders';
+        treeItem.command = {
+            command: 'karateIDE.showNetworkRequestResponseLog',
+            title: '',
+            arguments: [this.description(), `Query params for ${this.parent.description()}`],
+        };
+        return treeItem;
+    }
+}
+
+export class QueryParam implements ITreeEntry {
+    next: null;
+    constructor(public key: string, public value: string) {}
+    asTreeItem() {
+        const treeItem = new vscode.TreeItem(`${this.key}: ${this.value}`);
+        treeItem.contextValue = 'NetworkLogQueryParam';
+        treeItem.command = {
+            command: 'karateIDE.showNetworkRequestResponseLog',
+            title: '',
+            arguments: [`${this.key}: ${this.value}`, 'param'],
+        };
         return treeItem;
     }
 }

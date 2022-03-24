@@ -2,13 +2,16 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
-## 1.0.5 (unreleased)
+## 1.1.x (unreleased)
+
+-   [ ] Adds `Karate Process` summary and `Kill Karate Process` button to status bar tooltip
+
+## 1.1.0
 
 -   [x] Upgrades [ZenWave ApiMock](https://github.com/ZenWave360/apimock) to version 0.0.4
 -   [x] Adds configuration to override apimock.jar location
--   [ ] Adds `Karate Process` summary and `Kill Karate Process` button to status bar tooltip
 -   [x] On config change `Kill Karate Process`
--   [ ] Network Logs: adds section in tree for query params
+-   [x] Network Logs: adds section in tree for query params
 -   [x] Network Logs: improves labels and tooltips
 -   [x] Fix target classpath folder for karate-auth.js
 -   [x] Autogenerate matchResponse = "true" by default only for 2xx status codes

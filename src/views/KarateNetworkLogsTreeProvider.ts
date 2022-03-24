@@ -8,6 +8,8 @@ import {
     NetworkRequestResponseLog,
     Payload,
     PayloadProperty,
+    QueryParam,
+    QueryParams,
     ThreadTreeEntry,
     TreeEntry,
 } from '@/server/KarateEventLogsModels';
@@ -97,9 +99,18 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
         } else if (element instanceof NetworkRequestResponseLog) {
             return [element.request, element.response];
         } else if (element instanceof NetworkLog) {
+            if (element.label === 'Request') {
+                const queryParams = element.getQueryParams();
+                if (queryParams) {
+                    return [queryParams, element.headers, element.payload];
+                }
+                return [element.headers, element.payload];
+            }
             return [element.headers, element.payload];
         } else if (element instanceof Headers) {
             return element.headers;
+        } else if (element instanceof QueryParams) {
+            return element.params;
         } else if (element instanceof Payload || element instanceof PayloadProperty) {
             return element.properties;
         } else if (element instanceof TreeEntry) {

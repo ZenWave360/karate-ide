@@ -90,7 +90,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
     registerCommand('karateIDE.showNetworkRequestResponseLog', (payload, description) => {
-        payload = payload && typeof payload === 'object' ? JSON.stringify(payload, null, 2) : payload + '';
+        payload = !payload ? '' : typeof payload === 'object' ? JSON.stringify(payload, null, 2) : payload + '';
         karateOutputChannel.showOutputLogs(`// ${description || ''}\n${payload || ''}`);
     });
 
