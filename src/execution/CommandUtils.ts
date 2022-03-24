@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs';
 import { getFileAndRootPath } from '@/helper';
 import * as vscode from 'vscode';
 import EventLogsServer from '@/server/EventLogsServer';
@@ -31,7 +32,7 @@ export async function getCommandLine(type: 'RUN' | 'DEBUG', feature?: string) {
         .replace('${feature}', feature);
 }
 
-export function processClasspath(classpath: string, jar: 'vscode.jar' | 'apimock.jar' = 'vscode.jar') {
+export function processClasspath(classpath: string, jar: 'vscode.jar' | 'zenwave-apimock.jar' | string = 'vscode.jar') {
     if (classpath.includes('${m2.repo}')) {
         const m2Repo: string =
             vscode.workspace.getConfiguration('karateIDE.karateCli').get('m2Repo') ||
@@ -52,8 +53,14 @@ export function processClasspath(classpath: string, jar: 'vscode.jar' | 'apimock
             classpath = classpath.replace(/\${ext\:karate-ide\.jar}/g, karateJar);
         }
     }
-    if (Boolean(vscode.workspace.getConfiguration('karateIDE.karateCli').get('addHookToClasspath'))) {
+    if (jar === 'vscode.jar') {
+        if (Boolean(vscode.workspace.getConfiguration('karateIDE.karateCli').get('addHookToClasspath'))) {
+            return path.join(__dirname, `../resources/${jar}`) + path.delimiter + classpath;
+        }
+    } else if (jar === 'zenwave-apimock.jar') {
         return path.join(__dirname, `../resources/${jar}`) + path.delimiter + classpath;
+    } else {
+        return jar + path.delimiter + classpath;
     }
     return classpath;
 }
@@ -67,8 +74,11 @@ export async function getStartMockCommandLine(openapi: string, feature: string) 
         debugCommandTemplate = debugCommandTemplate.replace('${port}', await vscode.window.showInputBox({ prompt: 'Mock Server Port', value: '0' }));
     }
 
+    const apimockJarLocation: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('zenWaveApiMockJarLocation');
+    const apimockJar = apimockJarLocation || 'zenwave-apimock.jar';
+
     return debugCommandTemplate
-        .replace('${classpath}', processClasspath(classpath, 'apimock.jar'))
+        .replace('${classpath}', processClasspath(classpath, apimockJar))
         .replace('${mockServerOptions}', mockServerOptions)
         .replace('${openapi}', openapi || '')
         .replace('${feature}', feature || '');

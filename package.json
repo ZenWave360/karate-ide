@@ -486,6 +486,12 @@
                     "default": "**/src/test/**/*.feature",
                     "description": "Glob pattern to filter files in Karate Tests view.",
                     "scope": "resource"
+                },
+                "karateIDE.karateCli.zenWaveApiMockJarLocation": {
+                    "type": "string",
+                    "default": "zenwave-apimock.jar",
+                    "description": "KarateIDE ships with ZenWave ApiMock.jar. You can override this value to point to your own jar file.",
+                    "scope": "resource"
                 }
             }
         },
