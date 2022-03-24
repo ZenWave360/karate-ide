@@ -24,7 +24,7 @@ export async function generateKarateMocksFromOpenAPI(file: vscode.Uri) {
 
 async function generateKarateStatefulMock(file: vscode.Uri, api, targetFile: vscode.Uri, operations: any[]) {
     const openapiFile = vscode.workspace.asRelativePath(file).replace(/\\/g, '/');
-    const model = { testName: 'Mock Validator Test', openapiFile, operations: [], varNames: [], pathVarMap: {} };
+    const model = { testName: 'Karate Stateful Mock', openapiFile, operations: [], varNames: [], pathVarMap: {} };
     model.operations = operations.map(operation => prepareData(operation));
     model.varNames = _.uniq(operations.reduce((dtoNames, operation) => [...dtoNames, operation.responseDtoNamePlural], []).filter(dto => dto));
     model.operations.forEach(operation => {
@@ -58,7 +58,7 @@ export async function generateKarateMockValidation(file: vscode.Uri) {
 
 async function generateKarateMockValidationTest(file: vscode.Uri, api, targetFile: vscode.Uri, operations: any[]) {
     const openapiFile = vscode.workspace.asRelativePath(file).replace(/\\/g, '/');
-    const model = { testName: 'Mock Validator Test', openapiFile, operations: [] };
+    const model = { testName: 'Mock Validator Test', baseUrl: 'baseUrl', openapiFile, operations: [] };
     model.operations = operations.map(operation => {
         const payload = buildKarateTestDataObject(operation, Object.keys(operation?.responses)[0]);
         return {

@@ -15,8 +15,11 @@ export async function generateBusinessFlowTest(unused: vscode.Uri, features: vsc
     }
     const unsupportedFeatures = [];
     const apis = {};
-    const model = { testName: '', openapiFiles: [], operationIds: [], operations: [] };
+    const model = { testName: '', baseUrl: 'baseUrl', openapiFiles: [], operationIds: [], operations: [] };
     for (const file of features) {
+        if (!file.fsPath.endsWith('.feature')) {
+            break;
+        }
         const feature = await parseFeature(file);
         const openapiFile = feature.tags.find(tag => tag.startsWith('@openapi-file=')).replace('@openapi-file=', '');
         const operationId = feature.scenarios

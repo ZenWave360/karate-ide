@@ -58,6 +58,7 @@ async function generateKarateTest(file, api, apisFolder: vscode.Uri, operations:
     vscode.workspace.fs.createDirectory(apisFolder);
     operations.forEach(operation => {
         const model: any = { api, operationId: operation.operationId };
+        model.baseUrl = 'baseUrl';
         model.openapiFile = openapiFile;
         model.operation = prepareData(operation);
         model.serviceName = serviceName(operation);
