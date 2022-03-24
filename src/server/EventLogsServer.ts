@@ -25,7 +25,7 @@ export default class EventLogsServer {
                 if (buffer.startsWith('{') && buffer.endsWith('}')) {
                     if (buffer.includes('}{')) {
                         buffer
-                            .substring(1, buffer.length - 2)
+                            .substring(1, buffer.length - 1)
                             .split('}{')
                             .forEach(item => {
                                 try {
