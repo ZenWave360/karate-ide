@@ -408,7 +408,10 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
 
     public static String toJson(Event event) throws IllegalAccessException {
         Map<String, Object> map = new HashMap<>();
-        for(Field field: event.getClass().getDeclaredFields()) {
+        for (Field field : event.getClass().getDeclaredFields()) {
+            if(field.getName().startsWith("this$")) {
+                continue;
+            }
             map.put(field.getName(), field.get(event));
         }
         return toJson(map);
