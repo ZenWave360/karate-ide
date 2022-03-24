@@ -89,13 +89,16 @@ export class ThreadTreeEntry extends TreeEntry {
     stack: ITreeEntry[] = [];
     rootFeatures: TreeEntry[] = [];
     httpLogs: NetworkRequestResponseLog[] = [];
+    timestamp: Date;
 
     constructor(public threadName: string) {
         super(null, null);
+        this.timestamp = new Date();
     }
 
     asTreeItem() {
-        const treeItem = new vscode.TreeItem(`Karate Suite: ${this.threadName}`, vscode.TreeItemCollapsibleState.Expanded);
+        const time = this.timestamp.getHours() < 10 ? '0' + this.timestamp.getHours() : this.timestamp.getHours();
+        const treeItem = new vscode.TreeItem(`Karate Suite [${time}]`, vscode.TreeItemCollapsibleState.Expanded);
         treeItem.contextValue = 'ThreadTreeEntry';
         return treeItem;
     }
