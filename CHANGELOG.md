@@ -9,10 +9,10 @@ All notable changes to the "karate-ide" extension will be documented in this fil
 -   [ ] Adds `Karate Process` summary and `Kill Karate Process` button to status bar tooltip
 -   [x] On config change `Kill Karate Process`
 -   [ ] Network Logs: adds section in tree for query params
--   [ ] Network Logs: improves labels and tooltips
+-   [x] Network Logs: improves labels and tooltips
 -   [x] Fix target classpath folder for karate-auth.js
 -   [x] Autogenerate matchResponse = "true" by default only for 2xx status codes
--   [ ] Calculate classpath root when generating "Business Flow Tests"
+-   [x] Calculate classpath root when generating "Business Flow Tests"
 -   [x] Narrow down "activationEvents"
 -   [x] Upgrade generated karate-project templates
 -   [x] Show `cwd` on Execution logs and keep it when switching log views

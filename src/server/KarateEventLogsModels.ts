@@ -216,7 +216,7 @@ export class Payload implements ITreeEntry {
     asTreeItem() {
         const treeItem = new vscode.TreeItem(`${this.label}:`, vscode.TreeItemCollapsibleState.Collapsed);
         treeItem.tooltip = JSON.stringify(this.payload, null, 2);
-        treeItem.description = this.payload;
+        treeItem.description = this.json ? this.payload : undefined;
         treeItem.contextValue = 'NetworkLogPayload';
         treeItem.command = {
             command: 'karateIDE.showNetworkRequestResponseLog',
@@ -252,7 +252,7 @@ export class PayloadProperty implements ITreeEntry {
                 ? new vscode.TreeItem(`${this.key}:`, vscode.TreeItemCollapsibleState.Collapsed)
                 : new vscode.TreeItem(`${this.key}: ${this.value}`, vscode.TreeItemCollapsibleState.None);
         treeItem.contextValue = 'NetworkLogPayloadProperty';
-        treeItem.description = JSON.stringify(this.value);
+        treeItem.description = typeof this.value === 'object' ? JSON.stringify(this.value) : undefined;
         treeItem.tooltip = JSON.stringify(this.value, null, 2);
         treeItem.command = {
             command: 'karateIDE.showNetworkRequestResponseLog',
