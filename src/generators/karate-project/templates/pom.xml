@@ -12,15 +12,15 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>      
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-        <karate.version>1.1.0</karate.version>
-        <apimock.version>0.0.1</apimock.version>
+        <karate.version>1.2.0.RC5</karate.version>
+        <zenwave-apimock.version>0.0.5</zenwave-apimock.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>io.github.apimock</groupId>
-            <artifactId>apimock</artifactId>
-            <version>${apimock.version}</version>
+            <artifactId>zenwave-apimock</artifactId>
+            <version>${zenwave-apimock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

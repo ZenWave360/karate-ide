@@ -2,7 +2,7 @@
 Feature: <%= testName %>
 
 Background: 
-* url baseUrl
+* url <%= baseUrl || 'baseUrl' %>
 * def auth = { username: '', password: '' }
 * def authHeader = call read('classpath:karate-auth.js') auth
 * configure headers = authHeader || {}

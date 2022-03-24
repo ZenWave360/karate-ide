@@ -3,7 +3,7 @@ Feature: <%= operation.summary %>
 	<%= operation.description %>
 
 Background:
-* url baseUrl
+* url <%= baseUrl || 'baseUrl' %>
 
 @operationId=<%= operation.operationId %>
 Scenario Outline: Test <%= operation.operationId %> for <status> status code

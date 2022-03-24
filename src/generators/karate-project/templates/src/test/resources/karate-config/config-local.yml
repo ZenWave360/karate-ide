@@ -1,2 +1,3 @@
 # local config properties
 # remember you can use '#(karateExpresions)' properly quoted
+baseUrl: 'http://localhost:8080'

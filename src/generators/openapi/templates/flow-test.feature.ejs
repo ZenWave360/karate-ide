@@ -2,7 +2,7 @@
 Feature: <%= testName %>
 
 Background:
-* url baseUrl
+* url <%= baseUrl || 'baseUrl' %>
 
 @business-flow 
 <%- operationIds.map(o => `@operationId=${o}`).join(' ') %>
