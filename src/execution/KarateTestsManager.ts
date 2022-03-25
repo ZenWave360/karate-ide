@@ -1,6 +1,6 @@
 import { Feature, parseFeature } from '@/feature';
 import { filesManager, KarateTestTreeEntry } from '@/fs/FilesManager';
-import { getFileAndRootPath } from '@/helper';
+import { getFileAndRootPath } from '@/feature';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { getCommandLine, getStartMockCommandLine } from './CommandUtils';

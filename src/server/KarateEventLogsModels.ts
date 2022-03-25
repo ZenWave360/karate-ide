@@ -97,9 +97,13 @@ export class ThreadTreeEntry extends TreeEntry {
     }
 
     asTreeItem() {
-        const time = this.timestamp.getHours() < 10 ? '0' + this.timestamp.getHours() : this.timestamp.getHours();
-        const treeItem = new vscode.TreeItem(`Karate Suite [${time}]`, vscode.TreeItemCollapsibleState.Expanded);
+        function pad(n: number) {
+            return n < 10 ? '0' + n : n;
+        }
+        const time = `${pad(this.timestamp.getHours())}:${pad(this.timestamp.getMinutes())}:${pad(this.timestamp.getSeconds())}`;
+        const treeItem = new vscode.TreeItem(`Karate Execution`, vscode.TreeItemCollapsibleState.Expanded);
         treeItem.contextValue = 'ThreadTreeEntry';
+        treeItem.description = time;
         return treeItem;
     }
 }

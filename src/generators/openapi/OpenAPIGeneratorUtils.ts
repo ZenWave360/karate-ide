@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import * as pluralize from 'pluralize';
-import { getFileAndRootPath } from '@/helper';
+import { getFileAndRootPath } from '@/feature';
 
 export function normalizeTag(tagName) {
     return (tagName || 'Default').split(' ').map(_.upperFirst).join('');

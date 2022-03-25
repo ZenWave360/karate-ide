@@ -2,13 +2,9 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
-## 1.1.x (unreleased)
-
--   [ ] Adds `Karate Process` summary and `Kill Karate Process` button to status bar tooltip
-
 ## 1.1.0
 
--   [x] Upgrades [ZenWave ApiMock](https://github.com/ZenWave360/apimock) to version 0.0.4
+-   [x] Upgrades [ZenWave ApiMock](https://github.com/ZenWave360/apimock) to version 0.0.5
 -   [x] Adds configuration to override apimock.jar location
 -   [x] On config change `Kill Karate Process`
 -   [x] Network Logs: adds section in tree for query params
@@ -19,6 +15,7 @@ All notable changes to the "karate-ide" extension will be documented in this fil
 -   [x] Narrow down "activationEvents"
 -   [x] Upgrade generated karate-project templates
 -   [x] Show `cwd` on Execution logs and keep it when switching log views
+-   [ ] On delete .feature files remove them from Tests Explorer
 
 ## 1.0.4
 

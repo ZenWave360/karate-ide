@@ -1,10 +1,6 @@
-import * as path from 'path';
-import * as fs from 'fs';
-import { getFileAndRootPath } from '@/helper';
-import * as vscode from 'vscode';
 import EventLogsServer from '@/server/EventLogsServer';
-import { KarateExecutionProcess } from '@/execution/KarateExecutionProcess';
-import { Execution, SuiteExecution } from '@/views/KarateExecutionsTreeProvider';
+import * as path from 'path';
+import * as vscode from 'vscode';
 
 export function getKarateOptions() {
     const karateEnv: string = vscode.workspace.getConfiguration('karateIDE.karateCli').get('karateEnv');

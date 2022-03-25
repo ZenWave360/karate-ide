@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { getFileAndRootPath } from '@/helper';
+import { getFileAndRootPath } from '@/feature';
 import { getCommandLine, getKarateOptions } from './CommandUtils';
 import { KarateExecutionProcess } from './KarateExecutionProcess';
 import { getDebugFile } from './KarateTestsManager';

@@ -1,3 +1,5 @@
+import * as path from 'path';
+import * as fs from 'fs';
 import * as vscode from 'vscode';
 
 export class Feature {
@@ -69,4 +71,26 @@ export async function parseFeature(uri: vscode.Uri): Promise<Feature> {
     }
 
     return feature;
+}
+
+export function getFileAndRootPath(uri): { file: string; root: string } {
+    let rootFolderUri = vscode.workspace.getWorkspaceFolder(uri);
+    let rootModuleMarkerFile: string = vscode.workspace.getConfiguration('karateIDE.multimodule').get('rootModuleMarkerFile');
+
+    let rootPath = rootFolderUri.uri.fsPath;
+    let filePath = uri.fsPath.replace(rootPath + path.sep, '');
+    let filePathArray = filePath.split(path.sep);
+
+    if (rootModuleMarkerFile && rootModuleMarkerFile.trim().length > 0) {
+        do {
+            let runFileTestPath = filePathArray.join(path.sep);
+            if (fs.existsSync(path.join(rootPath, runFileTestPath, rootModuleMarkerFile))) {
+                rootPath = path.join(rootPath, runFileTestPath);
+                filePath = uri.fsPath.replace(rootPath + path.sep, '');
+                break;
+            }
+        } while (filePathArray.pop());
+    }
+
+    return { root: rootPath, file: filePath };
 }

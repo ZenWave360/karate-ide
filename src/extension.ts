@@ -124,9 +124,6 @@ export function activate(context: vscode.ExtensionContext) {
     eventLogsServer.start();
 
     vscode.workspace.onDidChangeConfiguration(e => {
-        if (e.affectsConfiguration('karateIDE.tests.globFilter')) {
-            filesManager.loadFiles();
-        }
         if (e.affectsConfiguration('karateIDE')) {
             KarateExecutionProcess.stopTestProcesses();
         }
