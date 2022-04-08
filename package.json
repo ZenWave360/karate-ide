@@ -3,7 +3,7 @@
     "displayName": "ZenWave Karate IDE",
     "description": "The best user experience for KarateDSL",
     "icon": "resources/karate.png",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "license": "MIT",
     "publisher": "KarateIDE",
     "bugs": {
