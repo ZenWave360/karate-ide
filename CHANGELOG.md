@@ -2,6 +2,12 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+## 1.1.1
+
+-   [x] Renamed to ZenWave KarateIDE
+-   [x] Adds "High Fidelity Stateful Mocks (Consumer Contracts) with OpenAPI and KarateDSL" link to readme.
+-   [x] Upgrades [ZenWave ApiMock](https://github.com/ZenWave360/apimock) to version 0.0.6
+
 ## 1.1.0
 
 -   [x] Upgrades [ZenWave ApiMock](https://github.com/ZenWave360/apimock) to version 0.0.5

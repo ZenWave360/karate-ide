@@ -1,7 +1,7 @@
 {
     "name": "karate-ide",
-    "displayName": "Karate IDE",
-    "description": "Explore your APIs and debug Karate test scripts within VS Code",
+    "displayName": "ZenWave Karate IDE",
+    "description": "The best user experience for KarateDSL",
     "icon": "resources/karate.png",
     "version": "1.1.0",
     "license": "MIT",

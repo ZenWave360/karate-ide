@@ -16,6 +16,7 @@ KarateIDE is by far the best user experience for KarateDSL and Contract Testing!
 
 -   Getting Started:
     -   Checkout [From Manual to Contract Testing with KarateDSL and KarateIDE](https://www.linkedin.com/pulse/from-manual-contract-testing-karatedsl-karateide-garc%25C3%25ADa-sainz-aja/) white paper in LinkedIn
+    -   Checkout [High Fidelity Stateful Mocks (Consumer Contracts) with OpenAPI and KarateDSL](https://medium.com/@ivangsa/high-fidelity-stateful-mocks-consumer-contracts-with-openapi-and-karatedsl-85a7f31cf84e) Medium article.
     -   [karate-openapi-petstore](https://github.com/ZenWave360/karate-openapi-petstore.git) companion project for a complete example with auto-generated tests, mocks, business flow tests and JUnit tests.
     -   KarateIDE [Classpath Configuration](#karate-classpath) section, for configuring this vscode extension.
 
@@ -83,7 +84,7 @@ You can generate stateful mocks from OpenAPI definitions:
 
 ### Generate Simpler Tests for Mock Validation
 
-Validate your mocks with a set of simple generated Karate Tests. Because we delegate payload validation to [ApiMock](https://github.com/ivangsa/apimock) OpenAPI wrapper these tests are much simpler than regular E2E tests.
+Validate your mocks with a set of simple generated Karate Tests. Because we delegate payload validation to [ZenWave ApiMock](https://github.com/ZenWave360/zenwave-apimock) OpenAPI wrapper these tests are much simpler than regular E2E tests.
 
 You should also validate your live API with this same set of tests to make sure your mocks are working as expected. See [VerifyMocksTest.java](https://github.com/ZenWave360/karate-openapi-petstore/blob/master/src/test/java/com/petstore/karate/VerifyMocksTest.java) for a JUnit example you can use in your pipeline.
 
@@ -150,7 +151,7 @@ You can now:
 -   Use KarateDSL for powerful yet simple stateful mocks.
 -   Use openapi examples to populate your karate mocks initial data.
 
-Navigate to https://github.com/ivangsa/apimock for more details about this integration.
+Navigate to [ZenWave ApiMock](https://github.com/ZenWave360/zenwave-apimock) for more details about this integration.
 
 ### Debug Karate Scripts
 
