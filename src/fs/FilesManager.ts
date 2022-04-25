@@ -15,8 +15,8 @@ export class KarateTestTreeEntry {
 }
 
 class FilesManager {
-    private workspaceFolder;
-    private workspaceFsPath;
+    private workspaceFolders = vscode.workspace.workspaceFolders;
+    private workspaceFsPaths;
     private testsGlobFilter: string;
     private classpathFolders: string[];
     private cachedKarateTestFiles: string[];
@@ -24,9 +24,7 @@ class FilesManager {
     private watcher;
 
     constructor() {
-        this.workspaceFolder =
-            vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.filter(folder => folder.uri.scheme === 'file')[0];
-        this.workspaceFsPath = this.workspaceFolder && this.workspaceFolder.uri.fsPath;
+        this.workspaceFsPaths = this.workspaceFolders && this.workspaceFolders.map(f => f.uri.fsPath);
 
         vscode.workspace.onDidChangeConfiguration(e => {
             if (e.affectsConfiguration('karateIDE.tests.globFilter') || e.affectsConfiguration('karateIDE.karateCli.classpath')) {
@@ -42,7 +40,7 @@ class FilesManager {
 
         this.cachedKarateTestFiles = (await vscode.workspace.findFiles(this.testsGlobFilter))
             // .filter(f => !focus || (focus.length > 0 && minimatch(f.path, focus, { matchBase: true })))
-            .map(f => path.relative(this.workspaceFolder.uri.path, f.path))
+            .map(f => this.relativeToWorkspace(f.fsPath))
             .map(f => f.replace(/\\/g, '/'));
 
         this.cachedClasspathFiles = [];
@@ -51,13 +49,13 @@ class FilesManager {
         const rootModuleMarkerFile = String(vscode.workspace.getConfiguration('karateIDE.multimodule').get('rootModuleMarkerFile'));
         this.classpathFolders = (await vscode.workspace.findFiles('**/' + rootModuleMarkerFile)).flatMap(root => {
             return classpathFolders
-                .map(f => path.relative(this.workspaceFolder.uri.fsPath, path.join(path.dirname(root.fsPath), f)))
+                .map(f => this.relativeToWorkspace(f))
                 .map(f => f.replace(/\\/g, '/'));
         });
 
         this.classpathFolders.forEach(async classpathFolder => {
             const entries = (await vscode.workspace.findFiles('**/' + classpathFolder + '/**/*.{feature,yml,json}'))
-                .map(f => path.relative(path.join(this.workspaceFolder.uri.fsPath, classpathFolder), f.fsPath))
+                .map(f => this.relativeToWorkspace(f.fsPath))
                 .map(f => f.replace(/\\/g, '/'));
             this.cachedClasspathFiles.push(...entries);
         });
@@ -116,7 +114,7 @@ class FilesManager {
 
     private findInClassPathFolders(file) {
         const result = this.classpathFolders
-            .map(folder => path.join(this.workspaceFsPath, folder, file))
+            .map(folder => path.join(this.workspaceFsPaths, folder, file))
             .filter(f => fs.existsSync(f))
             .filter((value, index) => index === 0);
         // console.log(result);
@@ -137,7 +135,7 @@ class FilesManager {
     }
 
     public getAutoCompleteEntries(documentUri: vscode.Uri, completionToken: string): vscode.CompletionItem[] {
-        const relativeTo = path.relative(this.workspaceFolder.uri.fsPath, path.dirname(documentUri.fsPath)).replace(/\\/g, '/');
+        const relativeTo = this.relativeToWorkspace(documentUri.fragment).replace(/\\/g, '/');
         let completionStrings = [];
         completionStrings.push(...this.cachedKarateTestFiles.filter(f => f));
         completionStrings.push(...this.cachedClasspathFiles.map(f => `classpath:${f}`));
@@ -218,18 +216,34 @@ class FilesManager {
                 .map(([key, value]) => {
                     const isDirectory = typeof value === 'object';
                     const file = isDirectory ? path.join(parentFolder, key) : (value as string);
-                    const uri = vscode.Uri.file(path.join(this.workspaceFolder.uri.fsPath, file));
+                    const workspaceFolder = this.getWorkspaceFolder(file);
+                    const fileWithoutWorkspaceFolder = file.split(/\/|\\/).slice(1).join('/');
+                    const title = this.workspaceFolders?.length === 1 ? fileWithoutWorkspaceFolder : file;
+                    const uri = vscode.Uri.joinPath(workspaceFolder.uri, fileWithoutWorkspaceFolder);
                     return new KarateTestTreeEntry({
                         uri,
                         type: isDirectory ? vscode.FileType.Directory : vscode.FileType.File,
-                        title: key,
+                        title,
                         // feature: { path: uri.fsPath, line: null },
-                        children: isDirectory ? this.convertToEntryTree(value, vscode.workspace.asRelativePath(uri.fsPath, false)) : null,
+                        children: isDirectory ? this.convertToEntryTree(value, this.relativeToWorkspace(uri.fsPath)) : null,
                     });
                 })
                 .sort((a, b) => b.type.toString().localeCompare(a.type.toString()) * 10 + a.title.localeCompare(b.title));
         }
         return foldersEntry;
+    }
+
+    private relativeToWorkspace(uri: string): string {
+        return vscode.workspace.asRelativePath(uri, true);
+    }
+
+    private getWorkspaceFolder(file: string) {
+        if(this.workspaceFolders?.length === 1) {
+            return this.workspaceFolders[0];
+        } else {
+            file = file.replace(/\\/g, '/');
+            return (this.workspaceFolders || []).find(f => file.startsWith(path.basename(f.uri.fsPath) + '/'));
+        }
     }
 }
 

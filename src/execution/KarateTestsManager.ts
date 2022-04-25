@@ -85,10 +85,6 @@ export async function reloadFeature(uri: vscode.Uri) {
 }
 
 async function processFeature(element: KarateTestTreeEntry, parent?: vscode.TestItemCollection) {
-    if (!parent) {
-        parent = testItems.get(path.dirname(element.uri.fsPath)).children;
-    }
-    parent.delete(element.uri.fsPath);
     const feature: Feature = await parseFeature(element.uri);
     if (!feature) {
         return;
@@ -104,6 +100,11 @@ async function processFeature(element: KarateTestTreeEntry, parent?: vscode.Test
     if (feature.tags.includes('@ignore')) {
         return;
     }
+    
+    if (!parent) {
+        parent = testItems.get(path.dirname(element.uri.fsPath)).children;
+    }
+    parent.delete(element.uri.fsPath);
     const featureTestItem = testsController.createTestItem(element.uri.fsPath, element.title, element.uri);
     featureTestItem.tags = feature.tags.map(tag => new vscode.TestTag(tag));
     featureTestItem.range = new vscode.Range(0, 0, 1, 0);

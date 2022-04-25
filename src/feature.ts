@@ -22,7 +22,13 @@ export class Example {
 }
 
 export async function parseFeature(uri: vscode.Uri): Promise<Feature> {
-    let document = await vscode.workspace.openTextDocument(uri);
+    let document = null;
+    try {
+        document = await vscode.workspace.openTextDocument(uri);
+    } catch(e) {
+        console.log('ERROR in parseFeature', uri.fsPath, e.message);
+        return null;
+    }
 
     let feature: Feature = null;
     let outline: Scenario = null;
