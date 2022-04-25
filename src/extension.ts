@@ -6,7 +6,7 @@ import ProviderDebugAdapter from '@/execution/ProviderDebugAdapter';
 import { generateKarateTestFromOpenAPI } from '@/generators/openapi/OpenAPIGenerator';
 import EventLogsServer from '@/server/EventLogsServer';
 import { karateExecutionsTreeProvider, debugTestEntry, runTestEntry } from '@/views/KarateExecutionsTreeProvider';
-import KarateNetworkLogsTreeProvider from '@/views/KarateNetworkLogsTreeProvider';
+import { karateNetworkLogsTreeProvider } from '@/views/KarateNetworkLogsTreeProvider';
 import StatusBarProvider from '@/views/StatusBarProvider';
 import { URL } from 'url';
 import * as vscode from 'vscode';
@@ -100,11 +100,10 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.languages.registerCompletionItemProvider(karateFile, new CompletionItemProvider(), ...["'", '"']));
 
     // NetworkLogs View
-    const networkLogsProvider = new KarateNetworkLogsTreeProvider();
-    registerCommand('karateIDE.karateNetworkLogs.clearTree', () => networkLogsProvider.clear());
-    registerCommand('karateIDE.karateNetworkLogs.showScenarios.true', () => networkLogsProvider.setShowScenarios(true));
-    registerCommand('karateIDE.karateNetworkLogs.showScenarios.false', () => networkLogsProvider.setShowScenarios(false));
-    createTreeView('karate-network-logs', { showCollapseAll: true, treeDataProvider: networkLogsProvider });
+    registerCommand('karateIDE.karateNetworkLogs.clearTree', () => karateNetworkLogsTreeProvider.clear());
+    registerCommand('karateIDE.karateNetworkLogs.showScenarios.true', () => karateNetworkLogsTreeProvider.setShowScenarios(true));
+    registerCommand('karateIDE.karateNetworkLogs.showScenarios.false', () => karateNetworkLogsTreeProvider.setShowScenarios(false));
+    createTreeView('karate-network-logs', { showCollapseAll: true, treeDataProvider: karateNetworkLogsTreeProvider });
     // Executions View
     registerCommand('karateIDE.karateExecutionsTree.run', runTestEntry);
     registerCommand('karateIDE.karateExecutionsTree.debug', debugTestEntry);
@@ -116,7 +115,7 @@ export function activate(context: vscode.ExtensionContext) {
     createTreeView('karate-executions', { showCollapseAll: false, treeDataProvider: karateExecutionsTreeProvider });
     const eventLogsServer = new EventLogsServer(data => {
         try {
-            networkLogsProvider.processLoggingEvent(data);
+            karateNetworkLogsTreeProvider.processLoggingEvent(data);
         } catch (e) {
             console.error('ERROR networkLogsProvider.processLoggingEvent', data, e);
         }

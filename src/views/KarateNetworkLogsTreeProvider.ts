@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import {
     Headers,
     ITreeEntry,
@@ -14,7 +13,7 @@ import {
     TreeEntry,
 } from '@/server/KarateEventLogsModels';
 
-export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataProvider<ITreeEntry> {
+class KarateNetworkLogsTreeProvider implements vscode.TreeDataProvider<ITreeEntry> {
     private eventLogsTree: { [key: string]: ThreadTreeEntry } = {};
     private showScenarios = false;
     private httpResponsesCount: number = 0;
@@ -26,6 +25,10 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
     public clear(): any {
         this.eventLogsTree = {};
         this._onDidChangeTreeData.fire(null);
+    }
+
+    public collapsePreviousExecutions() {
+        // TODO
     }
 
     public setShowScenarios(showScenarios) {
@@ -123,3 +126,5 @@ export default class KarateNetworkLogsTreeProvider implements vscode.TreeDataPro
         return null;
     }
 }
+
+export const karateNetworkLogsTreeProvider = new KarateNetworkLogsTreeProvider();

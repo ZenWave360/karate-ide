@@ -2,6 +2,11 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+## 1.1.2
+
+- [x] Add support for multi-root workspace
+- [ ] Collapses previous executions on new run (Maybe is not possible)
+
 ## 1.1.1
 
 -   [x] Renamed to ZenWave KarateIDE

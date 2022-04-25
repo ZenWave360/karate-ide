@@ -1,16 +1,12 @@
-import * as vscode from 'vscode';
-import * as net from 'net';
-import * as http from 'http';
-import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import {
-    Execution,
-    FeatureExecution,
-    karateExecutionsTreeProvider as executionsTreeProvider,
-    ScenarioExecution,
-    ScenarioOutlineExecution,
-    SuiteExecution,
-} from '@/views/KarateExecutionsTreeProvider';
 import * as karateTestManager from '@/execution/KarateTestsManager';
+import {
+    karateExecutionsTreeProvider as executionsTreeProvider
+} from '@/views/KarateExecutionsTreeProvider';
+import { karateNetworkLogsTreeProvider } from '@/views/KarateNetworkLogsTreeProvider';
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import * as http from 'http';
+import * as net from 'net';
+import * as vscode from 'vscode';
 import { karateOutputChannel } from './KarateOutputChannel';
 
 export type Event = {
@@ -77,6 +73,7 @@ export class KarateExecutionProcess {
         }
         this.isExecuting = true;
         executionsTreeProvider.clear();
+        karateNetworkLogsTreeProvider.collapsePreviousExecutions();
         karateOutputChannel.clear();
         karateOutputChannel.appendAll(`cwd: ${testServer.cwd}\nExecuting: ${command}\n\n`, true);
         vscode.commands.executeCommand('karate-executions.focus');
