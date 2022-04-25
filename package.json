@@ -1,7 +1,7 @@
 {
     "name": "karate-ide",
     "displayName": "ZenWave Karate IDE",
-    "description": "The best user experience for KarateDSL",
+    "description": "The Best User Experience for KarateDSL... by far!!",
     "icon": "resources/karate.png",
     "version": "1.1.1",
     "license": "MIT",
@@ -269,6 +269,14 @@
             {
                 "command": "karateIDE.generateKarateProject",
                 "title": "KarateIDE: Generate Karate Project"
+            },
+            {
+                "command": "karateIDE.karateExecutionsTree.refresh",
+                "title": "KarateIDE: Reload Karate Features",
+                "icon": {
+                    "light": "resources/vscode-icons/light/refresh.svg",
+                    "dark": "resources/vscode-icons/dark/refresh.svg"
+                }
             }
         ],
         "menus": {
@@ -287,6 +295,11 @@
                     "command": "karateIDE.karateExecutionsTree.mockServerOptions",
                     "when": "view == karate-executions",
                     "group": "navigation@3"
+                },
+                {
+                    "command": "karateIDE.karateExecutionsTree.refresh",
+                    "when": "view == karate-executions",
+                    "group": "navigation@4"
                 },
                 {
                     "command": "karateIDE.karateNetworkLogs.showScenarios.false",
