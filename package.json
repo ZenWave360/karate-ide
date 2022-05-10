@@ -1,7 +1,7 @@
 {
     "name": "karate-ide",
     "displayName": "ZenWave Karate IDE",
-    "description": "The Best User Experience for KarateDSL... by far!!",
+    "description": "Runner/Debugger, REST Client and OpenAPI Generator for Karate 1.2.0",
     "icon": "resources/karate.png",
     "version": "1.1.2",
     "license": "MIT",

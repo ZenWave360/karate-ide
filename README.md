@@ -5,7 +5,7 @@
 
 KarateIDE is:
 
--   A **REST Client** that uses [KarateDSL](https://github.com/karatelabs/karate) tests to explore your API, import/export from cURL generate tests and mocks from OpenAPI.
+-   A **Test Runner/Debugger** and **REST Client** that uses [KarateDSL](https://github.com/karatelabs/karate) to explore your API, import/export from cURL and generate tests/mocks from OpenAPI.
 -   **OpenAPI Generator** that generates:
     -   **Karate Tests** you can immediately run, with validation, inline payload examples and scenario outlines for each response code of your API.
     -   **Stateful Mocks**: combining OpenAPI schemas for validation and examples to load mock datasets.
@@ -14,41 +14,48 @@ KarateIDE is:
 
 KarateIDE is by far the best user experience for KarateDSL and Contract Testing!!
 
--   Getting Started:
-    -   Checkout [From Manual to Contract Testing with KarateDSL and KarateIDE](https://www.linkedin.com/pulse/from-manual-contract-testing-karatedsl-karateide-garc%25C3%25ADa-sainz-aja/) white paper in LinkedIn
-    -   Checkout [High Fidelity Stateful Mocks (Consumer Contracts) with OpenAPI and KarateDSL](https://medium.com/@ivangsa/high-fidelity-stateful-mocks-consumer-contracts-with-openapi-and-karatedsl-85a7f31cf84e) Medium article.
-    -   [karate-openapi-petstore](https://github.com/ZenWave360/karate-openapi-petstore.git) companion project for a complete example with auto-generated tests, mocks, business flow tests and JUnit tests.
-    -   KarateIDE [Classpath Configuration](#karate-classpath) section, for configuring this vscode extension.
+Getting Started:
+
+-   [karate-openapi-petstore](https://github.com/ZenWave360/karate-openapi-petstore.git) companion project for a complete example with auto-generated tests, mocks, business flow tests and JUnit tests.
+-   KarateIDE [Classpath Configuration](#karate-classpath) section, for configuring this vscode extension.
+-   Watch Generating KarateDSL tests from OpenAPI definition
+
+[![KarateIDE: Generate KarateDSL Tests from OpenAPI in VSCode](resources/screenshots/generating-tests-from-openapi-youtube-embed.png)](https://www.youtube.com/watch?v=pYyRvly4cG8)
+
+If you are interested on a deep dive into Contract Testing with KarateDSL, checkout:
+
+-   [From Manual to Contract Testing with KarateDSL and KarateIDE](https://medium.com/@ivangsa/from-manual-to-contract-testing-with-karatedsl-and-karateide-i-5884f1732680) white paper in Medium (15 min read)
+-   [High Fidelity Stateful Mocks (Consumer Contracts) with OpenAPI and KarateDSL](https://medium.com/@ivangsa/high-fidelity-stateful-mocks-consumer-contracts-with-openapi-and-karatedsl-85a7f31cf84e) Medium article (10 min read).
 
 <!-- TOC -->
 
--   [Karate IDE](#karate-ide)
-    -   [Features](#features)
-        -   [Blazing Fast tests Startup](#blazing-fast-tests-startup)
-        -   [Generate Karate Tests from OpenAPI definitions](#generate-karate-tests-from-openapi-definitions)
-        -   [Generate Stateful Mocks and Start them from the Editor or Tests Explorer side bar](#generate-stateful-mocks-and-start-them-from-the-editor-or-tests-explorer-side-bar)
-        -   [Generate Simpler Tests for Mock Validation](#generate-simpler-tests-for-mock-validation)
-        -   [Generate Tests that spans multiple API calls simulating Business Flows](#generate-tests-that-spans-multiple-api-calls-simulating-business-flows)
-        -   [Generate Karate Project](#generate-karate-project)
-        -   [SmartPaste sample payload into new files in scenario outline examples](#smartpaste-sample-payload-into-new-files-in-scenario-outline-examples)
-        -   [Many options to explore your logs and response payloads](#many-options-to-explore-your-logs-and-response-payloads)
-        -   [Replacing old Tests Explorer with native _Test API_ from VSCode](#replacing-old-tests-explorer-with-native-_test-api_-from-vscode)
-        -   [Auto Configuration](#auto-configuration)
-        -   [OpenAPI schemas and examples meets Karate Mocks](#openapi-schemas-and-examples-meets-karate-mocks)
-        -   [Debug Karate Scripts](#debug-karate-scripts)
-    -   [Configuration Options](#configuration-options)
-        -   [vscode/launch.json](#vscodelaunchjson)
-        -   [Karate classpath](#karate-classpath)
-            -   [Manual configuration: Using karate.jar Karate fat jar](#manual-configuration-using-karatejar-karate-fat-jar)
-            -   [Manual configuration: Using maven repository dependencies](#manual-configuration-using-maven-repository-dependencies)
-        -   [Run/Debug command templates](#rundebug-command-templates)
-        -   [Multimodule projects](#multimodule-projects)
-    -   [Other functionality](#other-functionality)
-        -   [Karate.env switcher, Karate Options and MockServer Options](#karateenv-switcher-karate-options-and-mockserver-options)
-        -   [SmartPaste from cURL in Karate files](#smartpaste-from-curl-in-karate-files)
-        -   [Code Navigation and Definition Peek](#code-navigation-and-definition-peek)
-        -   [Auto-Completion](#auto-completion)
-        -   [Kill vscode.KarateTestProcess command](#kill-vscodekaratetestprocess-command)
+- [Karate IDE](#karate-ide)
+  - [Features](#features)
+    - [Blazing Fast tests Startup](#blazing-fast-tests-startup)
+    - [Generate Karate Tests from OpenAPI definitions](#generate-karate-tests-from-openapi-definitions)
+    - [Generate Stateful Mocks and Start them from the Editor (or Tests Explorer side bar)](#generate-stateful-mocks-and-start-them-from-the-editor-or-tests-explorer-side-bar)
+    - [Generate Simpler Tests for Mock Validation](#generate-simpler-tests-for-mock-validation)
+    - [Generate Tests that spans multiple API calls simulating Business Flows](#generate-tests-that-spans-multiple-api-calls-simulating-business-flows)
+    - [Generate Karate Project](#generate-karate-project)
+    - [SmartPaste sample payload into new files in scenario outline examples](#smartpaste-sample-payload-into-new-files-in-scenario-outline-examples)
+    - [Many options to explore your logs and response payloads](#many-options-to-explore-your-logs-and-response-payloads)
+    - [Replacing old Tests Explorer with native _Test API_ from VSCode](#replacing-old-tests-explorer-with-native-test-api-from-vscode)
+    - [Auto Configuration](#auto-configuration)
+    - [OpenAPI schemas and examples meets Karate Mocks](#openapi-schemas-and-examples-meets-karate-mocks)
+    - [Debug Karate Scripts](#debug-karate-scripts)
+  - [Configuration Options](#configuration-options)
+    - [.vscode/launch.json](#vscodelaunchjson)
+    - [Karate classpath](#karate-classpath)
+      - [Manual configuration: Using karate.jar (Karate fat jar)](#manual-configuration-using-karatejar-karate-fat-jar)
+      - [Manual configuration: Using maven repository dependencies](#manual-configuration-using-maven-repository-dependencies)
+    - [Run/Debug command templates](#rundebug-command-templates)
+    - [Multimodule projects](#multimodule-projects)
+  - [Other functionality](#other-functionality)
+    - [Karate.env switcher, Karate Options and MockServer Options](#karateenv-switcher-karate-options-and-mockserver-options)
+    - [SmartPaste from cURL in Karate files](#smartpaste-from-curl-in-karate-files)
+    - [Code Navigation and Definition Peek](#code-navigation-and-definition-peek)
+    - [Auto-Completion](#auto-completion)
+    - [Kill vscode.KarateTestProcess command](#kill-vscodekaratetestprocess-command)
 
 <!-- /TOC -->
 

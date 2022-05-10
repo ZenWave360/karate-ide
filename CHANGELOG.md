@@ -2,10 +2,14 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+## 1.2.0
+
+-   [x] Adds Karate 1.2.0 option to `KarateIDE: Configure Classpath`
+-   [x] Adds "Generating KarateDSL tests from OpenAPI definition" video to README.md
+
 ## 1.1.2
 
-- [x] Add support for multi-root workspace
-- [ ] Collapses previous executions on new run (Maybe is not possible)
+-   [x] Add support for multi-root workspace
 
 ## 1.1.1
 
