@@ -2,6 +2,10 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+## 1.2.1
+
+-   [x] Updates ZenWave APIMock for Karate 1.2.1
+
 ## 1.2.0
 
 -   [x] Adds Karate 1.2.0 option to `KarateIDE: Configure Classpath`
