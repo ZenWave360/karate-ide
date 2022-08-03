@@ -6,6 +6,7 @@ All notable changes to the "karate-ide" extension will be documented in this fil
 
 -   [x] fixes reloading karate test files after adding features
 -   [x] openapi generator: use @ shortcut to call scenario in same feature
+-   [x] fixes calculate rootFolder when no marker file is found
 
 ## 1.2.1
 
