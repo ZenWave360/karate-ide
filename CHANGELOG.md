@@ -5,6 +5,7 @@ All notable changes to the "karate-ide" extension will be documented in this fil
 ## 1.2.2
 
 -   [x] fixes reloading karate test files after adding features
+-   [x] openapi generator: use @ shortcut to call scenario in same feature
 
 ## 1.2.1
 

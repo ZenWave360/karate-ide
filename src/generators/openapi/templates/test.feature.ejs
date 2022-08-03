@@ -9,7 +9,7 @@ Background:
 Scenario Outline: Test <%= operation.operationId %> for <status> status code
 <% if (operation.method === 'get' || operation.method === 'delete') { %>
 	* def params = __row
-	* def result = call read('<%= operation.operationId %>.feature@operation') { statusCode: #(+params.status), params: #(params), matchResponse: #(params.matchResponse) }
+	* def result = call read('@operation') { statusCode: #(+params.status), params: #(params), matchResponse: #(params.matchResponse) }
 	* match result.responseStatus == <status>
 		Examples:
 		| status | <%= operation.paramNames.length? operation.paramNames.join(' | ') + ' |' : '' %> matchResponse |
@@ -24,7 +24,7 @@ Scenario Outline: Test <%= operation.operationId %> for <status> status code
 	_%>
 <% } else { %>
 	* def args = read(<testDataFile>)
-	* def result = call read('<%= operation.operationId %>.feature@operation') args
+	* def result = call read('@operation') args
 	* match result.responseStatus == <status>
 		Examples:
 		| status | testDataFile |
@@ -47,13 +47,13 @@ Scenario: explore <%= operation.operationId %> inline
 * def statusCode = <%= payload.statusCode %>
 * def params = <%- JSON.stringify(payload.params) %>
 * def matchResponse = true
-* call read('<%= operation.operationId %>.feature@operation') 
+* call read('@operation') 
 <%_ } else { _%>
 * def payload =
 """
 <%- JSON.stringify(payload, null, 2) %>
 """
-* call read('<%= operation.operationId %>.feature@operation') payload
+* call read('@operation') payload
 <%_ } _%>
 
 <%_
@@ -95,7 +95,7 @@ When method <%= operation.method.toUpperCase() %>
 * if (args.statusCode && responseStatus != args.statusCode) karate.fail(`status code was: ${responseStatus}, expected: ${args.statusCode}`)
 <% if (operation.responseBody) { _%>
 # validate response body
-* if (args.matchResponse === true) karate.call('<%= operation.operationId %>.feature@validate')
+* if (args.matchResponse === true) karate.call('@validate')
 
 @ignore @validate
 Scenario: validates <%= operation.operationId %> response
