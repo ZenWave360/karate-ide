@@ -2,6 +2,10 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+## 1.2.2
+
+-   [x] fixes reloading karate test files after adding features
+
 ## 1.2.1
 
 -   [x] Updates ZenWave APIMock for Karate 1.2.1

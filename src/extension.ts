@@ -14,7 +14,7 @@ import { CompletionItemProvider } from './completion/CompletionProvider';
 import { configureClasspath } from './commands/ConfigureClasspath';
 import { KarateExecutionProcess } from './execution/KarateExecutionProcess';
 import { karateOutputChannel } from './execution/KarateOutputChannel';
-import { disposables, relaunchTest } from './execution/KarateTestsManager';
+import { disposables, relaunchTest, reloadKarateTestsController } from './execution/KarateTestsManager';
 import { filesManager } from './fs/FilesManager';
 import { generateBusinessFlowTest } from './generators/openapi/OpenAPIBusinessFlowGenerator';
 import { generateKarateMocksFromOpenAPI, generateKarateMockValidation } from './generators/openapi/OpenAPIMocksGenerator';
@@ -127,6 +127,8 @@ export function activate(context: vscode.ExtensionContext) {
             KarateExecutionProcess.stopTestProcesses();
         }
     });
+
+    reloadKarateTestsController();
 }
 
 export function deactivate() {}

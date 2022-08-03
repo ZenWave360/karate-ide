@@ -60,19 +60,27 @@ export function reloadKarateTestsController() {
         });
     }
     addTestItems(karateFiles, testsController.items);
-    console.log('Karate tests reloaded', testsController.items);
+    console.log('Karate tests reloaded', karateFiles.length);
 }
 
+let addFeatureTimeout: NodeJS.Timeout = null;
 export async function addFeature(uri: vscode.Uri) {
-    const paths = uri.fsPath.split(path.sep);
-    let parent = null;
-    while (!parent && paths.length > 0) {
-        const fsPath = paths.join(path.sep);
-        parent = testItems.get(fsPath);
-        paths.pop();
+    if (addFeatureTimeout) {
+        clearTimeout(addFeatureTimeout);
     }
-    parent = (parent && parent.items) || testsController.items;
-    processFeature(new KarateTestTreeEntry({ uri, type: vscode.FileType.File, title: path.basename(uri.fsPath) }), parent);
+    addFeatureTimeout = setTimeout(() => {
+        filesManager.loadFiles();
+    }, 1000);
+
+    // const paths = uri.fsPath.split(path.sep);
+    // let parent = null;
+    // while (!parent && paths.length > 0) {
+    //     const fsPath = paths.join(path.sep);
+    //     parent = testItems.get(fsPath);
+    //     paths.pop();
+    // }
+    // parent = (parent && parent.items) || testsController.items;
+    // processFeature(new KarateTestTreeEntry({ uri, type: vscode.FileType.File, title: path.basename(uri.fsPath) }), parent);
 }
 
 export async function removeFeature(uri: vscode.Uri) {
@@ -100,7 +108,7 @@ async function processFeature(element: KarateTestTreeEntry, parent?: vscode.Test
     if (feature.tags.includes('@ignore')) {
         return;
     }
-    
+
     if (!parent) {
         parent = testItems.get(path.dirname(element.uri.fsPath)).children;
     }
