@@ -1,7 +1,7 @@
 {
     "name": "karate-ide",
     "displayName": "ZenWave Karate IDE",
-    "description": "Runner/Debugger, REST Client and OpenAPI Generator for Karate 1.2.0",
+    "description": "Runner/Debugger, REST Client and OpenAPI Generator for KarateDSL",
     "icon": "resources/karate.png",
     "version": "1.2.2",
     "license": "MIT",
@@ -39,6 +39,8 @@
         "workspaceContains:**/karate-config.js",
         "workspaceContains:**.yml",
         "workspaceContains:**/**.yml",
+        "onCommand:karateIDE.configureClasspath",
+        "onCommand:karateIDE.generateKarateProject",
         "onCommand:karateIDE.*"
     ],
     "main": "./dist/extension.js",
@@ -71,7 +73,8 @@
         "openapi-sampler": "^1.2.0",
         "parse-curl": "0.2.6",
         "pluralize": "^8.0.0",
-        "rimraf": "^3.0.2"
+        "rimraf": "^3.0.2",
+        "vsce": "^2.10.0"
     },
     "devDependencies": {
         "@types/chai": "^4.2.14",
