@@ -3,7 +3,7 @@
     "displayName": "ZenWave Karate IDE",
     "description": "Runner/Debugger, REST Client and OpenAPI Generator for KarateDSL",
     "icon": "resources/karate.png",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "license": "MIT",
     "publisher": "KarateIDE",
     "bugs": {
