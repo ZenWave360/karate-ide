@@ -2,6 +2,11 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+## 1.3.0
+
+- [x] Compatibility with karate 1.3.0
+- [x] Upgrade to ApiMock 0.1.2 for karate 1.3.0 compatibility
+
 ## 1.2.2
 
 -   [x] fixes reloading karate test files after adding features
