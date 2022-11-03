@@ -1,36 +1,18 @@
 package vscode;
 
-import com.intuit.karate.JsonUtils;
-import com.intuit.karate.RuntimeHook;
 import com.intuit.karate.StringUtils;
 import com.intuit.karate.Suite;
-import com.intuit.karate.core.Feature;
 import com.intuit.karate.core.FeatureRuntime;
-import com.intuit.karate.core.Scenario;
 import com.intuit.karate.core.ScenarioOutline;
 import com.intuit.karate.core.ScenarioRuntime;
-import com.intuit.karate.core.Step;
-import com.intuit.karate.core.StepResult;
-import com.intuit.karate.http.HttpRequest;
-import com.intuit.karate.http.Response;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.StandardSocketOptions;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static vscode.compatibility.KarateCompatibility.feature;
+import static vscode.compatibility.KarateCompatibility.features;
 
 /**
  * @author ivangsa
@@ -43,7 +25,7 @@ public class VSCodeOutputRuntimeHook implements ExtendedRuntimeHook {
     @Override
     public void beforeSuite(Suite suite) {
         try {
-            String features = suite.features.stream().map(f -> f.getResource().getRelativePath()).collect(Collectors.joining(";"));
+            String features = features(suite).stream().map(f -> f.getResource().getRelativePath()).collect(Collectors.joining(";"));
             println(String.format(SUITE_STARTED, getCurrentTime(), features, suite.featuresFound));
             // log.trace(String.format(SUITE_STARTED, getCurrentTime(), features, suite.featuresFound));
         } catch (Exception e) {
@@ -66,9 +48,9 @@ public class VSCodeOutputRuntimeHook implements ExtendedRuntimeHook {
     public boolean beforeFeature(FeatureRuntime fr) {
         try {
             if (fr.caller.depth == 0) {
-                String path = fr.feature.getResource().getRelativePath();
-                println(String.format(FEATURE_STARTED, getCurrentTime(), path + ":" + fr.feature.getLine(), escape(fr.feature.getNameForReport())));
-                // log.trace(String.format(FEATURE_STARTED, getCurrentTime(), path + ":" + fr.feature.getLine(), escape(fr.feature.getNameForReport())));
+                String path = feature(fr).getResource().getRelativePath();
+                println(String.format(FEATURE_STARTED, getCurrentTime(), path + ":" + feature(fr).getLine(), escape(feature(fr).getNameForReport())));
+                // log.trace(String.format(FEATURE_STARTED, getCurrentTime(), path + ":" + feature(fr).getLine(), escape(feature(fr).getNameForReport())));
             }
         } catch (Exception e) {
             log.error("beforeFeature error: {}", e.getMessage());
@@ -80,9 +62,9 @@ public class VSCodeOutputRuntimeHook implements ExtendedRuntimeHook {
     public void afterFeature(FeatureRuntime fr) {
         try {
             if (fr.caller.depth == 0) {
-                String path = fr.feature.getResource().getRelativePath();
-                println(String.format(FEATURE_FINISHED, getCurrentTime(), path + ":" + fr.feature.getLine(), (int) fr.result.getDurationMillis(), escape(fr.feature.getNameForReport())));
-                // log.trace(String.format(FEATURE_FINISHED, getCurrentTime(), path + ":" + fr.feature.getLine(), (int) fr.result.getDurationMillis(), escape(fr.feature.getNameForReport())));
+                String path = feature(fr).getResource().getRelativePath();
+                println(String.format(FEATURE_FINISHED, getCurrentTime(), path + ":" + feature(fr).getLine(), (int) fr.result.getDurationMillis(), escape(feature(fr).getNameForReport())));
+                // log.trace(String.format(FEATURE_FINISHED, getCurrentTime(), path + ":" + feature(fr).getLine(), (int) fr.result.getDurationMillis(), escape(feature(fr).getNameForReport())));
             }
         } catch (Exception e) {
             log.error("afterFeature error: {}", e.getMessage());
@@ -112,10 +94,10 @@ public class VSCodeOutputRuntimeHook implements ExtendedRuntimeHook {
                 if (sr.result.isFailed()) {
                     StringUtils.Pair error = details(sr.result.getErrorMessage());
                     println(String.format(SCENARIO_FAILED, getCurrentTime(), path + ":" + sr.scenario.getLine(), (int) sr.result.getDurationMillis(), sr.scenario.isOutlineExample(), sr.scenario.isDynamic(), escape(error.right), escape(error.left), escape(sr.scenario.getRefIdAndName()), ""));
-                    // log.trace(String.format(SCENARIO_FAILED, getCurrentTime(), path + ":" + fr.feature.getLine(), (int) sr.result.getDurationMillis(), sr.scenario.isOutlineExample(), sr.scenario.isDynamic(), escape(error.right), escape(error.right), escape(error.left), escape(sr.scenario.getRefIdAndName()), ""));
+                    // log.trace(String.format(SCENARIO_FAILED, getCurrentTime(), path + ":" + feature(fr).getLine(), (int) sr.result.getDurationMillis(), sr.scenario.isOutlineExample(), sr.scenario.isDynamic(), escape(error.right), escape(error.right), escape(error.left), escape(sr.scenario.getRefIdAndName()), ""));
                 } else {
                     println(String.format(SCENARIO_FINISHED, getCurrentTime(), path + ":" + sr.scenario.getLine(), (int) sr.result.getDurationMillis(), sr.scenario.isOutlineExample(), sr.scenario.isDynamic(), escape(sr.scenario.getRefIdAndName())));
-                    // log.trace(String.format(SCENARIO_FINISHED, getCurrentTime(), path + ":" + fr.feature.getLine(), (int) sr.result.getDurationMillis(), sr.scenario.isOutlineExample(), sr.scenario.isDynamic(), escape(sr.scenario.getRefIdAndName())));
+                    // log.trace(String.format(SCENARIO_FINISHED, getCurrentTime(), path + ":" + feature(fr).getLine(), (int) sr.result.getDurationMillis(), sr.scenario.isOutlineExample(), sr.scenario.isDynamic(), escape(sr.scenario.getRefIdAndName())));
                 }
             }
         } catch (Exception e) {

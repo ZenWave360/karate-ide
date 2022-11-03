@@ -29,6 +29,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static vscode.compatibility.KarateCompatibility.feature;
+import static vscode.compatibility.KarateCompatibility.getFeatureCallLine;
 
 /**
  * @author ivangsa
@@ -155,22 +157,22 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
     @Override
     public boolean beforeFeature(FeatureRuntime fr) {
         try {
-            if (fr.caller.parentRuntime != null && isSame(fr.feature, fr.caller.parentRuntime.scenario.getFeature())) {
-                // System.out.println("fr.feature " + fr.feature.getNameForReport());
+            if (fr.caller.parentRuntime != null && isSame(feature(fr), fr.caller.parentRuntime.scenario.getFeature())) {
+                // System.out.println("feature(fr) " + feature(fr).getNameForReport());
                 return true;
             }
             Event event = new Event();
             event.eventType = EventType.FEATURE_START;
             event.thread = threadName.get();
             event.timestamp = System.currentTimeMillis();
-            event.name = getFeatureName(fr.feature);
-            event.feature = fr.feature.getNameForReport();
-            event.rootFeature = fr.rootFeature.feature.getNameForReport();
-            event.resource = fr.feature.getResource().getRelativePath();
-            event.line = fr.feature.getCallLine();
-            if (fr.caller != null && fr.caller.feature != null) {
+            event.name = getFeatureName(feature(fr));
+            event.feature = feature(fr).getNameForReport();
+            event.rootFeature = feature(fr).getNameForReport();
+            event.resource = feature(fr).getResource().getRelativePath();
+            event.line = getFeatureCallLine(fr); // feature(fr).getCallLine();
+            if (fr.caller != null && feature(fr.caller) != null) {
                 // event.parent = fr.caller.hashCode();
-                event.caller = fr.caller.feature.getNameForReport();
+                event.caller = feature(fr.caller).getNameForReport();
                 event.callDepth = fr.caller.depth;
             }
 
@@ -183,8 +185,8 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
 
     @Override
     public void afterFeature(FeatureRuntime fr) {
-        if (fr.caller.parentRuntime != null && isSame(fr.feature, fr.caller.parentRuntime.scenario.getFeature())) {
-            // log.debug("afterFeature", fr.feature, fr.caller.parentRuntime.scenario.getFeature(), fr.caller.parentRuntime != null, isSame(fr.feature, fr.caller.parentRuntime.scenario.getFeature()));
+        if (fr.caller.parentRuntime != null && isSame(feature(fr), fr.caller.parentRuntime.scenario.getFeature())) {
+            // log.debug("afterFeature", feature(fr), fr.caller.parentRuntime.scenario.getFeature(), fr.caller.parentRuntime != null, isSame(feature(fr), fr.caller.parentRuntime.scenario.getFeature()));
             return;
         }
         try {
@@ -192,13 +194,13 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
             event.eventType = EventType.FEATURE_END;
             event.thread = threadName.get();
             event.timestamp = System.currentTimeMillis();
-            event.name = getFeatureName(fr.feature);
-            event.feature = fr.feature.getNameForReport();
-            event.rootFeature = fr.rootFeature.feature.getNameForReport();
-            event.resource = fr.feature.getResource().getRelativePath();
-            event.line = fr.feature.getCallLine();
-            if (fr.caller != null && fr.caller.feature != null) {
-                event.caller = fr.caller.feature.getNameForReport(); // TODO build resource line
+            event.name = getFeatureName(feature(fr));
+            event.feature = feature(fr).getNameForReport();
+            event.rootFeature = feature(fr).getNameForReport();
+            event.resource = feature(fr).getResource().getRelativePath();
+            event.line = getFeatureCallLine(fr); // feature(fr).getCallLine();
+            if (fr.caller != null && feature(fr.caller) != null) {
+                event.caller = feature(fr.caller).getNameForReport(); // TODO build resource line
                 event.callDepth = fr.caller.depth;
             }
             event.status = fr.result.isFailed() ? "KO" : "OK";
@@ -219,18 +221,18 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
             event.thread = threadName.get();
             event.timestamp = System.currentTimeMillis();
             event.name = sr.scenario.getRefIdAndName();
-            event.feature = sr.featureRuntime.feature.getNameForReport();
-            event.rootFeature = sr.featureRuntime.rootFeature.feature.getNameForReport();
+            event.feature = feature(sr.featureRuntime).getNameForReport();
+            event.rootFeature = feature(sr.featureRuntime.rootFeature).getNameForReport();
             event.scenario = sr.scenario.getRefIdAndName();
-            event.resource = sr.featureRuntime.feature.getResource().getRelativePath();
+            event.resource = feature(sr.featureRuntime).getResource().getRelativePath();
             event.line = sr.scenario.getLine();
             if (sr.scenario.isOutlineExample()) {
                 event.isOutline = true;
                 event.isDinamic = sr.scenario.isDynamic();
             }
-            if (sr.caller != null && sr.caller.feature != null) {
+            if (sr.caller != null && feature(sr.caller) != null) {
                 // event.parent = sr.caller.hashCode();
-                event.caller = sr.caller.feature.getNameForReport();
+                event.caller = feature(sr.caller).getNameForReport();
                 event.callDepth = sr.caller.depth;
                 try {
                     // event.payload = sr.caller.arg.getAsString();
@@ -254,17 +256,17 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
             event.thread = threadName.get();
             event.timestamp = System.currentTimeMillis();
             event.name = sr.scenario.getRefIdAndName();
-            event.feature = sr.featureRuntime.feature.getNameForReport();
-            event.rootFeature = sr.featureRuntime.rootFeature.feature.getNameForReport();
+            event.feature = feature(sr.featureRuntime).getNameForReport();
+            event.rootFeature = feature(sr.featureRuntime.rootFeature).getNameForReport();
             event.scenario = sr.scenario.getRefIdAndName();
-            event.resource = sr.featureRuntime.feature.getResource().getRelativePath();
+            event.resource = feature(sr.featureRuntime).getResource().getRelativePath();
             event.line = sr.scenario.getLine();
             if (sr.scenario.isOutlineExample()) {
                 event.isOutline = true;
                 event.isDinamic = sr.scenario.isDynamic();
             }
-            if (sr.caller != null && sr.caller.feature != null) {
-                event.caller = sr.caller.feature.getNameForReport();
+            if (sr.caller != null && feature(sr.caller) != null) {
+                event.caller = feature(sr.caller).getNameForReport();
                 event.callDepth = sr.caller.depth;
             }
             event.status = sr.result.isFailed() ? "KO" : "OK";
@@ -289,18 +291,18 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
             event.thread = threadName.get();
             event.timestamp = System.currentTimeMillis();
             event.name =  getOutlineName(sr);
-            event.feature = sr.featureRuntime.feature.getNameForReport();
-            event.rootFeature = sr.featureRuntime.rootFeature.feature.getNameForReport();
+            event.feature = feature(sr.featureRuntime).getNameForReport();
+            event.rootFeature = feature(sr.featureRuntime.rootFeature).getNameForReport();
             event.scenario = getOutlineName(sr);
-            event.resource = sr.featureRuntime.feature.getResource().getRelativePath();
+            event.resource = feature(sr.featureRuntime).getResource().getRelativePath();
             event.line = sr.scenario.getLine();
             if (sr.scenario.isOutlineExample()) {
                 event.isOutline = true;
                 event.isDinamic = sr.scenario.isDynamic();
             }
-            if (sr.caller != null && sr.caller.feature != null) {
+            if (sr.caller != null && feature(sr.caller) != null) {
                 // event.parent = sr.caller.hashCode();
-                event.caller = sr.caller.feature.getNameForReport();
+                event.caller = feature(sr.caller).getNameForReport();
                 event.callDepth = sr.caller.depth;
                 try {
                     // event.payload = sr.caller.arg.getAsString();
@@ -324,17 +326,17 @@ public class VSCodeSocketRuntimeHook implements ExtendedRuntimeHook {
             event.thread = threadName.get();
             event.timestamp = System.currentTimeMillis();
             event.name =  getOutlineName(sr);
-            event.feature = sr.featureRuntime.feature.getNameForReport();
-            event.rootFeature = sr.featureRuntime.rootFeature.feature.getNameForReport();
+            event.feature = feature(sr.featureRuntime).getNameForReport();
+            event.rootFeature = feature(sr.featureRuntime.rootFeature).getNameForReport();
             event.scenario = getOutlineName(sr);
-            event.resource = sr.featureRuntime.feature.getResource().getRelativePath();
+            event.resource = feature(sr.featureRuntime).getResource().getRelativePath();
             event.line = sr.scenario.getLine();
             if (sr.scenario.isOutlineExample()) {
                 event.isOutline = true;
                 event.isDinamic = sr.scenario.isDynamic();
             }
-            if (sr.caller != null && sr.caller.feature != null) {
-                event.caller = sr.caller.feature.getNameForReport();
+            if (sr.caller != null && feature(sr.caller) != null) {
+                event.caller = feature(sr.caller).getNameForReport();
                 event.callDepth = sr.caller.depth;
             }
             event.status = sr.result.isFailed() ? "KO" : "OK";

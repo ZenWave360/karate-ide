@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static vscode.compatibility.KarateCompatibility.feature;
+
 /**
  * @author ivangsa
  */
@@ -54,7 +56,7 @@ public class VSCodeHook implements RuntimeHook {
             // fixes afterFeature not being called for empty features (no scenarios selected by tags)
             afterFeature(fr);
         }
-        this.currentFeature.set(fr.feature.getNameForReport());
+        this.currentFeature.set(feature(fr).getNameForReport());
         return runtimeHooks.stream().reduce(true, (accumulated, hook) -> hook.beforeFeature(fr), (accumulated, current) -> accumulated && current);
     }
 
@@ -112,13 +114,13 @@ public class VSCodeHook implements RuntimeHook {
         runtimeHooks.stream().forEach(h -> h.afterHttpCall(request, response, sr));
     }
 
-    @Override
-    public void beforeBackground(ScenarioRuntime sr) {
-        runtimeHooks.stream().forEach(h -> h.beforeBackground(sr));
-    }
-
-    @Override
-    public void afterBackground(ScenarioRuntime sr) {
-        runtimeHooks.stream().forEach(h -> h.afterBackground(sr));
-    }
+//    @Override
+//    public void beforeBackground(ScenarioRuntime sr) {
+//        runtimeHooks.stream().forEach(h -> h.beforeBackground(sr));
+//    }
+//
+//    @Override
+//    public void afterBackground(ScenarioRuntime sr) {
+//        runtimeHooks.stream().forEach(h -> h.afterBackground(sr));
+//    }
 }
