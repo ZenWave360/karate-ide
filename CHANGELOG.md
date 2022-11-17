@@ -2,6 +2,9 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+# 1.3.2
+- [x] Fallback "activationEvents" to "*"
+
 ## 1.3.1
 
 - [x] Compatibility with karate 1.3.0

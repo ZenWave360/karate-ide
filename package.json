@@ -33,15 +33,7 @@
         "api"
     ],
     "activationEvents": [
-        "workspaceContains:**.feature",
-        "workspaceContains:**/**.feature",
-        "workspaceContains:karate-config.js",
-        "workspaceContains:**/karate-config.js",
-        "workspaceContains:**.yml",
-        "workspaceContains:**/**.yml",
-        "onCommand:karateIDE.configureClasspath",
-        "onCommand:karateIDE.generateKarateProject",
-        "onCommand:karateIDE.*"
+        "*"
     ],
     "main": "./dist/extension.js",
     "scripts": {
