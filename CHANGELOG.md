@@ -2,6 +2,9 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+# 1.3.3
+- [x] Clear HttpLogs view on each new request
+
 # 1.3.2
 - [x] Fallback "activationEvents" to "*"
 

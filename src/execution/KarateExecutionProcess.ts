@@ -73,7 +73,7 @@ export class KarateExecutionProcess {
         }
         this.isExecuting = true;
         executionsTreeProvider.clear();
-        karateNetworkLogsTreeProvider.collapsePreviousExecutions();
+        karateNetworkLogsTreeProvider.clear(); // karateNetworkLogsTreeProvider.collapsePreviousExecutions();
         karateOutputChannel.clear();
         karateOutputChannel.appendAll(`cwd: ${testServer.cwd}\nExecuting: ${command}\n\n`, true);
         vscode.commands.executeCommand('karate-executions.focus');
