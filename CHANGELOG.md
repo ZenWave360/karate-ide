@@ -2,6 +2,11 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+# 1.3.4
+- [x] Upgrade to zenwave-apimock 0.1.4
+- [x] Remove old "Configure classpath" entries
+- [x] Validate compatibility with karate.jar 1.4.0
+
 # 1.3.3
 - [x] Clear HttpLogs view on each new request
 
