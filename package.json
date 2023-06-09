@@ -42,12 +42,12 @@
         "compile": "webpack",
         "watch": "webpack --watch",
         "package": "webpack --mode production --devtool hidden-source-map",
-        "test-compile": "tsc -p ./test",
+        "test-compile": "tsc -p ./src/test",
         "test-watch": "tsc -watch -p ./test",
         "pretest": "npm run test-compile && npm run lint",
         "prettier:format": "prettier --write \"{,src/**/,test/**}*.{js,ts}\"",
         "lint": "eslint src --ext ts",
-        "test": "ts-mocha test/**/*.spec.ts"
+        "test": "ts-mocha src/test/**/*.test.ts"
     },
     "dependencies": {
         "@apidevtools/json-schema-ref-parser": "^9.0.7",
