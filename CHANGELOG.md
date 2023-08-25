@@ -2,6 +2,9 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+# 1.3.5
+- [x] Fixes "Validation Schemas" generated from OpenAPI supporting "required fields" #30
+
 # 1.3.4
 - [x] Upgrade to zenwave-apimock 0.1.4
 - [x] Remove old "Configure classpath" entries
