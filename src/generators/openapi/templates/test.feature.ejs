@@ -18,7 +18,7 @@ Scenario Outline: Test <%= operation.operationId %> for <status> status code
 			if(statusCode == 500) {	continue;}
 			const response = operation.responses[statusCode];
 		_%>
-		| <%= statusCode %>    | <%= response.paramExamples.length? response.paramExamples.join(' | ') + ' |' : '' %> true          |
+		| <%= statusCode %>    | <%= response.paramExamples.length? response.paramExamples.join(' | ') + ' |' : '' %> <%= (statusCode + '').startsWith('2') %>          |
 		<%_
 		}
 	_%>
