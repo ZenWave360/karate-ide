@@ -143,8 +143,8 @@ function buildKarateSchema(schema, options) {
     const nullable = schema.nullable === true || (Array.isArray(schema.type) && schema.type.includes("'null'"));
     const isOptionalPrefix = !required || nullable ? '#' : '';
     if (type === 'array') {
-        if(schema.minItems || schema.maxItems){
-            return generateArrayLengthValidationExpr(schema,isOptionalPrefix);
+        if (schema.minItems || schema.maxItems) {
+            return generateArrayLengthValidationExpr(schema, isOptionalPrefix);
         }
         return `${isOptionalPrefix}#array`;
         // return [buildKarateSchema(schema.items, { ...options, name: `${options.name}[*]` })];
@@ -159,15 +159,14 @@ function buildKarateSchema(schema, options) {
     }
     if (schema.type === 'integer') {
         if (schema.minimum || schema.maximum) {
-            return generateNumberFuzzyExpr(schema,isOptionalPrefix);
-        } else {
-            return `${isOptionalPrefix}#number`;
+            return generateNumberFuzzyExpr(schema, isOptionalPrefix);
         } 
+        return `${isOptionalPrefix}#number`;
     }
     if (schema.type === 'boolean') {
         return `${isOptionalPrefix}#boolean`;
     }
-    if(schema.type === 'string' && (schema.minLength || schema.maxLength || schema.pattern )){
+    if (schema.type === 'string' && (schema.minLength || schema.maxLength || schema.pattern)) {
         return generateFuzzyRegexWithOptions(schema, isOptionalPrefix);
     }
     return `${isOptionalPrefix}#string`;
@@ -184,25 +183,21 @@ function generateFuzzyRegexWithOptions(schema, isOptionalPrefix) {
     return regex;
 }
 
-function generateNumberFuzzyExpr(schema,isOptionalPrefix) {
+function generateNumberFuzzyExpr(schema, isOptionalPrefix) {
     let expr = `${isOptionalPrefix}#number? _ `;
-
     if (schema.minimum !== undefined) {
         expr += `${schema.exclusiveMinimum ? '>=' : '>'} ${schema.minimum}`;
     }
-
     if (schema.maximum !== undefined) {
         expr += `${schema.minimum !== undefined ? ' && _ ' : ''}${schema.exclusiveMaximum ? '<=' : '<'} ${schema.maximum}`;
     }
-
     return expr;
 }
 
-function generateArrayLengthValidationExpr(schema,isOptionalPrefix) {
+function generateArrayLengthValidationExpr(schema, isOptionalPrefix) {
     let expr = `${isOptionalPrefix}#[_ `;
-
     if (schema.minItems !== undefined) {
-        expr += `>= ${schema.minItems}${schema.maxItems !== undefined ? ' && _ ':']'}`;
+        expr += `>= ${schema.minItems}${schema.maxItems !== undefined ? ' && _ ' : ']'}`;
     }
 
     if (schema.maxItems !== undefined) {
