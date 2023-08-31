@@ -111,8 +111,12 @@ Scenario: validates <%= operation.operationId %> response
 _%>
 # validate nested array: <%= property %>
 * def <%= property %>_MatchesEach = <%- JSON.stringify(responseMatchesEach[property]) %>
+<%_ if(isArraySchema(responseSchema)) { _%>
+* match each response[*].<%= property %> contains <%= property %>_MatchesEach
+<%_ } else { _%>
 * def <%= property %>_Response = response.<%= property %> || []
 * match each <%= property %>_Response contains <%= property %>_MatchesEach
+<%_ } _%>
 <%_
     });
 _%>
