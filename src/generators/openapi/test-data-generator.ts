@@ -14,7 +14,7 @@ function buildKarateTestDataObject(operation: any, statusCode: string | number) 
         const schema = (Object.values(operation.responses[statusCode].content)[0] as any)?.schema;
         return isArraySchema(schema) ? schema.items : schema;
     };
-    const requiredProperties = (Object.values(operation.responses[statusCode].content)[0] as any)?.schema?.required;
+    const requiredProperties = hasResponseContent? responseSchema().required : [];
     const body = operation.requestBody ? buildExampleFromSchema(requestSchema(), { optional: true }) : null;
     const responseMatch = hasResponseContent ? buildKarateSchema(responseSchema(), {requiredProps:requiredProperties}) : null;
     const matchResponse = (statusCode + '').startsWith('2');
