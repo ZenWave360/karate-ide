@@ -2,6 +2,10 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+# 1.3.6
+- [x] Adds min,max & pattern validation based on open API schema
+- [x] Fix for "Validation Schemas" generated from OpenAPI supporting "required fields" #30
+
 # 1.3.5
 - [x] Fixes "Validation Schemas" generated from OpenAPI supporting "required fields" #30
 
