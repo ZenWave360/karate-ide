@@ -16,7 +16,7 @@ export class KarateTestTreeEntry {
 
 class FilesManager {
     private workspaceFolders = vscode.workspace.workspaceFolders;
-    private workspaceFsPaths;
+    private workspaceFsPaths: string[];
     private testsGlobFilter: string;
     private classpathFolders: string[];
     private cachedKarateTestFiles: string[];
@@ -57,7 +57,8 @@ class FilesManager {
 
         this.classpathFolders.forEach(async classpathFolder => {
             const entries = (await vscode.workspace.findFiles('**/' + classpathFolder + '/**/*.{feature,yml,json}'))
-                .map(f => this.relativeToWorkspace(f.fsPath))
+                .map(f => vscode.workspace.asRelativePath(f, false))
+                .map(f => path.relative(classpathFolder, f))
                 .map(f => f.replace(/\\/g, '/'));
             this.cachedClasspathFiles.push(...entries);
         });
@@ -115,12 +116,10 @@ class FilesManager {
     }
 
     private findInClassPathFolders(file) {
-        const result = this.classpathFolders
-            .map(folder => path.join(this.workspaceFsPaths, folder, file))
-            .filter(f => fs.existsSync(f))
-            .filter((value, index) => index === 0);
-        // console.log(result);
-        return result;
+        const searchPaths = this.classpathFolders
+            .map(folder => path.join(folder, file))
+            .flatMap(f => this.workspaceFsPaths.map(w => path.join(w, f)));
+        return searchPaths.filter(f => fs.existsSync(f));
     }
 
     public getClasspathRelativePath(file: vscode.Uri) {
@@ -141,7 +140,7 @@ class FilesManager {
         let completionStrings = [];
         completionStrings.push(...this.cachedKarateTestFiles.filter(f => f));
         completionStrings.push(...this.cachedClasspathFiles.map(f => `classpath:${f}`));
-        let completionItems = completionStrings.map(f => new vscode.CompletionItem(`classpath:${f}`, vscode.CompletionItemKind.File));
+        let completionItems = completionStrings.map(f => new vscode.CompletionItem(f, vscode.CompletionItemKind.File));
         // completionItems.push(...this.cachedKarateTestFiles.filter(f => f).map(f => new vscode.CompletionItem(f, vscode.CompletionItemKind.File)));
         // completionItems.push(...this.cachedClasspathFiles.map(f => new vscode.CompletionItem(`classpath:${f}`, vscode.CompletionItemKind.File)));
         return completionItems.filter(item => item.label.toString().startsWith(completionToken));
