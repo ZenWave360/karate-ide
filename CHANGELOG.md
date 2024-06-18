@@ -2,6 +2,9 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+# 1.4.1
+- [x] Fixes support for openapi property type "number" when generating validation schemas.
+
 # 1.4.0
 - [x] Upgrades API-Mock to karate.jar 1.4.1
 - [x] Validates compatibility with karate.jar 1.4.1

@@ -157,7 +157,7 @@ function buildKarateSchema(schema, options) {
         });
         return object;
     }
-    if (schema.type === 'integer') {
+    if (schema.type === 'integer' || schema.type === 'number') {
         if (schema.minimum || schema.maximum) {
             return generateNumberFuzzyExpr(schema, isOptionalPrefix);
         } 
