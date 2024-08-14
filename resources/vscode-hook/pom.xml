@@ -15,7 +15,12 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <karate.version>1.4.1</karate.version>
+
+<!--        <karate.version>1.4.0</karate.version>-->
+<!--        <karate.groupId>com.intuit.karate</karate.groupId>-->
+
+        <karate.version>1.5.0</karate.version>
+        <karate.groupId>io.karatelabs</karate.groupId>
     </properties>
 
     <build>
@@ -29,7 +34,7 @@
 
 	<dependencies>
         <dependency>
-            <groupId>com.intuit.karate</groupId>
+            <groupId>${karate.groupId}</groupId>
             <artifactId>karate-core</artifactId>
             <version>${karate.version}</version>
         </dependency>

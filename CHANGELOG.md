@@ -2,6 +2,11 @@
 
 All notable changes to the "karate-ide" extension will be documented in this file.
 
+# 1.5.0
+- [x] Adds DapServer to vscode.jar to bring back `debug`support
+- [x] Compilation against karate-core 1.5.0
+
+
 # 1.4.1
 - [x] Fixes support for openapi property type "number" when generating validation schemas.
 
